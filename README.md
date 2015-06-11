@@ -4,13 +4,13 @@ acbuild is a command line utility to build and modify App Container images (ACIs
 
 ## Rationale
 
-Dockerfiles are great and introduce nice concepts such as build layers, controlled build environment, however they lack flexibility (impossible to extend, re-use environment variables) and don't play nicely with app spec and linux toolchain (e.g. shell, makefiles)
+Dockerfiles are powerful and feature useful concepts such as build layers, controlled build environment. At the same time, they lack flexibility (impossible to extend, re-use environment variables) and don't play nicely with the app spec and Linux toolchain (e.g. shell, makefiles)
 
-This proposal introduces the concept of a command line build tool that natively supports ACI builds and integrates well with shell, makefiles and other Unix tools
+This proposal introduces the concept of a command-line build tool, `acbuild`, that natively supports ACI builds and integrates well with shell, makefiles and other Unix tools.
 
 ## Commands
 
-acbuild will support several commands:
+`acbuild` will support several commands:
 
 * acbuild init in.aci
   creates an empty aci image `in.aci` with manifest filled up with auto generated stub contents
