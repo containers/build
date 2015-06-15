@@ -12,38 +12,38 @@ This proposal introduces the concept of a command-line build tool, `acbuild`, th
 
 `acbuild` will support several commands:
 
-* acbuild init in.aci
+* `acbuild init in.aci`
   creates an empty aci image `in.aci` with manifest filled up with auto generated stub contents
 
-* acbuild env -var="a=b” -var=”c=d" -in=in.aci -out=out.aci   
+* `acbuild env -var="a=b" -var="c=d" -in=in.aci -out=out.aci`
   adds environment variables to an image `in.aci`, outputs the result to `out.aci`
 
-* acbuild set-run /usr/local/bin/etcd -in=in.aci -out=out.aci
+* `acbuild set-run /usr/local/bin/etcd -in=in.aci -out=out.aci`
   sets a run command for the aci image in.aci, writing output to `out.aci`
 
-* acbuild set-label -a=key:val -a=key:val -in=in.aci -out=out.aci  	
+* `acbuild set-label -a=key:val -a=key:val -in=in.aci -out=out.aci`
   sets annotation label in manifest of `in.aci` and outputs the results to `out.aci`
 
-* acbuild add-image add.aci -in=in.aci -out=out.aci	          	
+* `acbuild add-image add.aci -in=in.aci -out=out.aci`
   add contents of image `add.aci` to image `in.aci` and outputs the value to `out.aci`
 
-* acbuild add-dir /dir -in=in.aci -dir=/dir -out=out.aci                   	
+* `acbuild add-dir /dir -in=in.aci -dir=/dir -out=out.aci`
   add contents of directory `/dir` to image `in.aci` and outputs the result to `out.aci`
 
-* acbuild exec -in=in.aci -cmd=/var/run/cmd.run -out=out.aci          
+* `acbuild exec -in=in.aci -cmd=/var/run/cmd.run -out=out.aci`
   unpacks image.aci, ask systemd-nspawn (either vendored with acbuild or provided by host OS) to execute command in image.aci's environment: `/var/run/cmd.run`, and add the results to the `out.aci` as a separate layer.
 
-* acbuild squash -in=in.aci -layers=* -out=out.aci
+* `acbuild squash -in=in.aci -layers=* -out=out.aci`
   squashes all layers in in.aci and outputs `out.aci` as a result
 
-* acbuild push -user= -pass= in=in.aci url=registry-url -tag a:b
+* `acbuild push -user= -pass= in=in.aci url=registry-url -tag a:b`
   pushes `in.aci` to the registry and add some tags to it
 
 ### acbuild exec
 
 `acbuild exec` executes the command using systemd-nspawn with the root filesystem of the image passed as a parameter.
 
-    acbuild exec -in=dbus.aci -out=built.aci “cd /build && ./configure && make && make install”
+    acbuild exec -in=dbus.aci -out=built.aci "cd /build && ./configure && make && make install"
 
 starts a build in the filesystem of the image `dbus.aci`
 
@@ -81,7 +81,7 @@ In layered mode and with overlayfs support `acbuild exec` works as follows:
 
 Caching can be available as an explicit flag for the `acbuild exec`, giving users a choice to re-use the previous execution results for a command in cases when it makes sense, e.g when command execution results are idempotent.
 
-    acbuild exec -cache=true -in=in.aci “git clone --branch v219 --depth 1 git://anongit.freedesktop.org/systemd/systemd /tmp/out”
+    acbuild exec -cache=true -in=in.aci "git clone --branch v219 --depth 1 git://anongit.freedesktop.org/systemd/systemd /tmp/out"
 
 in case if `-cache=true` is set acbuild executes the following sequence:
 
@@ -164,8 +164,8 @@ build mongodb from official images
 use apt-get to install nginx
 
 
-    acbuild -in=in.aci -out=int.aci add aptitude.aci 
-    acbuild -in=int.aci -out=out.aci exec apt-get -y install nginx
+    acbuild -in=in.aci -out=in.aci add-image aptitude.aci
+    acbuild -in=in.aci -out=out.aci exec apt-get -y install nginx
 
 
 
