@@ -1,0 +1,80 @@
+{
+	"ImportPath": "github.com/appc/acbuild",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/appc/spec/aci",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/discovery",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/pkg/acirenderer",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/pkg/device",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/pkg/tarheader",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/schema",
+			"Comment": "v0.7.0-6-ge040d35",
+			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-semver/semver",
+			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
+		},
+		{
+			"ImportPath": "github.com/coreos/ioprogress",
+			"Rev": "e7fc03058804de5488baed8df5b89f3924b9ec9a"
+		},
+		{
+			"ImportPath": "github.com/inconshreveable/mousetrap",
+			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "66816bcd0378e248c613e3c443c020f544c28804"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh/terminal",
+			"Rev": "a7ead6ddf06233883deca151dffaef2effbf498f"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "1dfe7915deaf3f80b962c163b918868d8a6d8974"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
+			"Comment": "v1.1.0-alpha.1-1388-gcf75b0d",
+			"Rev": "cf75b0d023e0815160a1a5d66d3375818ee2afe8"
+		},
+		{
+			"ImportPath": "speter.net/go/exp/math/dec/inf",
+			"Rev": "42ca6cd68aa922bc3f32f1e056e61b65945d9ad7"
+		},
+		{
+			"ImportPath": "xi2.org/x/xz",
+			"Rev": "18c6b7129324841d920ee8dc1ab66ec07054998f"
+		}
+	]
+}
