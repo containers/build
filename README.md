@@ -13,7 +13,9 @@ This proposal introduces the concept of a command-line build tool, `acbuild`,
 that natively supports ACI builds and integrates well with shell, makefiles and
 other Unix tools.
 
-## Dependencies
+## Installation
+
+### Dependencies
 
 acbuild requires a handful of commands be available:
 
@@ -22,6 +24,41 @@ acbuild requires a handful of commands be available:
 - `mount`
 - `modprobe`
 - `tar`
+
+### Build from source
+
+Currently the only way to install `acbuild` is to build the program from
+source. Follow these steps to do so:
+
+1. Grab the source code for `acbuild` by `git clone`ing the source repository:
+
+```
+cd ~
+git clone git@github.com:appc/acbuild
+```
+
+2. Run the `build` script from the root source repository directory:
+
+```
+cd acbuild
+./build
+```
+
+3. A `bin/` directory will be created that contains the `acbuild` tool. To make
+   sure your shell can find this executable, append this directory to your
+   environment's `$PATH` variable. You can do this in your `.bashrc` or similar
+   file, for example:
+
+```
+vi ~/.bashrc
+```
+
+and put the following lines at the end of the file:
+
+```
+export ACBUILD_BIN_DIR=~/acbuild/bin
+export PATH=$PATH:$ACBUILD_BIN_DIR
+```
 
 ## Usage
 

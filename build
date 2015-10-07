@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+ORG_PATH="github.com/appc"
+REPO_PATH="${ORG_PATH}/acbuild"
+
+if [ ! -h gopath/src/${REPO_PATH} ]; then
+	mkdir -p gopath/src/${ORG_PATH}
+	ln -s ../../../.. gopath/src/${REPO_PATH} || exit 255
+fi
+
+export GOBIN=${PWD}/bin
+export GOPATH=${PWD}/gopath
+
+eval $(go env)
+export GOOS GOARCH
+
+if [ "${GOOS}" = "freebsd" ]; then
+    # /usr/bin/cc is clang on freebsd, but we need to tell it to go to
+    # make it generate proper flavour of code that doesn't emit
+    # warnings.
+    export CC=clang
+fi
+
+echo "Building acbuild..."
+go build -o $GOBIN/acbuild ${REPO_PATH}/acbuild
