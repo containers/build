@@ -58,11 +58,23 @@ func runAddLabel(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("label add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("label add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Adding label %q=%q", args[0], args[1])
 	}
 
-	err := lib.AddLabel(tmpacipath(), args[0], args[1])
+	err = lib.AddLabel(tmpacipath(), args[0], args[1])
 
 	if err != nil {
 		stderr("label add: %v", err)
@@ -82,11 +94,23 @@ func runRemoveLabel(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("label remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("label remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing label %q", args[0])
 	}
 
-	err := lib.RemoveLabel(tmpacipath(), args[0])
+	err = lib.RemoveLabel(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("label remove: %v", err)

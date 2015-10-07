@@ -61,6 +61,18 @@ func runAddMount(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("mount add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("mount add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		if readOnly {
 			stderr("Adding read only mount point %q=%q", args[0], args[1])
@@ -69,7 +81,7 @@ func runAddMount(cmd *cobra.Command, args []string) (exit int) {
 		}
 	}
 
-	err := lib.AddMount(tmpacipath(), args[0], args[1], readOnly)
+	err = lib.AddMount(tmpacipath(), args[0], args[1], readOnly)
 
 	if err != nil {
 		stderr("mount add: %v", err)
@@ -89,11 +101,23 @@ func runRmMount(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("mount remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("mount remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing mount point %q", args[0])
 	}
 
-	err := lib.RemoveMount(tmpacipath(), args[0])
+	err = lib.RemoveMount(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("mount remove: %v", err)

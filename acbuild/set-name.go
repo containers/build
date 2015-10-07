@@ -44,11 +44,23 @@ func runSetName(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("set-name: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("set-name: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Setting name of ACI to %s", args[0])
 	}
 
-	err := lib.SetName(tmpacipath(), args[0])
+	err = lib.SetName(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("set-name: %v", err)

@@ -43,11 +43,23 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("run: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("run: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Running: %v", args)
 	}
 
-	err := lib.Run(tmpacipath(), depstorepath(), targetpath(), scratchpath(), workpath(), args, insecure)
+	err = lib.Run(tmpacipath(), depstorepath(), targetpath(), scratchpath(), workpath(), args, insecure)
 
 	if err != nil {
 		stderr("run: %v", err)

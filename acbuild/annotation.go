@@ -59,11 +59,23 @@ func runAddAnno(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("annotation add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("annotation add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Adding annotation %q=%q", args[0], args[1])
 	}
 
-	err := lib.AddAnnotation(tmpacipath(), args[0], args[1])
+	err = lib.AddAnnotation(tmpacipath(), args[0], args[1])
 
 	if err != nil {
 		stderr("annotation add: %v", err)
@@ -83,11 +95,23 @@ func runRmAnno(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("annotation remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("annotation remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing annotation %q", args[0])
 	}
 
-	err := lib.RemoveAnnotation(tmpacipath(), args[0])
+	err = lib.RemoveAnnotation(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("annotation remove: %v", err)

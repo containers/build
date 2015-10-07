@@ -15,6 +15,7 @@
 package main
 
 import (
+	"os"
 	"path"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
@@ -42,14 +43,29 @@ func runAbort(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("abort: %v", err)
+		return 1
+	}
+	// Lock will be released when lib.Abort deletes the folder containing the
+	// lockfile.
+
 	if debug {
 		stderr("Aborting the build")
 	}
 
-	err := lib.Abort(path.Join(contextpath, workprefix))
+	err = lib.Abort(path.Join(contextpath, workprefix))
 
 	if err != nil {
 		stderr("abort: %v", err)
+		// In the event of an error the lockfile may have not been removed, so
+		// let's release the lock now
+		if err := releaseLock(lockfile); err != nil {
+			if !os.IsNotExist(err) {
+				stderr("abort: %v", err)
+			}
+		}
 		return 1
 	}
 

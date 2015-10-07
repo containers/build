@@ -70,11 +70,23 @@ func runAddDep(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("dependency add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("dependency add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Adding dependency %q", args[0])
 	}
 
-	err := lib.AddDependency(tmpacipath(), args[0], imageId,
+	err = lib.AddDependency(tmpacipath(), args[0], imageId,
 		types.Labels(labels), size)
 
 	if err != nil {
@@ -95,11 +107,23 @@ func runRmDep(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("dependency remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("dependency remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing dependency %q", args[0])
 	}
 
-	err := lib.RemoveDependency(tmpacipath(), args[0])
+	err = lib.RemoveDependency(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("dependency remove: %v", err)
