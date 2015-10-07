@@ -26,3 +26,7 @@ _testmain.go
 *.swp
 
 acbuild/acbuild
+
+# Used in building acbuild
+gopath/
+bin/
