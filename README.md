@@ -1,23 +1,26 @@
 # acbuild
 
-acbuild is a command line utility to build and modify App Container images (ACIs).
+acbuild is a command line utility to build and modify App Container Images 
+(ACIs), the container image format defined in the 
+[App Container (appc) spec](https://github.com/appc/spec).
 
 ## Rationale
 
-Dockerfiles are powerful and feature useful concepts such as build layers,
-controlled build environment. At the same time, they lack flexibility
-(impossible to extend, re-use environment variables) and don't play nicely with
-the app spec and Linux toolchain (e.g. shell, makefiles)
+Dockerfiles are powerful and feature useful concepts such as build layers, 
+controlled build environment. At the same time, they lack flexibility 
+(impossible to extend, re-use environment variables) and don't play nicely 
+with the appc spec and Linux toolchain (e.g. shell, makefiles)
 
-This proposal introduces the concept of a command-line build tool, `acbuild`,
-that natively supports ACI builds and integrates well with shell, makefiles and
+`acbuild` is a command-line tool that natively supports ACI builds and integrates 
+well with shell, makefiles and
 other Unix tools.
 
 ## Installation
 
-### Dependencies
+### Runtime dependencies
 
-acbuild requires a handful of commands be available:
+acbuild requires a handful of commands be available on the system on 
+which it's run:
 
 - `systemd-nspawn`
 - `cp`
@@ -27,38 +30,34 @@ acbuild requires a handful of commands be available:
 
 ### Build from source
 
-Currently the only way to install `acbuild` is to build the program from
-source. Follow these steps to do so:
+Currently the only way to install `acbuild` is to build from source. 
+Follow these steps to do so:
 
 1. Grab the source code for `acbuild` by `git clone`ing the source repository:
-
-```
-cd ~
-git clone git@github.com:appc/acbuild
-```
+   ```
+   cd ~
+   git clone git@github.com:appc/acbuild
+   ```
 
 2. Run the `build` script from the root source repository directory:
-
-```
-cd acbuild
-./build
-```
+   ```
+   cd acbuild
+   ./build
+   ```
 
 3. A `bin/` directory will be created that contains the `acbuild` tool. To make
    sure your shell can find this executable, append this directory to your
    environment's `$PATH` variable. You can do this in your `.bashrc` or similar
    file, for example:
-
-```
-vi ~/.bashrc
-```
+   ```
+   vi ~/.bashrc
+   ```
 
 and put the following lines at the end of the file:
-
-```
-export ACBUILD_BIN_DIR=~/acbuild/bin
-export PATH=$PATH:$ACBUILD_BIN_DIR
-```
+   ```
+   export ACBUILD_BIN_DIR=~/acbuild/bin
+   export PATH=$PATH:$ACBUILD_BIN_DIR
+   ```
 
 ## Usage
 
