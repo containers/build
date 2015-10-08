@@ -15,6 +15,7 @@
 package main
 
 import (
+	"os"
 	"path"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
@@ -23,28 +24,21 @@ import (
 )
 
 var (
-	overwrite = false
-	cmdEnd    = &cobra.Command{
-		Use:     "end ACI_PATH",
-		Short:   "End a build",
-		Long:    "Ends a running build, placing the resulting ACI at the provided path",
-		Example: "acbuild end mynewapp.aci",
+	cmdEnd = &cobra.Command{
+		Use:     "end",
+		Short:   "end a current build",
+		Long:    "End the current build, deleting the current context",
+		Example: "acbuild end",
 		Run:     runWrapper(runEnd),
 	}
 )
 
 func init() {
 	cmdAcbuild.AddCommand(cmdEnd)
-
-	cmdEnd.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite output ACI")
 }
 
 func runEnd(cmd *cobra.Command, args []string) (exit int) {
-	if len(args) == 0 {
-		cmd.Usage()
-		return 1
-	}
-	if len(args) > 1 {
+	if len(args) != 0 {
 		stderr("end: incorrect number of arguments")
 		return 1
 	}
@@ -58,16 +52,16 @@ func runEnd(cmd *cobra.Command, args []string) (exit int) {
 	// lockfile.
 
 	if debug {
-		stderr("Ending build. Writing completed ACI to %s", args[0])
+		stderr("Ending the build")
 	}
 
-	err = lib.End(tmpacipath(), args[0], path.Join(contextpath, workprefix), overwrite)
+	err = lib.End(path.Join(contextpath, workprefix))
 
 	if err != nil {
 		stderr("end: %v", err)
-		// In the event of an error the lockfile won't have been removed, so
+		// In the event of an error the lockfile may have not been removed, so
 		// let's release the lock now
-		if err := releaseLock(lockfile); err != nil {
+		if err := releaseLock(lockfile); !os.IsNotExist(err) {
 			stderr("end: %v", err)
 		}
 		return 1

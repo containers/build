@@ -23,6 +23,7 @@ import (
 // from the binary's stdout and stderr to this program's stdout and stderr.
 func Exec(bin string, args ...string) error {
 	cmd := exec.Command(bin, args...)
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()

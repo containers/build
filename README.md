@@ -26,7 +26,7 @@ which it's run:
 - `cp`
 - `mount`
 - `modprobe`
-- `tar`
+- `gpg`
 
 ### Build from source
 
@@ -80,13 +80,14 @@ The following commands are supported:
 
   Begin a build.
 
-* `acbuild end ACI_PATH`
+* `acbuild write ACI_PATH`
 
-  End a build, writing the resulting ACI to `ACI_PATH`.
+  Write an ACI resulting from the current build context to the given path. See
+  the section below on signing ACIs.
 
-* `acbuild abort`
+* `acbuild end`
 
-  Abort the current build, throwing away any changes since `begin` was called.
+  End a build, deleting the current build context.
 
 * `acbuild annotation add NAME VALUE`
 
@@ -180,6 +181,24 @@ dependencies.
 
 `acbuild run` also requires root.
 
+### Signing ACIs
+
+When finishing a build with `acbuild write`, if the `--sign` flag is provided
+acbuild will sign the resulting ACI by invoking the `gpg` command on the
+system. By default the `--armor` and `--yes` flags are passed to `gpg`, but if
+this is not sufficient any arguments given to `acbuild end` after the ACI to
+write are passed along to `gpg`.
+
+Some examples:
+
+```
+acbuild write --sign mynewapp.aci
+```
+
+```
+acbuild write --sign mynewapp.aci -- --no-default-keyring --keyring ./rkt.gpg
+```
+
 ### Context-Free Mode
 
 Calling `begin` and `end` with acbuild to make a single change to an existing
@@ -220,7 +239,8 @@ acbuild run -- apt-get update
 acbuild run -- apt-get -y install nginx
 acbuild set-exec /usr/sbin/nginx
 acbuild set-name example.com/ubuntu-nginx
-acbuild end ubuntu-nginx.aci
+acbuild write ubuntu-nginx.aci
+acbuild end
 ```
 
 ## Related work
