@@ -19,11 +19,14 @@ import (
 	"os"
 	"path"
 	"strings"
+	"syscall"
 	"text/tabwriter"
 	"text/template"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/pflag"
+
+	"github.com/appc/acbuild/util"
 )
 
 const (
@@ -72,6 +75,10 @@ func depstorepath() string {
 
 func workpath() string {
 	return path.Join(contextpath, workprefix, "work")
+}
+
+func lockpath() string {
+	return path.Join(contextpath, workprefix, "lock")
 }
 
 var cmdAcbuild = &cobra.Command{
@@ -154,6 +161,51 @@ func stderr(format string, a ...interface{}) {
 func stdout(format string, a ...interface{}) {
 	out := fmt.Sprintf(format, a...)
 	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
+}
+
+func getLock() (*os.File, error) {
+	ex, err := util.Exists(path.Join(contextpath, workprefix))
+	if err != nil {
+		return nil, err
+	}
+	if !ex {
+		return nil, fmt.Errorf("build not in progress in this working dir - try \"acbuild begin\"")
+	}
+
+	lockfile, err := os.OpenFile(lockpath(), os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return nil, err
+	}
+
+	err = syscall.Flock(int(lockfile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err != nil {
+		if err == syscall.EWOULDBLOCK {
+			return nil, fmt.Errorf("lock already held - is another acbuild running in this working dir?")
+		}
+		return nil, err
+	}
+
+	return lockfile, nil
+}
+
+func releaseLock(lockfile *os.File) error {
+	err := syscall.Flock(int(lockfile.Fd()), syscall.LOCK_UN)
+	if err != nil {
+		return err
+	}
+
+	err = lockfile.Close()
+	if err != nil {
+		return err
+	}
+	lockfile = nil
+
+	err = os.Remove(lockpath())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getSubCommands(cmd *cobra.Command) []*cobra.Command {

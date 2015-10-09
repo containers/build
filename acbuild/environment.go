@@ -59,11 +59,23 @@ func runAddEnv(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("environment add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("environment add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Adding environment variable %q=%q", args[0], args[1])
 	}
 
-	err := lib.AddEnv(tmpacipath(), args[0], args[1])
+	err = lib.AddEnv(tmpacipath(), args[0], args[1])
 
 	if err != nil {
 		stderr("environment add: %v", err)
@@ -83,11 +95,23 @@ func runRemoveEnv(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("environment remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("environment remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing environment variable %q", args[0])
 	}
 
-	err := lib.RemoveEnv(tmpacipath(), args[0])
+	err = lib.RemoveEnv(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("environment remove: %v", err)

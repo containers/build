@@ -70,6 +70,18 @@ func runAddPort(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("port add: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("port add: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Adding port %q=%q", args[0], args[1])
 	}
@@ -94,11 +106,23 @@ func runRmPort(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("port remove: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("port remove: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Removing port %q", args[0])
 	}
 
-	err := lib.RemovePort(tmpacipath(), args[0])
+	err = lib.RemovePort(tmpacipath(), args[0])
 
 	if err != nil {
 		stderr("port remove: %v", err)

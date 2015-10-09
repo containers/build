@@ -43,11 +43,23 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("copy: %v", err)
+		return 1
+	}
+	defer func() {
+		if err := releaseLock(lockfile); err != nil {
+			stderr("copy: %v", err)
+			exit = 1
+		}
+	}()
+
 	if debug {
 		stderr("Copying host:%s to aci:%s", args[0], args[1])
 	}
 
-	err := lib.Copy(tmpacipath(), args[0], args[1])
+	err = lib.Copy(tmpacipath(), args[0], args[1])
 
 	if err != nil {
 		stderr("copy: %v", err)

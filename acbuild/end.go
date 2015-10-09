@@ -49,14 +49,27 @@ func runEnd(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
+	lockfile, err := getLock()
+	if err != nil {
+		stderr("end: %v", err)
+		return 1
+	}
+	// Lock will be released when lib.End deletes the folder containing the
+	// lockfile.
+
 	if debug {
 		stderr("Ending build. Writing completed ACI to %s", args[0])
 	}
 
-	err := lib.End(tmpacipath(), args[0], path.Join(contextpath, workprefix), overwrite)
+	err = lib.End(tmpacipath(), args[0], path.Join(contextpath, workprefix), overwrite)
 
 	if err != nil {
 		stderr("end: %v", err)
+		// In the event of an error the lockfile won't have been removed, so
+		// let's release the lock now
+		if err := releaseLock(lockfile); err != nil {
+			stderr("end: %v", err)
+		}
 		return 1
 	}
 
