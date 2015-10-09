@@ -44,6 +44,31 @@
 			"Rev": "e7fc03058804de5488baed8df5b89f3924b9ec9a"
 		},
 		{
+			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
+			"Comment": "v0.8.1-244-g64ae183",
+			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/multicall",
+			"Comment": "v0.8.1-244-g64ae183",
+			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/sys",
+			"Comment": "v0.8.1-244-g64ae183",
+			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/tar",
+			"Comment": "v0.8.1-244-g64ae183",
+			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/uid",
+			"Comment": "v0.8.1-244-g64ae183",
+			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+		},
+		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 		},
@@ -54,6 +79,10 @@
 		{
 			"ImportPath": "github.com/spf13/pflag",
 			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
+		},
+		{
+			"ImportPath": "github.com/syndtr/gocapability/capability",
+			"Rev": "8e4cdcb3c22b40d5e330ade0b68cb2e2a3cf6f98"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",
