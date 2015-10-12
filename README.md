@@ -206,7 +206,7 @@ Use apt-get to install nginx.
 
 ```
 acbuild begin
-acbuild add-dep quay.io/fermayo/ubuntu
+acbuild dependency add quay.io/fermayo/ubuntu
 acbuild run -- apt-get update
 acbuild run -- apt-get -y install nginx
 acbuild end ubuntu-nginx.aci
