@@ -45,6 +45,14 @@ Follow these steps to do so:
    ./build
    ```
 
+   Or, if you want to build in docker (assuming `$PWD` exists and contains `acbuild/`
+   on your Docker host):
+
+   ```
+   cd acbuild
+   ./build-docker
+   ```
+
 3. A `bin/` directory will be created that contains the `acbuild` tool. To make
    sure your shell can find this executable, append this directory to your
    environment's `$PATH` variable. You can do this in your `.bashrc` or similar
