@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -27,6 +28,7 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/pflag"
 
+	"github.com/appc/acbuild/lib"
 	"github.com/appc/acbuild/util"
 )
 
@@ -53,6 +55,7 @@ var (
 
 	debug       bool
 	contextpath string
+	aciToModify string
 
 	tabOut      *tabwriter.Writer
 	cmdExitCode int
@@ -90,6 +93,7 @@ var cmdAcbuild = &cobra.Command{
 func init() {
 	cmdAcbuild.PersistentFlags().BoolVar(&debug, "debug", false, "Print out debug information to stderr")
 	cmdAcbuild.PersistentFlags().StringVar(&contextpath, "work-path", ".", "Path to place working files in")
+	cmdAcbuild.PersistentFlags().StringVar(&aciToModify, "modify", "", "Path to an ACI to modify (ignores build context)")
 }
 
 func init() {
@@ -140,7 +144,46 @@ GLOBAL OPTIONS:
 // terminator.
 func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
+		if aciToModify == "" {
+			cmdExitCode = cf(cmd, args)
+			return
+		}
+
+		contextualCommands := []string{"begin", "end", "abort"}
+		command := strings.Split(cmd.Use, " ")[0]
+		for _, cc := range contextualCommands {
+			if command == cc {
+				stderr("Can't use the --modify flag with %s.", command)
+				cmdExitCode = 1
+				return
+			}
+		}
+
+		var err error
+		contextpath, err = ioutil.TempDir("", "acbuild-")
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
+		defer os.Remove(contextpath)
+
+		err = lib.Begin(tmpacipath(), aciToModify)
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
+
 		cmdExitCode = cf(cmd, args)
+
+		err = lib.End(tmpacipath(), aciToModify, path.Join(contextpath,
+			workprefix), true)
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
 	}
 }
 

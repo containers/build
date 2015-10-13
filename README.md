@@ -172,14 +172,15 @@ dependencies.
 
 `acbuild run` also requires root.
 
+### Context-Free Mode
+
+Calling `begin` and `end` with acbuild to make a single change to an existing
+ACI can be cumbersome, so acbuild provides a context free mode. The
+`--modify=path/to/app.aci` flag can be used to specify an ACI to modify, and
+when provided the current build context will be ignored and the change will be
+applied to the given ACI instead.
+
 ## Planned features
-
-### Context-free mode
-
-There are scenarios in which it is not convenient to need to call `begin` and
-`end`, the most obvious being when a single change is made to an existing ACI.
-A flag will be added to allow every subcommand to be performed on a given ACI,
-instead of looking for a current build in progress.
 
 ### Image signing
 
