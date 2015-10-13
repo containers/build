@@ -36,7 +36,7 @@ func End(tmpaci, output, contextpath string, overwrite bool) error {
 	}
 
 	if man.App != nil && testEq(man.App.Exec, placeholderexec) {
-		return fmt.Errorf("can't end build, run command was never set")
+		return fmt.Errorf("can't end build, exec command was never set")
 	}
 
 	if man.Name == types.ACIdentifier(placeholdername) {

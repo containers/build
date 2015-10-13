@@ -15,16 +15,26 @@
 package lib
 
 import (
+	"os"
 	"path"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-
-	"github.com/appc/acbuild/util"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
 )
 
 // Copy will copy the directory/file at from to the path to inside the untarred
 // ACI at acipath.
 func Copy(acipath, from, to string) error {
-	err := util.Exec("cp", "-r", from, path.Join(acipath, aci.RootfsDir, to))
-	return err
+	target := path.Join(acipath, aci.RootfsDir, to)
+
+	dir, _ := path.Split(target)
+	if dir != "" {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	return fileutil.CopyTree(from, target, uid.NewBlankUidRange())
 }
