@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --rm --tty --interactive --net=host --volume=$PWD:/opt/acbuild --workdir=/opt/acbuild golang:1.5 ${@-./build}
