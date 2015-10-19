@@ -50,16 +50,27 @@ func (r Registry) tmpuncompressedpath() string {
 	return path.Join(r.DepStoreTarPath, "tmp.uncompressed.aci")
 }
 
+// Fetch will download the given image, and optionally its dependencies, into
+// r.DepStoreTarPath
+func (r Registry) Fetch(imagename types.ACIdentifier, labels types.Labels, size uint, fetchDeps bool) error {
+	_, err := r.GetACI(imagename, labels)
+	if err == ErrNotFound {
+		err := r.fetchACIWithSize(imagename, labels, size, fetchDeps)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return err
+}
+
 // FetchAndRender will fetch the given image and all of its dependencies if
 // they have not been fetched yet, and will then render them on to the
 // filesystem if they have not been rendered yet.
 func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labels, size uint) error {
-	_, err := r.GetACI(imagename, labels)
-	if err == ErrNotFound {
-		err := r.fetchACIWithSize(imagename, labels, size)
-		if err != nil {
-			return err
-		}
+	err := r.Fetch(imagename, labels, size, true)
+	if err != nil {
+		return err
 	}
 
 	filesToRender, err := acirenderer.GetRenderedACI(imagename,
@@ -95,7 +106,7 @@ func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labe
 	return nil
 }
 
-func (r Registry) fetchACIWithSize(imagename types.ACIdentifier, labels types.Labels, size uint) error {
+func (r Registry) fetchACIWithSize(imagename types.ACIdentifier, labels types.Labels, size uint, fetchDeps bool) error {
 	endpoint, err := r.discoverEndpoint(imagename, labels)
 	if err != nil {
 		return err
@@ -140,6 +151,10 @@ func (r Registry) fetchACIWithSize(imagename types.ACIdentifier, labels types.La
 		return err
 	}
 
+	if !fetchDeps {
+		return nil
+	}
+
 	err = os.MkdirAll(
 		path.Join(r.DepStoreExpandedPath, id, aci.RootfsDir), 0755)
 	if err != nil {
@@ -164,7 +179,7 @@ func (r Registry) fetchACIWithSize(imagename types.ACIdentifier, labels types.La
 	}
 
 	for _, dep := range man.Dependencies {
-		err := r.fetchACIWithSize(dep.ImageName, dep.Labels, dep.Size)
+		err := r.fetchACIWithSize(dep.ImageName, dep.Labels, dep.Size, fetchDeps)
 		if err != nil {
 			return err
 		}

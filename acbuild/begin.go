@@ -20,7 +20,7 @@ import (
 
 var (
 	cmdBegin = &cobra.Command{
-		Use:     "begin [START_ACI_PATH]",
+		Use:     "begin [START_ACI]",
 		Short:   "Start a new build",
 		Long:    "Begins a new build. By default operations will be performed on top of an empty image, but a start image can be provided",
 		Example: "acbuild begin",
@@ -30,6 +30,7 @@ var (
 
 func init() {
 	cmdAcbuild.AddCommand(cmdBegin)
+	cmdBegin.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over an unencrypted connection")
 }
 
 func runBegin(cmd *cobra.Command, args []string) (exit int) {
@@ -48,9 +49,9 @@ func runBegin(cmd *cobra.Command, args []string) (exit int) {
 
 	var err error
 	if len(args) == 0 {
-		err = newACBuild().Begin("")
+		err = newACBuild().Begin("", insecure)
 	} else {
-		err = newACBuild().Begin(args[0])
+		err = newACBuild().Begin(args[0], insecure)
 	}
 
 	if err != nil {
