@@ -62,13 +62,15 @@ func Run(acipath, depstore, targetpath, scratchpath, workpath string, cmd []stri
 	}
 
 	if len(man.Dependencies) != 0 {
-		err := util.Exec("modprobe", "overlay")
-		if err != nil {
-			return err
-		}
 		if !supportsOverlay() {
-			return fmt.Errorf(
-				"overlayfs support required for using run with dependencies")
+			err := util.Exec("modprobe", "overlay")
+			if err != nil {
+				return err
+			}
+			if !supportsOverlay() {
+				return fmt.Errorf(
+					"overlayfs support required for using run with dependencies")
+			}
 		}
 	}
 
