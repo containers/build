@@ -218,6 +218,8 @@ acbuild begin
 acbuild dependency add quay.io/fermayo/ubuntu
 acbuild run -- apt-get update
 acbuild run -- apt-get -y install nginx
+acbuild set-exec /usr/sbin/nginx
+acbuild set-name example.com/ubuntu-nginx
 acbuild end ubuntu-nginx.aci
 ```
 
