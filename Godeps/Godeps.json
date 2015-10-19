@@ -7,33 +7,33 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/appc/spec/aci",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/discovery",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/acirenderer",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/device",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/tarheader",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/schema",
-			"Comment": "v0.7.0-6-ge040d35",
-			"Rev": "e040d35a7bb35a343f04c0f022a669968699d06a"
+			"Comment": "v0.7.1-16-g5a7af19",
+			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
