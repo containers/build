@@ -18,8 +18,6 @@ import (
 	"strconv"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/lib"
 )
 
 var (
@@ -70,23 +68,11 @@ func runAddPort(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("port add: %v", err)
-		return 1
-	}
-	defer func() {
-		if err := releaseLock(lockfile); err != nil {
-			stderr("port add: %v", err)
-			exit = 1
-		}
-	}()
-
 	if debug {
 		stderr("Adding port %q=%q", args[0], args[1])
 	}
 
-	err = lib.AddPort(tmpacipath(), args[0], args[1], uint(port), count, socketActivated)
+	err = newACBuild().AddPort(args[0], args[1], uint(port), count, socketActivated)
 
 	if err != nil {
 		stderr("port add: %v", err)
@@ -106,23 +92,11 @@ func runRmPort(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("port remove: %v", err)
-		return 1
-	}
-	defer func() {
-		if err := releaseLock(lockfile); err != nil {
-			stderr("port remove: %v", err)
-			exit = 1
-		}
-	}()
-
 	if debug {
 		stderr("Removing port %q", args[0])
 	}
 
-	err = lib.RemovePort(tmpacipath(), args[0])
+	err := newACBuild().RemovePort(args[0])
 
 	if err != nil {
 		stderr("port remove: %v", err)

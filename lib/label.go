@@ -34,9 +34,18 @@ func removeLabelFromMan(name types.ACIdentifier) func(*schema.ImageManifest) {
 }
 
 // AddLabel will add a label with the given name and value to the untarred ACI
-// stored at acipath. If the label already exists its value will be updated to
+// stored at a.CurrentACIPath. If the label already exists its value will be updated to
 // the new value.
-func AddLabel(acipath, name, value string) error {
+func (a *ACBuild) AddLabel(name, value string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(name)
 	if err != nil {
 		return err
@@ -50,16 +59,25 @@ func AddLabel(acipath, name, value string) error {
 				Value: value,
 			})
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
 
 // RemoveLabel will remove the label with the given name from the untarred ACI
-// stored at acipath
-func RemoveLabel(acipath, name string) error {
+// stored at a.CurrentACIPath
+func (a *ACBuild) RemoveLabel(name string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(name)
 	if err != nil {
 		return err
 	}
 
-	return util.ModifyManifest(removeLabelFromMan(*acid), acipath)
+	return util.ModifyManifest(removeLabelFromMan(*acid), a.CurrentACIPath)
 }

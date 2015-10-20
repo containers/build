@@ -21,13 +21,23 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-// SetExec sets the exec command for the untarred ACI stored at acipath.
-func SetExec(acipath string, cmd []string) error {
+// SetExec sets the exec command for the untarred ACI stored at
+// a.CurrentACIPath.
+func (a *ACBuild) SetExec(cmd []string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	fn := func(s *schema.ImageManifest) {
 		if s.App == nil {
 			s.App = &types.App{}
 		}
 		s.App.Exec = cmd
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

@@ -24,8 +24,17 @@ import (
 )
 
 // SetUser sets the user the pod will run as in the untarred ACI stored at
-// acipath.
-func SetUser(acipath, user string) error {
+// a.CurrentACIPath.
+func (a *ACBuild) SetUser(user string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	if user == "" {
 		return fmt.Errorf("user cannot be empty")
 	}
@@ -35,5 +44,5 @@ func SetUser(acipath, user string) error {
 		}
 		s.App.User = user
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

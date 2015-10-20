@@ -16,8 +16,6 @@ package main
 
 import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/lib"
 )
 
 var (
@@ -40,23 +38,11 @@ func runSetExec(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("set-exec: %v", err)
-		return 1
-	}
-	defer func() {
-		if err := releaseLock(lockfile); err != nil {
-			stderr("set-exec: %v", err)
-			exit = 1
-		}
-	}()
-
 	if debug {
 		stderr("Setting exec command %v", args)
 	}
 
-	err = lib.SetExec(tmpacipath(), args)
+	err := newACBuild().SetExec(args)
 
 	if err != nil {
 		stderr("set-exec: %v", err)

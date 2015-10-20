@@ -28,13 +28,22 @@ import (
 
 // Write will produce the resulting ACI from the current build context, saving
 // it to the given path, optionally signing it.
-func Write(tmpaci, output string, overwrite, sign bool, gpgflags []string) error {
-	man, err := util.GetManifest(tmpaci)
+func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
+	man, err := util.GetManifest(a.CurrentACIPath)
 	if err != nil {
 		return err
 	}
 
-	if man.App != nil && testEq(man.App.Exec, placeholderexec) {
+	if man.App != nil && len(man.App.Exec) == 0 {
 		fmt.Fprintf(os.Stderr, "warning: exec command was never set.\n")
 	}
 
@@ -63,7 +72,7 @@ func Write(tmpaci, output string, overwrite, sign bool, gpgflags []string) error
 
 	aw := aci.NewImageWriter(*man, tar.NewWriter(ofile))
 
-	err = filepath.Walk(tmpaci, aci.BuildWalker(tmpaci, aw, nil))
+	err = filepath.Walk(a.CurrentACIPath, aci.BuildWalker(a.CurrentACIPath, aw, nil))
 
 	aw.Close()
 	ofile.Close()
@@ -82,18 +91,6 @@ func Write(tmpaci, output string, overwrite, sign bool, gpgflags []string) error
 	}
 
 	return nil
-}
-
-func testEq(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, elem := range a {
-		if elem != b[i] {
-			return false
-		}
-	}
-	return true
 }
 
 func signACI(acipath, signaturepath string, flags []string) error {

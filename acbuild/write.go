@@ -16,8 +16,6 @@ package main
 
 import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/lib"
 )
 
 var (
@@ -45,23 +43,11 @@ func runWrite(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("write: %v", err)
-		return 1
-	}
-	defer func() {
-		if err := releaseLock(lockfile); err != nil {
-			stderr("write: %v", err)
-			exit = 1
-		}
-	}()
-
 	if debug {
 		stderr("Writing ACI to %s", args[0])
 	}
 
-	err = lib.Write(tmpacipath(), args[0], overwrite, sign, args[1:])
+	err := newACBuild().Write(args[0], overwrite, sign, args[1:])
 
 	if err != nil {
 		stderr("write: %v", err)

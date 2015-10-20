@@ -24,9 +24,18 @@ import (
 )
 
 // Copy will copy the directory/file at from to the path to inside the untarred
-// ACI at acipath.
-func Copy(acipath, from, to string) error {
-	target := path.Join(acipath, aci.RootfsDir, to)
+// ACI at a.CurrentACIPath.
+func (a *ACBuild) Copy(from, to string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
+	target := path.Join(a.CurrentACIPath, aci.RootfsDir, to)
 
 	dir, _ := path.Split(target)
 	if dir != "" {

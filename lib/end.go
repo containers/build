@@ -21,10 +21,10 @@ import (
 	"github.com/appc/acbuild/util"
 )
 
-// End will stop the current build, given the path that the build resources
-// are stored at. An error will be returned if no build is in progress.
-func End(contextpath string) error {
-	ok, err := util.Exists(contextpath)
+// End will stop the current build. An error will be returned if no build is in
+// progress.
+func (a *ACBuild) End() error {
+	ok, err := util.Exists(a.ContextPath)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,11 @@ func End(contextpath string) error {
 		return fmt.Errorf("build not in progress")
 	}
 
-	err = os.RemoveAll(contextpath)
+	if err = a.lock(); err != nil {
+		return err
+	}
+
+	err = os.RemoveAll(a.ContextPath)
 	if err != nil {
 		return err
 	}

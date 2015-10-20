@@ -15,13 +15,7 @@
 package main
 
 import (
-	"os"
-	"path"
-
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/lib"
-	"github.com/appc/acbuild/util"
 )
 
 var (
@@ -44,34 +38,6 @@ func runBegin(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	ex, err := util.Exists(path.Join(contextpath, workprefix))
-	if err != nil {
-		stderr("begin: %v", err)
-		return 1
-	}
-	if ex {
-		stderr("begin: build already in progress in this working dir")
-		return 1
-	}
-
-	err = os.MkdirAll(path.Join(contextpath, workprefix), 0755)
-	if err != nil {
-		stderr("begin: %v", err)
-		return 1
-	}
-
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("begin: %v", err)
-		return 1
-	}
-	defer func() {
-		if err := releaseLock(lockfile); err != nil {
-			stderr("begin: %v", err)
-			exit = 1
-		}
-	}()
-
 	if debug {
 		if len(args) == 0 {
 			stderr("Beginning build with an empty ACI")
@@ -80,10 +46,11 @@ func runBegin(cmd *cobra.Command, args []string) (exit int) {
 		}
 	}
 
+	var err error
 	if len(args) == 0 {
-		err = lib.Begin(tmpacipath(), "")
+		err = newACBuild().Begin("")
 	} else {
-		err = lib.Begin(tmpacipath(), args[0])
+		err = newACBuild().Begin(args[0])
 	}
 
 	if err != nil {

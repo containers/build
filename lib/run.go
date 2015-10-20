@@ -31,32 +31,42 @@ import (
 var pathlist = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin",
 	"/usr/bin", "/sbin", "/bin"}
 
-// Run will execute the given command in the ACI being built. acipath is where
-// the untarred ACI is stored, depstore is the directory to download
-// dependencies into, scratchpath is where the dependencies are expanded into,
-// workpath is the work directory used by overlayfs, and insecure signifies
-// whether downloaded images should be fetched over http or https.
-func Run(acipath, depstore, targetpath, scratchpath, workpath string, cmd []string, insecure bool) error {
-	err := util.RmAndMkdir(targetpath)
+// Run will execute the given command in the ACI being built. a.CurrentACIPath
+// is where the untarred ACI is stored, a.DepStoreTarPath is the directory to
+// download dependencies into, a.DepStoreExpandedPath is where the dependencies
+// are expanded into, a.OverlayWorkPath is the work directory used by
+// overlayfs, and insecure signifies whether downloaded images should be
+// fetched over http or https.
+func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
+	err = util.RmAndMkdir(a.OverlayTargetPath)
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(targetpath)
-	err = util.RmAndMkdir(workpath)
+	defer os.RemoveAll(a.OverlayTargetPath)
+	err = util.RmAndMkdir(a.OverlayWorkPath)
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(workpath)
-	err = os.MkdirAll(scratchpath, 0755)
+	defer os.RemoveAll(a.OverlayWorkPath)
+	err = os.MkdirAll(a.DepStoreExpandedPath, 0755)
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(depstore, 0755)
+	err = os.MkdirAll(a.DepStoreTarPath, 0755)
 	if err != nil {
 		return err
 	}
 
-	man, err := util.GetManifest(acipath)
+	man, err := util.GetManifest(a.CurrentACIPath)
 	if err != nil {
 		return err
 	}
@@ -74,32 +84,33 @@ func Run(acipath, depstore, targetpath, scratchpath, workpath string, cmd []stri
 		}
 	}
 
-	deps, err := renderACI(acipath, scratchpath, depstore, insecure)
+	deps, err := a.renderACI(insecure, a.Debug)
 	if err != nil {
 		return err
 	}
 
 	var nspawnpath string
 	if deps == nil {
-		nspawnpath = path.Join(acipath, aci.RootfsDir)
+		nspawnpath = path.Join(a.CurrentACIPath, aci.RootfsDir)
 	} else {
 		for i, dep := range deps {
-			deps[i] = path.Join(scratchpath, dep, aci.RootfsDir)
+			deps[i] = path.Join(a.DepStoreExpandedPath, dep, aci.RootfsDir)
 		}
 		options := "-olowerdir=" + strings.Join(deps, ":") +
-			",upperdir=" + path.Join(acipath, aci.RootfsDir) + ",workdir=" + workpath
+			",upperdir=" + path.Join(a.CurrentACIPath, aci.RootfsDir) +
+			",workdir=" + a.OverlayWorkPath
 		err := util.Exec("mount", "-t", "overlay",
-			"overlay", options, targetpath)
+			"overlay", options, a.OverlayTargetPath)
 		if err != nil {
 			return err
 		}
 
-		umount := exec.Command("umount", targetpath)
+		umount := exec.Command("umount", a.OverlayTargetPath)
 		umount.Stdout = os.Stdout
 		umount.Stderr = os.Stderr
 		defer umount.Run()
 
-		nspawnpath = targetpath
+		nspawnpath = a.OverlayTargetPath
 	}
 	nspawncmd := []string{"systemd-nspawn", "-q", "-D", nspawnpath}
 
@@ -167,14 +178,15 @@ func findCmdInPath(pathlist []string, cmd, prefix string) (string, error) {
 	return "", fmt.Errorf("%s not found in any of: %v", cmd, pathlist)
 }
 
-func renderACI(acipath, scratchpath, depstore string, insecure bool) ([]string, error) {
+func (a *ACBuild) renderACI(insecure, debug bool) ([]string, error) {
 	reg := registry.Registry{
-		Depstore:    depstore,
-		Scratchpath: scratchpath,
-		Insecure:    insecure,
+		DepStoreTarPath:      a.DepStoreTarPath,
+		DepStoreExpandedPath: a.DepStoreExpandedPath,
+		Insecure:             insecure,
+		Debug:                debug,
 	}
 
-	man, err := util.GetManifest(acipath)
+	man, err := util.GetManifest(a.CurrentACIPath)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +207,7 @@ func renderACI(acipath, scratchpath, depstore string, insecure bool) ([]string, 
 			return nil, err
 		}
 
-		subdeplist, err := genDeplist(path.Join(scratchpath, depkey), reg)
+		subdeplist, err := genDeplist(path.Join(a.DepStoreExpandedPath, depkey), reg)
 		if err != nil {
 			return nil, err
 		}
@@ -223,7 +235,7 @@ func genDeplist(acipath string, reg registry.Registry) ([]string, error) {
 			return nil, err
 		}
 
-		subdeps, err := genDeplist(path.Join(reg.Scratchpath, depkey), reg)
+		subdeps, err := genDeplist(path.Join(reg.DepStoreExpandedPath, depkey), reg)
 		if err != nil {
 			return nil, err
 		}
