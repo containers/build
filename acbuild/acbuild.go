@@ -149,7 +149,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			return
 		}
 
-		contextualCommands := []string{"begin", "end", "abort"}
+		contextualCommands := []string{"begin", "write", "end"}
 		command := strings.Split(cmd.Use, " ")[0]
 		for _, cc := range contextualCommands {
 			if command == cc {
@@ -177,8 +177,14 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 
 		cmdExitCode = cf(cmd, args)
 
-		err = lib.End(tmpacipath(), aciToModify, path.Join(contextpath,
-			workprefix), true)
+		err = lib.Write(tmpacipath(), aciToModify, true, false, nil)
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
+
+		err = lib.End(path.Join(contextpath, workprefix))
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1

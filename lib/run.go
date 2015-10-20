@@ -122,6 +122,9 @@ func Run(acipath, depstore, targetpath, scratchpath, workpath string, cmd []stri
 
 	err = util.Exec(nspawncmd[0], nspawncmd[1:]...)
 	if err != nil {
+		if err == exec.ErrNotFound {
+			return fmt.Errorf("systemd-nspawn is required but not found")
+		}
 		return err
 	}
 
