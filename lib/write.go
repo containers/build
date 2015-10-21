@@ -51,6 +51,8 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 		return fmt.Errorf("can't write ACI, name was never set")
 	}
 
+	fileFlags := os.O_CREATE | os.O_WRONLY
+
 	ex, err := util.Exists(output)
 	if err != nil {
 		return err
@@ -59,13 +61,10 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 		if !overwrite {
 			return fmt.Errorf("ACI already exists: %s", output)
 		}
-		err := os.Remove(output)
-		if err != nil {
-			return err
-		}
+		fileFlags |= os.O_TRUNC
 	}
 
-	ofile, err := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
+	ofile, err := os.OpenFile(output, fileFlags, 0644)
 	if err != nil {
 		return err
 	}
