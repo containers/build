@@ -16,6 +16,7 @@ package lib
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -64,18 +65,21 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 		fileFlags |= os.O_TRUNC
 	}
 
+	// open/create the aci file
 	ofile, err := os.OpenFile(output, fileFlags, 0644)
 	if err != nil {
 		return err
 	}
+	defer ofile.Close()
 
-	aw := aci.NewImageWriter(*man, tar.NewWriter(ofile))
+	// setup compression
+	gzwriter := gzip.NewWriter(ofile)
+	defer gzwriter.Close()
 
+	// create the aci writer
+	aw := aci.NewImageWriter(*man, tar.NewWriter(gzwriter))
 	err = filepath.Walk(a.CurrentACIPath, aci.BuildWalker(a.CurrentACIPath, aw, nil))
-
-	aw.Close()
-	ofile.Close()
-
+	defer aw.Close()
 	if err != nil {
 		return err
 	}

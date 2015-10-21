@@ -33,7 +33,7 @@ var (
 func init() {
 	cmdAcbuild.AddCommand(cmdWrite)
 
-	cmdWrite.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite output ACI")
+	cmdWrite.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the resulting ACI")
 	cmdWrite.Flags().BoolVar(&sign, "sign", false, "sign the resulting ACI")
 }
 
