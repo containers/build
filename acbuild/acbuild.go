@@ -18,9 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"strings"
-	"syscall"
 	"text/tabwriter"
 	"text/template"
 
@@ -29,7 +27,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/pflag"
 
 	"github.com/appc/acbuild/lib"
-	"github.com/appc/acbuild/util"
 )
 
 const (
@@ -38,8 +35,6 @@ const (
 )
 
 var (
-	workprefix = ".acbuild"
-
 	commandUsageTemplate *template.Template
 
 	templFuncs = template.FuncMap{
@@ -60,30 +55,6 @@ var (
 	tabOut      *tabwriter.Writer
 	cmdExitCode int
 )
-
-func tmpacipath() string {
-	return path.Join(contextpath, workprefix, "currentaci")
-}
-
-func targetpath() string {
-	return path.Join(contextpath, workprefix, "target")
-}
-
-func scratchpath() string {
-	return path.Join(contextpath, workprefix, "scratch")
-}
-
-func depstorepath() string {
-	return path.Join(contextpath, workprefix, "depstore")
-}
-
-func workpath() string {
-	return path.Join(contextpath, workprefix, "work")
-}
-
-func lockpath() string {
-	return path.Join(contextpath, workprefix, "lock")
-}
 
 var cmdAcbuild = &cobra.Command{
 	Use:   "acbuild [command]",
@@ -139,6 +110,10 @@ GLOBAL OPTIONS:
 	commandUsageTemplate = template.Must(template.New("command_usage").Funcs(templFuncs).Parse(strings.Replace(commandUsage, "\\\n", "", -1)))
 }
 
+func newACBuild() *lib.ACBuild {
+	return lib.NewACBuild(contextpath, debug)
+}
+
 // runWrapper return a func(cmd *cobra.Command, args []string) that internally
 // will add command function return code and the reinsertion of the "--" flag
 // terminator.
@@ -160,15 +135,16 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		}
 
 		var err error
-		contextpath, err = ioutil.TempDir("", "acbuild-")
+		buildpath, err := ioutil.TempDir("", "acbuild-")
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
 			return
 		}
-		defer os.Remove(contextpath)
+		defer os.Remove(buildpath)
 
-		err = lib.Begin(tmpacipath(), aciToModify)
+		a := lib.NewACBuild(buildpath, debug)
+		err = a.Begin(aciToModify)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
@@ -177,14 +153,14 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 
 		cmdExitCode = cf(cmd, args)
 
-		err = lib.Write(tmpacipath(), aciToModify, true, false, nil)
+		err = a.Write(aciToModify, true, false, nil)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
 			return
 		}
 
-		err = lib.End(path.Join(contextpath, workprefix))
+		err = a.End()
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
@@ -214,51 +190,6 @@ func stderr(format string, a ...interface{}) {
 func stdout(format string, a ...interface{}) {
 	out := fmt.Sprintf(format, a...)
 	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
-}
-
-func getLock() (*os.File, error) {
-	ex, err := util.Exists(path.Join(contextpath, workprefix))
-	if err != nil {
-		return nil, err
-	}
-	if !ex {
-		return nil, fmt.Errorf("build not in progress in this working dir - try \"acbuild begin\"")
-	}
-
-	lockfile, err := os.OpenFile(lockpath(), os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		return nil, err
-	}
-
-	err = syscall.Flock(int(lockfile.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if err != nil {
-		if err == syscall.EWOULDBLOCK {
-			return nil, fmt.Errorf("lock already held - is another acbuild running in this working dir?")
-		}
-		return nil, err
-	}
-
-	return lockfile, nil
-}
-
-func releaseLock(lockfile *os.File) error {
-	err := syscall.Flock(int(lockfile.Fd()), syscall.LOCK_UN)
-	if err != nil {
-		return err
-	}
-
-	err = lockfile.Close()
-	if err != nil {
-		return err
-	}
-	lockfile = nil
-
-	err = os.Remove(lockpath())
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func getSubCommands(cmd *cobra.Command) []*cobra.Command {

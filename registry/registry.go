@@ -47,16 +47,16 @@ var (
 )
 
 type Registry struct {
-	Depstore    string
-	Scratchpath string
-	Insecure    bool
-	Debug       bool
+	DepStoreTarPath      string
+	DepStoreExpandedPath string
+	Insecure             bool
+	Debug                bool
 }
 
 // Read the ACI contents stream given the key. Use ResolveKey to
 // convert an image ID to the relative provider's key.
 func (r Registry) ReadStream(key string) (io.ReadCloser, error) {
-	return os.Open(path.Join(r.Depstore, key))
+	return os.Open(path.Join(r.DepStoreTarPath, key))
 }
 
 // Converts an image ID to the, if existent, key under which the
@@ -72,7 +72,7 @@ func (r Registry) ResolveKey(key string) (string, error) {
 		key = key[:lenKey]
 	}
 
-	files, err := ioutil.ReadDir(r.Depstore)
+	files, err := ioutil.ReadDir(r.DepStoreTarPath)
 	if err != nil {
 		return "", err
 	}
@@ -97,18 +97,18 @@ func (r Registry) HashToKey(h hash.Hash) string {
 
 // Returns the manifest for the ACI with the given key
 func (r Registry) GetImageManifest(key string) (*schema.ImageManifest, error) {
-	return util.GetManifest(path.Join(r.Scratchpath, key))
+	return util.GetManifest(path.Join(r.DepStoreExpandedPath, key))
 }
 
 // Returns the key for the ACI with the given name and labels
 func (r Registry) GetACI(name types.ACIdentifier, labels types.Labels) (string, error) {
-	files, err := ioutil.ReadDir(r.Scratchpath)
+	files, err := ioutil.ReadDir(r.DepStoreExpandedPath)
 	if err != nil {
 		return "", err
 	}
 nextkey:
 	for _, file := range files {
-		man, err := util.GetManifest(path.Join(r.Scratchpath, file.Name()))
+		man, err := util.GetManifest(path.Join(r.DepStoreExpandedPath, file.Name()))
 		if err != nil {
 			return "", err
 		}

@@ -24,8 +24,17 @@ import (
 )
 
 // SetGroup sets the group the pod will run as in the untarred ACI stored at
-// acipath.
-func SetGroup(acipath, group string) error {
+// a.CurrentACIPath.
+func (a *ACBuild) SetGroup(group string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	if group == "" {
 		return fmt.Errorf("group cannot be empty")
 	}
@@ -35,5 +44,5 @@ func SetGroup(acipath, group string) error {
 		}
 		s.App.Group = group
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

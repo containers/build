@@ -34,9 +34,18 @@ func removeDep(imageName types.ACIdentifier) func(*schema.ImageManifest) {
 }
 
 // AddDependency will add a dependency with the given name, id, labels, and size
-// to the untarred ACI stored at acipath. If the dependency already exists its
-// fields will be updated to the new values.
-func AddDependency(acipath, imageName, imageId string, labels types.Labels, size uint) error {
+// to the untarred ACI stored at a.CurrentACIPath. If the dependency already
+// exists its fields will be updated to the new values.
+func (a *ACBuild) AddDependency(imageName, imageId string, labels types.Labels, size uint) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(imageName)
 	if err != nil {
 		return err
@@ -61,16 +70,25 @@ func AddDependency(acipath, imageName, imageId string, labels types.Labels, size
 				Size:      size,
 			})
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
 
 // RemoveDependency will remove the dependency with the given name from the
-// untarred ACI stored at acipath
-func RemoveDependency(acipath, imageName string) error {
+// untarred ACI stored at a.CurrentACIPath.
+func (a *ACBuild) RemoveDependency(imageName string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(imageName)
 	if err != nil {
 		return err
 	}
 
-	return util.ModifyManifest(removeDep(*acid), acipath)
+	return util.ModifyManifest(removeDep(*acid), a.CurrentACIPath)
 }

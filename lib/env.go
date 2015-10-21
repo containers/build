@@ -37,20 +37,38 @@ func removeFromEnv(name string) func(*schema.ImageManifest) {
 }
 
 // AddEnv will add an environment variable with the given name and value to the
-// untarred ACI stored at acipath. If the environment variable already exists
-// its value will be updated to the new value.
-func AddEnv(acipath, name, value string) error {
+// untarred ACI stored at a.CurrentACIPath. If the environment variable already
+// exists its value will be updated to the new value.
+func (a *ACBuild) AddEnv(name, value string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	fn := func(s *schema.ImageManifest) {
 		if s.App == nil {
 			s.App = &types.App{}
 		}
 		s.App.Environment.Set(name, value)
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
 
 // RemoveEnv will remove the environment variable with the given name from the
-// untarred ACI stored at acipath
-func RemoveEnv(acipath, name string) error {
-	return util.ModifyManifest(removeFromEnv(name), acipath)
+// untarred ACI stored at a.CurrentACIPath.
+func (a *ACBuild) RemoveEnv(name string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
+	return util.ModifyManifest(removeFromEnv(name), a.CurrentACIPath)
 }

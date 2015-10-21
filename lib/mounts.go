@@ -37,10 +37,19 @@ func removeMount(name types.ACName) func(*schema.ImageManifest) {
 }
 
 // AddMount will add a mount point with the given name and path to the untarred
-// ACI stored at acipath. If the mount point already exists its value will be
-// updated to the new value. readOnly signifies whether or not the mount point
-// should be read only.
-func AddMount(acipath, name, path string, readOnly bool) error {
+// ACI stored at a.CurrentACIPath. If the mount point already exists its value
+// will be updated to the new value. readOnly signifies whether or not the
+// mount point should be read only.
+func (a *ACBuild) AddMount(name, path string, readOnly bool) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acn, err := types.NewACName(name)
 	if err != nil {
 		return err
@@ -58,16 +67,25 @@ func AddMount(acipath, name, path string, readOnly bool) error {
 				ReadOnly: readOnly,
 			})
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
 
 // RemoveMount will remove the mount point with the given name from the
-// untarred ACI stored at acipath
-func RemoveMount(acipath, name string) error {
+// untarred ACI stored at a.CurrentACIPath
+func (a *ACBuild) RemoveMount(name string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acn, err := types.NewACName(name)
 	if err != nil {
 		return err
 	}
 
-	return util.ModifyManifest(removeMount(*acn), acipath)
+	return util.ModifyManifest(removeMount(*acn), a.CurrentACIPath)
 }

@@ -43,11 +43,11 @@ var (
 )
 
 func (r Registry) tmppath() string {
-	return path.Join(r.Depstore, "tmp.aci")
+	return path.Join(r.DepStoreTarPath, "tmp.aci")
 }
 
 func (r Registry) tmpuncompressedpath() string {
-	return path.Join(r.Depstore, "tmp.uncompressed.aci")
+	return path.Join(r.DepStoreTarPath, "tmp.uncompressed.aci")
 }
 
 // FetchAndRender will fetch the given image and all of its dependencies if
@@ -69,7 +69,8 @@ func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labe
 	}
 
 	for _, fs := range filesToRender {
-		ex, err := util.Exists(path.Join(r.Scratchpath, fs.Key, "rendered"))
+		ex, err := util.Exists(
+			path.Join(r.DepStoreExpandedPath, fs.Key, "rendered"))
 		if err != nil {
 			return err
 		}
@@ -78,13 +79,14 @@ func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labe
 			continue
 		}
 
-		err = util.UnTar(path.Join(r.Depstore, fs.Key),
-			path.Join(r.Scratchpath, fs.Key), fs.FileMap)
+		err = util.UnTar(path.Join(r.DepStoreTarPath, fs.Key),
+			path.Join(r.DepStoreExpandedPath, fs.Key), fs.FileMap)
 		if err != nil {
 			return err
 		}
 
-		rfile, err := os.Create(path.Join(r.Scratchpath, fs.Key, "rendered"))
+		rfile, err := os.Create(
+			path.Join(r.DepStoreExpandedPath, fs.Key, "rendered"))
 		if err != nil {
 			return err
 		}
@@ -133,18 +135,19 @@ func (r Registry) fetchACIWithSize(imagename types.ACIdentifier, labels types.La
 		return err
 	}
 
-	err = os.Rename(r.tmpuncompressedpath(), path.Join(r.Depstore, id))
+	err = os.Rename(r.tmpuncompressedpath(), path.Join(r.DepStoreTarPath, id))
 	if err != nil {
 		return err
 	}
 
-	err = os.MkdirAll(path.Join(r.Scratchpath, id, aci.RootfsDir), 0755)
+	err = os.MkdirAll(
+		path.Join(r.DepStoreExpandedPath, id, aci.RootfsDir), 0755)
 	if err != nil {
 		return err
 	}
 
-	err = getManifestFromTar(path.Join(r.Depstore, id),
-		path.Join(r.Scratchpath, id, aci.ManifestFile))
+	err = getManifestFromTar(path.Join(r.DepStoreTarPath, id),
+		path.Join(r.DepStoreExpandedPath, id, aci.ManifestFile))
 	if err != nil {
 		return err
 	}

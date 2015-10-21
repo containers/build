@@ -34,9 +34,18 @@ func removeAnnotation(name types.ACIdentifier) func(*schema.ImageManifest) {
 }
 
 // AddAnnotation will add an annotation with the given name and value to the
-// untarred ACI stored at acipath. If the annotation already exists its value
-// will be updated to the new value.
-func AddAnnotation(acipath, name, value string) error {
+// untarred ACI stored at a.CurrentACIPath. If the annotation already exists
+// its value will be updated to the new value.
+func (a *ACBuild) AddAnnotation(name, value string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(name)
 	if err != nil {
 		return err
@@ -45,16 +54,25 @@ func AddAnnotation(acipath, name, value string) error {
 	fn := func(s *schema.ImageManifest) {
 		s.Annotations.Set(*acid, value)
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
 
 // RemoveAnnotation will remove the annotation with the given name from the
-// untarred ACI stored at acipath
-func RemoveAnnotation(acipath, name string) error {
+// untarred ACI stored at a.CurrentACIPath
+func (a *ACBuild) RemoveAnnotation(name string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	acid, err := types.NewACIdentifier(name)
 	if err != nil {
 		return err
 	}
 
-	return util.ModifyManifest(removeAnnotation(*acid), acipath)
+	return util.ModifyManifest(removeAnnotation(*acid), a.CurrentACIPath)
 }

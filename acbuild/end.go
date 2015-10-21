@@ -15,12 +15,7 @@
 package main
 
 import (
-	"os"
-	"path"
-
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/lib"
 )
 
 var (
@@ -43,27 +38,14 @@ func runEnd(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	lockfile, err := getLock()
-	if err != nil {
-		stderr("end: %v", err)
-		return 1
-	}
-	// Lock will be released when lib.End deletes the folder containing the
-	// lockfile.
-
 	if debug {
 		stderr("Ending the build")
 	}
 
-	err = lib.End(path.Join(contextpath, workprefix))
+	err := newACBuild().End()
 
 	if err != nil {
 		stderr("end: %v", err)
-		// In the event of an error the lockfile may have not been removed, so
-		// let's release the lock now
-		if err := releaseLock(lockfile); !os.IsNotExist(err) {
-			stderr("end: %v", err)
-		}
 		return 1
 	}
 

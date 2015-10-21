@@ -23,8 +23,17 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-// SetName sets the name for the untarred ACI stored at acipath
-func SetName(acipath, name string) error {
+// SetName sets the name for the untarred ACI stored at a.CurrentACIPath
+func (a *ACBuild) SetName(name string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
@@ -36,5 +45,5 @@ func SetName(acipath, name string) error {
 	fn := func(s *schema.ImageManifest) {
 		s.Name = *acid
 	}
-	return util.ModifyManifest(fn, acipath)
+	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

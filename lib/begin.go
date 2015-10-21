@@ -27,26 +27,35 @@ import (
 )
 
 var (
-	placeholderexec = []string{"/acbuild", "placeholder", "exec", "statement"}
 	placeholdername = "acbuild-unnamed"
 )
 
 // Begin will start a new build, storing the untarred ACI the build operates on
-// at tmpaci. If start is the empty string, the build will begin with an empty
-// ACI, otherwise the ACI stored at start will be used at the starting point.
-func Begin(tmpaci, start string) error {
-	ex, err := util.Exists(tmpaci)
+// at a.CurrentACIPath. If start is the empty string, the build will begin with
+// an empty ACI, otherwise the ACI stored at start will be used at the starting
+// point.
+func (a *ACBuild) Begin(start string) (err error) {
+	ex, err := util.Exists(a.ContextPath)
 	if err != nil {
 		return err
 	}
 	if ex {
-		return fmt.Errorf("build already in progress? path exists: %s", tmpaci)
+		return fmt.Errorf("build already in progress in this working dir")
 	}
 
-	err = os.MkdirAll(path.Join(tmpaci, aci.RootfsDir), 0755)
+	err = os.MkdirAll(path.Join(a.CurrentACIPath, aci.RootfsDir), 0755)
 	if err != nil {
 		return err
 	}
+
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
 
 	if start != "" {
 		ex, err := util.Exists(start)
@@ -57,7 +66,7 @@ func Begin(tmpaci, start string) error {
 			return fmt.Errorf("start aci doesn't exist: %s", start)
 		}
 
-		err = util.UnTar(start, tmpaci, nil)
+		err = util.UnTar(start, a.CurrentACIPath, nil)
 		if err != nil {
 			return err
 		}
@@ -75,7 +84,7 @@ func Begin(tmpaci, start string) error {
 		ACVersion: schema.AppContainerVersion,
 		Name:      *acid,
 		App: &types.App{
-			Exec:  placeholderexec,
+			Exec:  nil,
 			User:  "0",
 			Group: "0",
 		},
@@ -86,7 +95,7 @@ func Begin(tmpaci, start string) error {
 		return err
 	}
 
-	manfile, err := os.Create(path.Join(tmpaci, aci.ManifestFile))
+	manfile, err := os.Create(path.Join(a.CurrentACIPath, aci.ManifestFile))
 	if err != nil {
 		return err
 	}
