@@ -44,20 +44,25 @@ func runAcbuild(workingDir string, args ...string) error {
 	return cmd.Run()
 }
 
-func setUpTest() (string, error) {
-	tmpdir, err := ioutil.TempDir("", "acbuild-test")
+func setUpTest() string {
+	tmpdir := mustTempDir()
+
+	err := runAcbuild(tmpdir, "begin")
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 
-	err = runAcbuild(tmpdir, "begin")
-	if err != nil {
-		return "", err
-	}
-
-	return tmpdir, nil
+	return tmpdir
 }
 
 func cleanUpTest(tmpdir string) error {
 	return os.RemoveAll(tmpdir)
+}
+
+func mustTempDir() string {
+	dir, err := ioutil.TempDir("", "acbuild-test")
+	if err != nil {
+		panic(err)
+	}
+	return dir
 }
