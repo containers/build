@@ -4,7 +4,7 @@ set -e
 ORG_PATH="github.com/appc"
 REPO_PATH="${ORG_PATH}/acbuild"
 VERSION=$(git describe --dirty)
-GLDFLAGS="-X github.com/appc/acbuild/lib.Version=\"${VERSION}\""
+GLDFLAGS="-X github.com/appc/acbuild/lib.Version=${VERSION}"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
 	mkdir -p gopath/src/${ORG_PATH}
