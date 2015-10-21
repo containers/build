@@ -124,7 +124,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			return
 		}
 
-		contextualCommands := []string{"begin", "write", "end"}
+		contextualCommands := []string{"begin", "write", "end", "version"}
 		command := strings.Split(cmd.Use, " ")[0]
 		for _, cc := range contextualCommands {
 			if command == cc {
