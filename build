@@ -3,6 +3,8 @@ set -e
 
 ORG_PATH="github.com/appc"
 REPO_PATH="${ORG_PATH}/acbuild"
+VERSION=$(git describe --dirty)
+GLDFLAGS="-X github.com/appc/acbuild/lib.Version=\"${VERSION}\""
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
 	mkdir -p gopath/src/${ORG_PATH}
@@ -23,4 +25,4 @@ if [ "${GOOS}" = "freebsd" ]; then
 fi
 
 echo "Building acbuild..."
-go build -o $GOBIN/acbuild ${REPO_PATH}/acbuild
+go build -o $GOBIN/acbuild -ldflags "${GLDFLAGS}" ${REPO_PATH}/acbuild
