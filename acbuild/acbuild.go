@@ -143,8 +143,25 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		}
 		defer os.Remove(buildpath)
 
+		finfo, err := os.Stat(aciToModify)
+		switch {
+		case os.IsNotExist(err):
+			stderr("ACI doesn't appear to exist: %s.", aciToModify)
+			cmdExitCode = 1
+			return
+		case err != nil:
+			stderr("Error accessing ACI to modify: %v.", err)
+			cmdExitCode = 1
+			return
+		case finfo.IsDir():
+			stderr("ACI to modify is a directory: %s.", aciToModify)
+			cmdExitCode = 1
+			return
+		}
+
 		a := lib.NewACBuild(buildpath, debug)
-		err = a.Begin(aciToModify)
+
+		err = a.Begin(aciToModify, false)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
