@@ -76,7 +76,7 @@ func runAddPort(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("port add: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0
@@ -100,7 +100,7 @@ func runRmPort(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("port remove: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

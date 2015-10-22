@@ -46,7 +46,7 @@ func runSetExec(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("set-exec: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

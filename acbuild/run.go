@@ -49,7 +49,7 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("run: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

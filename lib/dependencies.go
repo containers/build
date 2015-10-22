@@ -21,15 +21,21 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removeDep(imageName types.ACIdentifier) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removeDep(imageName types.ACIdentifier) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
+		foundOne := false
 		for i := len(s.Dependencies) - 1; i >= 0; i-- {
 			if s.Dependencies[i].ImageName == imageName {
+				foundOne = true
 				s.Dependencies = append(
 					s.Dependencies[:i],
 					s.Dependencies[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -60,7 +66,7 @@ func (a *ACBuild) AddDependency(imageName, imageId string, labels types.Labels, 
 		}
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removeDep(*acid)(s)
 		s.Dependencies = append(s.Dependencies,
 			types.Dependency{
@@ -69,6 +75,7 @@ func (a *ACBuild) AddDependency(imageName, imageId string, labels types.Labels, 
 				Labels:    labels,
 				Size:      size,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

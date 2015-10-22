@@ -23,18 +23,24 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removeIsolatorFromMan(name types.ACIdentifier) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removeIsolatorFromMan(name types.ACIdentifier) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return
+			return nil
 		}
+		foundOne := false
 		for i := len(s.App.Isolators) - 1; i >= 0; i-- {
 			if s.App.Isolators[i].Name == name {
+				foundOne = true
 				s.App.Isolators = append(
 					s.App.Isolators[:i],
 					s.App.Isolators[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -54,13 +60,14 @@ func (a *ACBuild) AddIsolator(name string, value []byte) (err error) {
 	}
 	rawMsg := json.RawMessage(value)
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removeIsolatorFromMan(*acid)(s)
 		s.App.Isolators = append(s.App.Isolators,
 			types.Isolator{
 				Name:     *acid,
 				ValueRaw: &rawMsg,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

@@ -21,18 +21,24 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removeMount(name types.ACName) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removeMount(name types.ACName) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return
+			return nil
 		}
+		foundOne := false
 		for i := len(s.App.MountPoints) - 1; i >= 0; i-- {
 			if s.App.MountPoints[i].Name == name {
+				foundOne = true
 				s.App.MountPoints = append(
 					s.App.MountPoints[:i],
 					s.App.MountPoints[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -55,7 +61,7 @@ func (a *ACBuild) AddMount(name, path string, readOnly bool) (err error) {
 		return err
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removeMount(*acn)(s)
 		if s.App == nil {
 			s.App = &types.App{}
@@ -66,6 +72,7 @@ func (a *ACBuild) AddMount(name, path string, readOnly bool) (err error) {
 				Path:     path,
 				ReadOnly: readOnly,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

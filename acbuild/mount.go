@@ -71,7 +71,7 @@ func runAddMount(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("mount add: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0
@@ -95,7 +95,7 @@ func runRmMount(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("mount remove: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

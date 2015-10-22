@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+ORG_PATH="github.com/appc"
+REPO_PATH="${ORG_PATH}/acbuild"
+TESTS_PATH="${REPO_PATH}/tests"
+
+export ACBUILD_BIN="${PWD}/bin/acbuild"
+export GOPATH="${PWD}/gopath"
+
+source "${GOPATH}/src/${REPO_PATH}/build"
+
+go test "${TESTS_PATH}" "$@"

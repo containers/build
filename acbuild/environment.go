@@ -64,7 +64,7 @@ func runAddEnv(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("environment add: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0
@@ -88,7 +88,7 @@ func runRemoveEnv(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("environment remove: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

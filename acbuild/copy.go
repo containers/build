@@ -49,7 +49,7 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("copy: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

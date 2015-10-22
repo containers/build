@@ -25,6 +25,10 @@ import (
 
 const defaultWorkPath = ".acbuild"
 
+// ErrNotFound is returned when acbuild is asked to remove an element from
+// a list and the element is not present in the list
+var ErrNotFound = fmt.Errorf("element to be removed does not exist in this ACI")
+
 // ACBuild contains all the information for a current build. Once an ACBuild
 // has been created, the functions available on it will perform different
 // actions in the build, like updating a dependency or writing a finished ACI.

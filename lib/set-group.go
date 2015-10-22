@@ -38,11 +38,12 @@ func (a *ACBuild) SetGroup(group string) (err error) {
 	if group == "" {
 		return fmt.Errorf("group cannot be empty")
 	}
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
 			s.App = &types.App{}
 		}
 		s.App.Group = group
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
