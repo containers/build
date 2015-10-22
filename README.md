@@ -76,9 +76,11 @@ empty ACI, or an initial ACI can be provided.
 
 The following commands are supported:
 
-* `acbuild begin`
+* `acbuild begin [ACI]`
 
-  Begin a build.
+  Begin a build. Optionally an ACI can be specified (either on the filesystem or
+  fetched via meta discovery) as a starting point for the build. If unspecified,
+  an empty ACI will be the starting point.
 
 * `acbuild write ACI_PATH`
 
@@ -209,20 +211,16 @@ applied to the given ACI instead.
 
 ## Planned features
 
-### Image signing
-
-It would be convenient if the appropriate gpg keys could be passed into `acbuild
-end`, and a ASC file would then be produced in addition to the ACI file.
-
 ### Squash
 
 `acbuild squash`: fetch all the dependencies for the given image and squash them
 together into the ACI without dependencies.
 
-### Image fetching with begin
+### Image pushing with write
 
-Pass in an image name, instead of a path to the ACI for `acbuild begin`, and the
-image will be fetched and used as the starting point for the build.
+When acbuild goes to write the ACI, meta discovery could be performed on the
+name that was set for the ACI to find an endpoint to push the image to, instead
+of saving the ACI on the local filesystem.
 
 ### Alternate execution engine
 
@@ -249,5 +247,6 @@ acbuild end
 - https://github.com/appc/spec/tree/master/actool - particularly the `build` and
   `patch-manifest` subcommands. `acbuild` may subsume such functionality,
   leaving `actool` as a validator only.
+- https://github.com/blablacar/cnt
 
 
