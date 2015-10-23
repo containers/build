@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+if [ "$EUID" -ne 0 ]; then
+    echo "This script uses functionality which requires root privileges"
+    exit 1
+fi
+
 acbuild --debug begin quay.io/listhub/alpine
 
 trap "{ export EXT=$?; acbuild --debug end && exit $EXT; }" EXIT
