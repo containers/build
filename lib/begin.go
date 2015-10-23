@@ -171,7 +171,7 @@ func (a *ACBuild) beginFromImage(start string, insecure bool) error {
 		return err
 	}
 
-	if len(files) != 0 {
+	if len(files) != 1 {
 		var filelist string
 		for _, file := range files {
 			if filelist == "" {
