@@ -238,14 +238,6 @@ func (r Registry) uncompress() error {
 		return fmt.Errorf("downloaded ACI is of an unknown type")
 	}
 
-	if r.Debug {
-		finfo, err := acifile.Stat()
-		if err != nil {
-			return err
-		}
-		in = newIoprogress("Uncompressing", finfo.Size(), in)
-	}
-
 	out, err := os.OpenFile(r.tmpuncompressedpath(),
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
