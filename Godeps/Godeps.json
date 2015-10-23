@@ -41,7 +41,7 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/ioprogress",
-			"Rev": "e7fc03058804de5488baed8df5b89f3924b9ec9a"
+			"Rev": "4637e494fd9b23c5565ee193e89f91fdc1639bc0"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
