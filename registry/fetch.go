@@ -90,7 +90,7 @@ func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labe
 			continue
 		}
 
-		err = util.UnTar(path.Join(r.DepStoreTarPath, fs.Key),
+		err = util.ExtractImage(path.Join(r.DepStoreTarPath, fs.Key),
 			path.Join(r.DepStoreExpandedPath, fs.Key), fs.FileMap)
 		if err != nil {
 			return err

@@ -120,7 +120,7 @@ func (a *ACBuild) beginFromImage(start string, insecure bool) error {
 		if finfo.IsDir() {
 			return fmt.Errorf("provided starting ACI is a directory: %s", start)
 		}
-		return util.UnTar(start, a.CurrentACIPath, nil)
+		return util.ExtractImage(start, a.CurrentACIPath, nil)
 	} else if !os.IsNotExist(err) {
 		return err
 	}
@@ -183,5 +183,5 @@ func (a *ACBuild) beginFromImage(start string, insecure bool) error {
 		panic("unexpected number of files in store after download: " + filelist)
 	}
 
-	return util.UnTar(path.Join(tmpDepStoreTarPath, files[0].Name()), a.CurrentACIPath, nil)
+	return util.ExtractImage(path.Join(tmpDepStoreTarPath, files[0].Name()), a.CurrentACIPath, nil)
 }

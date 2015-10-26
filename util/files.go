@@ -53,20 +53,20 @@ func Exists(path string) (bool, error) {
 	return false, err
 }
 
-// UnTar will extract the contents at the tar file at tarpath to the directory
+// ExtractImage will extract the contents of the image at path to the directory
 // at dst. If fileMap is set, only files in it will be extracted.
-func UnTar(tarpath, dst string, fileMap map[string]struct{}) error {
+func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
 	dst, err := filepath.Abs(dst)
 	if err != nil {
 		return err
 	}
-	tarfile, err := os.Open(tarpath)
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	defer tarfile.Close()
+	defer file.Close()
 
-	dr, err := aci.NewCompressedReader(tarfile)
+	dr, err := aci.NewCompressedReader(file)
 	if err != nil {
 		return fmt.Errorf("error decompressing image: %v", err)
 	}
