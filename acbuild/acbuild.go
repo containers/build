@@ -126,14 +126,15 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			return
 		}
 
-		contextualCommands := []string{"begin", "write", "end", "version"}
 		command := strings.Split(cmd.Use, " ")[0]
-		for _, cc := range contextualCommands {
-			if command == cc {
-				stderr("Can't use the --modify flag with %s.", command)
-				cmdExitCode = 1
-				return
-			}
+		switch command {
+		case "cat-manifest":
+			cmdExitCode = runCatOnACI(aciToModify)
+			return
+		case "begin", "write", "end", "version":
+			stderr("Can't use the --modify flag with %s.", command)
+			cmdExitCode = 1
+			return
 		}
 
 		finfo, err := os.Stat(aciToModify)
