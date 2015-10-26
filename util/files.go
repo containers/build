@@ -15,9 +15,11 @@
 package util
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/tar"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
 )
@@ -64,5 +66,11 @@ func UnTar(tarpath, dst string, fileMap map[string]struct{}) error {
 	}
 	defer tarfile.Close()
 
-	return tar.ExtractTar(tarfile, dst, true, uid.NewBlankUidRange(), fileMap)
+	dr, err := aci.NewCompressedReader(tarfile)
+	if err != nil {
+		return fmt.Errorf("error decompressing image: %v", err)
+	}
+	defer dr.Close()
+
+	return tar.ExtractTar(dr, dst, true, uid.NewBlankUidRange(), fileMap)
 }
