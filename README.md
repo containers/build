@@ -36,7 +36,7 @@ Follow these steps to do so:
 1. Grab the source code for `acbuild` by `git clone`ing the source repository:
    ```
    cd ~
-   git clone git@github.com:appc/acbuild
+   git clone https://github.com/appc/acbuild
    ```
 
 2. Run the `build` script from the root source repository directory:
