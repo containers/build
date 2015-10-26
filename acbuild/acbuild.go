@@ -15,9 +15,11 @@
 package main
 
 import (
+	"crypto/sha512"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"text/tabwriter"
 	"text/template"
@@ -134,15 +136,6 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			}
 		}
 
-		var err error
-		buildpath, err := ioutil.TempDir("", "acbuild-")
-		if err != nil {
-			stderr("%v", err)
-			cmdExitCode = 1
-			return
-		}
-		defer os.Remove(buildpath)
-
 		finfo, err := os.Stat(aciToModify)
 		switch {
 		case os.IsNotExist(err):
@@ -159,7 +152,29 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			return
 		}
 
-		a := lib.NewACBuild(buildpath, debug)
+		absoluteAciToModify, err := filepath.Abs(aciToModify)
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
+
+		hash := sha512.New().Sum([]byte(absoluteAciToModify))
+		contextpath := path.Join(os.TempDir(), fmt.Sprintf("acbuild-%x", hash))
+
+		if len(contextpath) > 16 {
+			contextpath = contextpath[:16]
+		}
+
+		err = os.MkdirAll(contextpath, 0755)
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
+		defer os.RemoveAll(contextpath)
+
+		a := newACBuild()
 
 		err = a.Begin(aciToModify, false)
 		if err != nil {
