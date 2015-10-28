@@ -21,8 +21,8 @@ import (
 var (
 	cmdSetName = &cobra.Command{
 		Use:     "set-name ACI_NAME",
-		Short:   "Change an ACI's name",
-		Long:    "Changes the name of an ACI in its manifest",
+		Short:   "Set the image name",
+		Long:    "Sets the name of the ACI in the manifest",
 		Example: "acbuild name quay.io/coreos/etcd",
 		Run:     runWrapper(runSetName),
 	}

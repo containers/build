@@ -27,9 +27,8 @@ var (
 	labels  labellist
 	size    uint
 	cmdDep  = &cobra.Command{
-		Use:     "dependency [command]",
-		Aliases: []string{"dep"},
-		Short:   "Manage dependencies",
+		Use:   "dependency [command]",
+		Short: "Manage dependencies",
 	}
 	cmdAddDep = &cobra.Command{
 		Use:     "add IMAGE_NAME",
