@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"time"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
@@ -35,11 +36,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/xi2.org/x/xz"
 
 	"github.com/appc/acbuild/util"
-)
-
-var (
-	defaultArch = "amd64"
-	defaultOS   = "linux"
 )
 
 func (r Registry) tmppath() string {
@@ -327,10 +323,10 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 		return nil, err
 	}
 	if _, ok := app.Labels["arch"]; !ok {
-		app.Labels["arch"] = defaultArch
+		app.Labels["arch"] = runtime.GOARCH
 	}
 	if _, ok := app.Labels["os"]; !ok {
-		app.Labels["os"] = defaultOS
+		app.Labels["os"] = runtime.GOOS
 	}
 
 	eps, attempts, err := discovery.DiscoverEndpoints(*app, r.Insecure)

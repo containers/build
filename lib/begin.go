@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 
 	"github.com/appc/acbuild/registry"
@@ -79,6 +80,16 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 		return err
 	}
 
+	archlabel, err := types.NewACIdentifier("arch")
+	if err != nil {
+		return err
+	}
+
+	oslabel, err := types.NewACIdentifier("os")
+	if err != nil {
+		return err
+	}
+
 	manifest := &schema.ImageManifest{
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
@@ -87,6 +98,16 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 			Exec:  nil,
 			User:  "0",
 			Group: "0",
+		},
+		Labels: types.Labels{
+			types.Label{
+				*archlabel,
+				runtime.GOARCH,
+			},
+			types.Label{
+				*oslabel,
+				runtime.GOOS,
+			},
 		},
 	}
 

@@ -169,6 +169,15 @@ The following commands are supported:
 
   Sets the exec command in the ACI's manifest.
 
+### Default labels when starting with an empty ACI
+
+When `acbuild begin` isn't passed any arguments a minimal container is created.
+The rootfs is empty, there isn't an exec statement, there's just a placeholder
+name for the image, and so on. There will, however, be two labels created: the
+"os" and "arch" labels. These labels are populated based on the system's
+operating system and architecture, but they can always be overridden or removed
+during the build with the `label add` and `label remove` commands.
+
 ### acbuild run
 
 `acbuild run` builds the root filesystem with any dependencies the ACI has
