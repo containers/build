@@ -26,90 +26,73 @@ import (
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/pflag"
 
 	"github.com/appc/acbuild/lib"
 )
 
 const (
-	cliName        = "acbuild"
-	cliDescription = "acbuild, the application container build system"
+	cliName = "acbuild"
+
+	commandUsage = `\
+NAME:
+{{printf "\t%s - %s" .Name .Short}}
+
+USAGE:
+{{printf "\t%s" .UseLine}}
+
+{{if (ne .Example "")}}\
+EXAMPLE:
+{{printf "\t%s" .Example}}
+
+{{end}}\
+\
+{{if (ne (len .Commands) 0)}}\
+COMMANDS:
+{{range .Commands}}\
+{{if (ne (len .Commands) 0)}}\
+{{printf "\t%s%s\t%s" .Name (subcmdList .Commands) .Short}}
+{{else}}\
+{{printf "\t%s\t%s" .Name .Short}}
+{{end}}\
+{{end}}\
+
+{{end}}\
+\
+OPTIONS:
+{{.LocalFlags.FlagUsages}}`
 )
 
 var (
-	commandUsageTemplate *template.Template
-
-	templFuncs = template.FuncMap{
-		"cmdName": func(cmd *cobra.Command, startCmd *cobra.Command) string {
-			parts := []string{cmd.Name()}
-			for cmd.HasParent() && cmd.Parent().Name() != startCmd.Name() {
-				cmd = cmd.Parent()
-				parts = append([]string{cmd.Name()}, parts...)
-			}
-			return strings.Join(parts, " ")
-		},
-	}
-
 	debug       bool
 	contextpath string
 	aciToModify string
 
-	tabOut      *tabwriter.Writer
 	cmdExitCode int
+
+	templFuncs = template.FuncMap{
+		"subcmdList": func(cmds []*cobra.Command) string {
+			var subcmds []string
+			for _, subcmd := range cmds {
+				subcmds = append(subcmds, subcmd.Name())
+			}
+			return " [" + strings.Join(subcmds, "|") + "]"
+		},
+	}
+
+	commandUsageTemplate = template.Must(template.New("command_usage").Funcs(templFuncs).Parse(strings.Replace(commandUsage, "\\\n", "", -1)))
 )
 
 var cmdAcbuild = &cobra.Command{
 	Use:   "acbuild [command]",
-	Short: cliDescription,
+	Short: "the application container build system",
 }
 
 func init() {
 	cmdAcbuild.PersistentFlags().BoolVar(&debug, "debug", false, "Print out debug information to stderr")
 	cmdAcbuild.PersistentFlags().StringVar(&contextpath, "work-path", ".", "Path to place working files in")
 	cmdAcbuild.PersistentFlags().StringVar(&aciToModify, "modify", "", "Path to an ACI to modify (ignores build context)")
-}
-
-func init() {
-	tabOut = new(tabwriter.Writer)
-	tabOut.Init(os.Stdout, 0, 8, 1, '\t', 0)
 
 	cobra.EnablePrefixMatching = true
-
-	commandUsage := `
-{{ $cmd := .Cmd }}\
-{{ $cmdname := cmdName .Cmd .Cmd.Root }}\
-NAME:
-{{ if not .Cmd.HasParent }}\
-{{printf "\t%s - %s" .Cmd.Name .Cmd.Short}}
-{{else}}\
-{{printf "\t%s - %s" $cmdname .Cmd.Short}}
-{{end}}\
-
-USAGE:
-{{printf "\t%s" .Cmd.UseLine}}
-{{if .Cmd.HasSubCommands}}\
-
-COMMANDS:
-{{range .SubCommands}}\
-{{ $cmdname := cmdName . $cmd }}\
-{{ if .Runnable }}\
-{{printf "\t%s\t%s" $cmdname .Short}}
-{{end}}\
-{{end}}\
-{{end}}\
-{{if .Cmd.HasLocalFlags}}\
-
-OPTIONS:
-{{.Cmd.LocalFlags.FlagUsages}}\
-{{end}}\
-{{if .Cmd.HasInheritedFlags}}\
-
-GLOBAL OPTIONS:
-{{.Cmd.InheritedFlags.FlagUsages}}\
-{{end}}
-`[1:]
-
-	commandUsageTemplate = template.Must(template.New("command_usage").Funcs(templFuncs).Parse(strings.Replace(commandUsage, "\\\n", "", -1)))
 }
 
 func newACBuild() *lib.ACBuild {
@@ -205,7 +188,13 @@ func main() {
 	// check if acbuild is executed with a multicall command
 	multicall.MaybeExec()
 
-	cmdAcbuild.SetUsageFunc(usageFunc)
+	cmdAcbuild.SetUsageFunc(func(cmd *cobra.Command) error {
+		tabOut := new(tabwriter.Writer)
+		tabOut.Init(os.Stdout, 0, 8, 1, '\t', 0)
+		commandUsageTemplate.Execute(tabOut, cmd)
+		tabOut.Flush()
+		return nil
+	})
 
 	// Make help just show the usage
 	cmdAcbuild.SetHelpTemplate(`{{.UsageString}}`)
@@ -222,30 +211,4 @@ func stderr(format string, a ...interface{}) {
 func stdout(format string, a ...interface{}) {
 	out := fmt.Sprintf(format, a...)
 	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
-}
-
-func getSubCommands(cmd *cobra.Command) []*cobra.Command {
-	subCommands := []*cobra.Command{}
-	for _, subCmd := range cmd.Commands() {
-		subCommands = append(subCommands, subCmd)
-		subCommands = append(subCommands, getSubCommands(subCmd)...)
-	}
-	return subCommands
-}
-
-func usageFunc(cmd *cobra.Command) error {
-	subCommands := getSubCommands(cmd)
-	commandUsageTemplate.Execute(tabOut, struct {
-		Executable  string
-		Cmd         *cobra.Command
-		CmdFlags    *pflag.FlagSet
-		SubCommands []*cobra.Command
-	}{
-		cliName,
-		cmd,
-		cmd.Flags(),
-		subCommands,
-	})
-	tabOut.Flush()
-	return nil
 }

@@ -20,9 +20,8 @@ import (
 
 var (
 	cmdAnno = &cobra.Command{
-		Use:     "annotation [command]",
-		Aliases: []string{"anno"},
-		Short:   "Manage annotations",
+		Use:   "annotation [command]",
+		Short: "Manage annotations",
 	}
 	cmdAddAnno = &cobra.Command{
 		Use:     "add NAME VALUE",

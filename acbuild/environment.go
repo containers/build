@@ -20,9 +20,8 @@ import (
 
 var (
 	cmdEnv = &cobra.Command{
-		Use:     "environment [command]",
-		Aliases: []string{"env"},
-		Short:   "Manage environment variables",
+		Use:   "environment [command]",
+		Short: "Manage environment variables",
 	}
 	cmdAddEnv = &cobra.Command{
 		Use:     "add NAME VALUE",
