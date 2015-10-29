@@ -45,28 +45,28 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
-			"Comment": "v0.8.1-244-g64ae183",
-			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+			"Comment": "v0.10.0-54-gc78755c",
+			"Rev": "c78755c055864eeb0e23e880f3f6a136820a34d7"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/multicall",
-			"Comment": "v0.8.1-244-g64ae183",
-			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+			"Comment": "v0.10.0-54-gc78755c",
+			"Rev": "c78755c055864eeb0e23e880f3f6a136820a34d7"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/sys",
-			"Comment": "v0.8.1-244-g64ae183",
-			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+			"Comment": "v0.10.0-54-gc78755c",
+			"Rev": "c78755c055864eeb0e23e880f3f6a136820a34d7"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/tar",
-			"Comment": "v0.8.1-244-g64ae183",
-			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+			"Comment": "v0.10.0-54-gc78755c",
+			"Rev": "c78755c055864eeb0e23e880f3f6a136820a34d7"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/uid",
-			"Comment": "v0.8.1-244-g64ae183",
-			"Rev": "64ae18343537f7e4f53ae27f1abd1fe533da2965"
+			"Comment": "v0.10.0-54-gc78755c",
+			"Rev": "c78755c055864eeb0e23e880f3f6a136820a34d7"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
