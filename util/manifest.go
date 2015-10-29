@@ -15,6 +15,8 @@
 package util
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -73,5 +75,22 @@ func ModifyManifest(fn func(*schema.ImageManifest), acipath string) error {
 		return err
 	}
 
+	return nil
+}
+
+// PrintManifest will print the given manifest to stdout, optionally inserting
+// whitespace to make it more human readable.
+func PrintManifest(man *schema.ImageManifest, prettyPrint bool) error {
+	var manblob []byte
+	var err error
+	if prettyPrint {
+		manblob, err = json.MarshalIndent(man, "", "    ")
+	} else {
+		manblob, err = man.MarshalJSON()
+	}
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(manblob))
 	return nil
 }
