@@ -1,0 +1,14 @@
+language: go
+matrix:
+  include:
+    - go: 1.4.2
+    - go: 1.5.1
+
+script:
+ - ./build
+ - ./test
+
+notifications:
+  email: false
+
+sudo: true
