@@ -50,13 +50,16 @@ func GetManifest(acipath string) (*schema.ImageManifest, error) {
 // ModifyManifest will read in the manifest from the untarred ACI stored at
 // acipath, run the fn function (which is intended to modify the manifest), and
 // then write the resulting manifest back to the file it was read from.
-func ModifyManifest(fn func(*schema.ImageManifest), acipath string) error {
+func ModifyManifest(fn func(*schema.ImageManifest) error, acipath string) error {
 	man, err := GetManifest(acipath)
 	if err != nil {
 		return err
 	}
 
-	fn(man)
+	err = fn(man)
+	if err != nil {
+		return err
+	}
 
 	blob, err := man.MarshalJSON()
 	if err != nil {

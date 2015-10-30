@@ -25,43 +25,27 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestBeginEmpty(t *testing.T) {
-	tmpdir := mustTempDir()
-	defer cleanUpTest(tmpdir)
+	workingDir := mustTempDir()
+	defer cleanUpTest(workingDir)
 
-	err := runAcbuild(tmpdir, "begin")
+	err := runACBuild(workingDir, "begin")
 	if err != nil {
-		t.Fatalf("%v", err)
+		t.Fatalf("%v\n", err)
 	}
 
-	wim := schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
-	}
-
-	checkMinimalContainer(t, path.Join(tmpdir, ".acbuild", "currentaci"), wim)
+	checkManifest(t, workingDir, emptyManifest)
+	checkEmptyRootfs(t, workingDir)
 }
 
 func TestBeginLocalACI(t *testing.T) {
-	wim := schema.ImageManifest{
+	wantedManifest := schema.ImageManifest{
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
 		Name:      *types.MustACIdentifier("acbuild-begin-test"),
-		Labels: types.Labels{
-			types.Label{
-				Name:  *types.MustACIdentifier("version"),
-				Value: "9001",
-			},
-		},
+		Labels:    systemLabels,
 		App: &types.App{
 			Exec:  types.Exec{"/bin/nethack4", "-D", "wizard"},
 			User:  "0",
@@ -101,7 +85,7 @@ func TestBeginLocalACI(t *testing.T) {
 		},
 	}
 
-	manblob, err := wim.MarshalJSON()
+	manblob, err := wantedManifest.MarshalJSON()
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +109,7 @@ func TestBeginLocalACI(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpaci.Name())
 
-	aw := aci.NewImageWriter(wim, tar.NewWriter(tmpaci))
+	aw := aci.NewImageWriter(wantedManifest, tar.NewWriter(tmpaci))
 	err = filepath.Walk(tmpexpandedaci, aci.BuildWalker(tmpexpandedaci, aw, nil))
 	aw.Close()
 	if err != nil {
@@ -133,41 +117,14 @@ func TestBeginLocalACI(t *testing.T) {
 	}
 	tmpaci.Close()
 
-	tmpdir := mustTempDir()
-	defer cleanUpTest(tmpdir)
+	workingDir := mustTempDir()
+	defer cleanUpTest(workingDir)
 
-	err = runAcbuild(tmpdir, "begin", tmpaci.Name())
-	if err != nil {
-		t.Fatalf("%v", err)
+	err1 := runACBuild(workingDir, "begin", tmpaci.Name())
+	if err1 != nil {
+		t.Fatalf("%s\n", err1.Error())
 	}
 
-	checkMinimalContainer(t, path.Join(tmpdir, ".acbuild", "currentaci"), wim)
-}
-
-func checkMinimalContainer(t *testing.T, acipath string, expectedManifest schema.ImageManifest) {
-	// Check that there are no files in the rootfs
-	files, err := ioutil.ReadDir(path.Join(acipath, aci.RootfsDir))
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-	if len(files) != 0 {
-		t.Errorf("rootfs in aci contains files, should be empty")
-	}
-
-	// Check that the manifest is no bigger than it needs to be
-	manblob, err := ioutil.ReadFile(path.Join(acipath, aci.ManifestFile))
-	if err != nil {
-		t.Errorf("%v", err)
-	}
-
-	var man schema.ImageManifest
-
-	err = man.UnmarshalJSON(manblob)
-	if err != nil {
-		t.Errorf("invalid manifest schema: %v", err)
-	}
-
-	if str := pretty.Compare(man, expectedManifest); str != "" {
-		t.Errorf("unexpected manifest:\n%s", str)
-	}
+	checkManifest(t, workingDir, wantedManifest)
+	checkEmptyRootfs(t, workingDir)
 }

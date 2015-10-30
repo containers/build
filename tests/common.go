@@ -16,13 +16,46 @@ package tests
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
+	"runtime"
+	"syscall"
+	"testing"
+
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/kylelemons/godebug/pretty"
 )
 
 var (
 	acbuildBinPath string
+
+	systemLabels = types.Labels{
+		types.Label{
+			*types.MustACIdentifier("arch"),
+			runtime.GOARCH,
+		},
+		types.Label{
+			*types.MustACIdentifier("os"),
+			runtime.GOOS,
+		},
+	}
+
+	emptyManifest = schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-unnamed"),
+		App: &types.App{
+			Exec:  nil,
+			User:  "0",
+			Group: "0",
+		},
+		Labels: systemLabels,
+	}
 )
 
 func init() {
@@ -36,20 +69,58 @@ func init() {
 	}
 }
 
-func runAcbuild(workingDir string, args ...string) error {
-	cmd := exec.Command(acbuildBinPath, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Dir = workingDir
-	return cmd.Run()
+type acbuildError struct {
+	err      *exec.ExitError
+	exitCode int
+	stdout   []byte
+	stderr   []byte
 }
 
-func setUpTest() string {
-	tmpdir := mustTempDir()
+func (ae acbuildError) Error() string {
+	return fmt.Sprintf("non-zero exit code of %d: %v\nstdout:\n%s\nstderr:\n%s", ae.exitCode, ae.err, string(ae.stdout), string(ae.stderr))
+}
 
-	err := runAcbuild(tmpdir, "begin")
+func runACBuild(workingDir string, args ...string) *acbuildError {
+	cmd := exec.Command(acbuildBinPath, args...)
+	cmd.Dir = workingDir
+	stdoutpipe, err := cmd.StdoutPipe()
 	if err != nil {
 		panic(err)
+	}
+	stderrpipe, err := cmd.StderrPipe()
+	if err != nil {
+		panic(err)
+	}
+	stdoutch := make(chan []byte)
+	stderrch := make(chan []byte)
+	readTillClosed := func(in io.ReadCloser, out chan []byte) {
+		msg, err := ioutil.ReadAll(in)
+		if err != nil {
+			panic(err)
+		}
+		out <- msg
+	}
+	go readTillClosed(stdoutpipe, stdoutch)
+	go readTillClosed(stderrpipe, stderrch)
+	err = cmd.Run()
+	stdout := <-stdoutch
+	stderr := <-stderrch
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		code := exitErr.Sys().(syscall.WaitStatus).ExitStatus()
+		return &acbuildError{exitErr, code, stdout, stderr}
+	}
+	if err != nil {
+		panic(err)
+	}
+	return nil
+}
+
+func setUpTest(t *testing.T) string {
+	tmpdir := mustTempDir()
+
+	err := runACBuild(tmpdir, "begin")
+	if err != nil {
+		t.Fatalf("%v\n", err)
 	}
 
 	return tmpdir
@@ -65,4 +136,34 @@ func mustTempDir() string {
 		panic(err)
 	}
 	return dir
+}
+
+func checkManifest(t *testing.T, workingDir string, wantedManifest schema.ImageManifest) {
+	acipath := path.Join(workingDir, ".acbuild", "currentaci")
+
+	manblob, err := ioutil.ReadFile(path.Join(acipath, aci.ManifestFile))
+	if err != nil {
+		panic(err)
+	}
+
+	var man schema.ImageManifest
+
+	err = man.UnmarshalJSON(manblob)
+	if err != nil {
+		t.Errorf("invalid manifest schema: %v", err)
+	}
+
+	if str := pretty.Compare(man, wantedManifest); str != "" {
+		t.Errorf("unexpected manifest:\n%s", str)
+	}
+}
+
+func checkEmptyRootfs(t *testing.T, workingDir string) {
+	files, err := ioutil.ReadDir(path.Join(workingDir, ".acbuild", "currentaci", aci.RootfsDir))
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+	if len(files) != 0 {
+		t.Errorf("rootfs in aci contains files, should be empty")
+	}
 }

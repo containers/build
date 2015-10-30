@@ -50,7 +50,7 @@ func runSetGroup(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("set-group: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

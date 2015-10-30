@@ -33,11 +33,12 @@ func (a *ACBuild) SetExec(cmd []string) (err error) {
 		}
 	}()
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
 			s.App = &types.App{}
 		}
 		s.App.Exec = cmd
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

@@ -12,38 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package tests
 
 import (
-	"fmt"
-
-	"github.com/appc/acbuild/util"
+	"testing"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-// SetUser sets the user the pod will run as in the untarred ACI stored at
-// a.CurrentACIPath.
-func (a *ACBuild) SetUser(user string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
+func TestSetGroup(t *testing.T) {
+	workingDir := setUpTest(t)
+	defer cleanUpTest(workingDir)
 
-	if user == "" {
-		return fmt.Errorf("user cannot be empty")
+	const group = "10"
+
+	err := runACBuild(workingDir, "set-group", group)
+	if err != nil {
+		t.Fatalf("%v\n", err)
 	}
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = &types.App{}
-		}
-		s.App.User = user
-		return nil
+	man := schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-unnamed"),
+		App: &types.App{
+			Exec:  nil,
+			User:  "0",
+			Group: group,
+		},
+		Labels: systemLabels,
 	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+
+	checkManifest(t, workingDir, man)
+	checkEmptyRootfs(t, workingDir)
 }

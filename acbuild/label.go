@@ -64,7 +64,7 @@ func runAddLabel(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("label add: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0
@@ -88,7 +88,7 @@ func runRemoveLabel(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("label remove: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

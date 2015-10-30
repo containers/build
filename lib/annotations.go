@@ -21,15 +21,21 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removeAnnotation(name types.ACIdentifier) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removeAnnotation(name types.ACIdentifier) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
+		foundOne := false
 		for i := len(s.Annotations) - 1; i >= 0; i-- {
 			if s.Annotations[i].Name == name {
+				foundOne = true
 				s.Annotations = append(
 					s.Annotations[:i],
 					s.Annotations[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -51,8 +57,9 @@ func (a *ACBuild) AddAnnotation(name, value string) (err error) {
 		return err
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		s.Annotations.Set(*acid, value)
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

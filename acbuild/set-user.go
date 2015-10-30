@@ -50,7 +50,7 @@ func runSetUser(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("set-user: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

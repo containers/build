@@ -73,6 +73,14 @@
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
 		},
 		{
+			"ImportPath": "github.com/kylelemons/godebug/diff",
+			"Rev": "21cb3784d9bda523911b96719efba02b7e983256"
+		},
+		{
+			"ImportPath": "github.com/kylelemons/godebug/pretty",
+			"Rev": "21cb3784d9bda523911b96719efba02b7e983256"
+		},
+		{
 			"ImportPath": "github.com/spf13/cobra",
 			"Rev": "66816bcd0378e248c613e3c443c020f544c28804"
 		},

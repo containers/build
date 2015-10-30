@@ -21,15 +21,21 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removeLabelFromMan(name types.ACIdentifier) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removeLabelFromMan(name types.ACIdentifier) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
+		foundOne := false
 		for i := len(s.Labels) - 1; i >= 0; i-- {
 			if s.Labels[i].Name == name {
+				foundOne = true
 				s.Labels = append(
 					s.Labels[:i],
 					s.Labels[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -51,13 +57,14 @@ func (a *ACBuild) AddLabel(name, value string) (err error) {
 		return err
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removeLabelFromMan(*acid)(s)
 		s.Labels = append(s.Labels,
 			types.Label{
 				Name:  *acid,
 				Value: value,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

@@ -21,18 +21,24 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
-func removePort(name types.ACName) func(*schema.ImageManifest) {
-	return func(s *schema.ImageManifest) {
+func removePort(name types.ACName) func(*schema.ImageManifest) error {
+	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return
+			return nil
 		}
+		foundOne := false
 		for i := len(s.App.Ports) - 1; i >= 0; i-- {
 			if s.App.Ports[i].Name == name {
+				foundOne = true
 				s.App.Ports = append(
 					s.App.Ports[:i],
 					s.App.Ports[i+1:]...)
 			}
 		}
+		if !foundOne {
+			return ErrNotFound
+		}
+		return nil
 	}
 }
 
@@ -55,7 +61,7 @@ func (a *ACBuild) AddPort(name, protocol string, port, count uint, socketActivat
 		return err
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removePort(*acn)(s)
 		if s.App == nil {
 			s.App = &types.App{}
@@ -68,6 +74,7 @@ func (a *ACBuild) AddPort(name, protocol string, port, count uint, socketActivat
 				Count:           count,
 				SocketActivated: socketActivated,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }

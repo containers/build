@@ -76,7 +76,7 @@ func runAddDep(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("dependency add: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0
@@ -100,7 +100,7 @@ func runRmDep(cmd *cobra.Command, args []string) (exit int) {
 
 	if err != nil {
 		stderr("dependency remove: %v", err)
-		return 1
+		return getErrorCode(err)
 	}
 
 	return 0

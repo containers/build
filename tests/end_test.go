@@ -12,42 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package tests
 
 import (
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
+	"os"
+	"path"
+	"testing"
 )
 
-var (
-	cmdEnd = &cobra.Command{
-		Use:     "end",
-		Short:   "end a current build",
-		Long:    "End the current build, deleting the current context",
-		Example: "acbuild end",
-		Run:     runWrapper(runEnd),
-	}
-)
+func TestEnd(t *testing.T) {
+	workingDir := setUpTest(t)
+	defer cleanUpTest(workingDir)
 
-func init() {
-	cmdAcbuild.AddCommand(cmdEnd)
-}
-
-func runEnd(cmd *cobra.Command, args []string) (exit int) {
-	if len(args) != 0 {
-		stderr("end: incorrect number of arguments")
-		return 1
-	}
-
-	if debug {
-		stderr("Ending the build")
-	}
-
-	err := newACBuild().End()
-
+	err := runACBuild(workingDir, "end")
 	if err != nil {
-		stderr("end: %v", err)
-		return getErrorCode(err)
+		t.Fatalf("%v\n", err)
 	}
 
-	return 0
+	_, err1 := os.Stat(path.Join(workingDir, ".acbuild"))
+	switch {
+	case os.IsNotExist(err1):
+		return
+	case err1 != nil:
+		panic(err1)
+	default:
+		t.Fatalf("end failed to remove acbuild working directory")
+	}
 }

@@ -99,6 +99,17 @@ func newACBuild() *lib.ACBuild {
 	return lib.NewACBuild(contextpath, debug)
 }
 
+func getErrorCode(err error) int {
+	switch err {
+	case lib.ErrNotFound:
+		return 2
+	case nil:
+		return 0
+	default:
+		return 1
+	}
+}
+
 // runWrapper return a func(cmd *cobra.Command, args []string) that internally
 // will add command function return code and the reinsertion of the "--" flag
 // terminator.
@@ -163,7 +174,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		err = a.Begin(aciToModify, false)
 		if err != nil {
 			stderr("%v", err)
-			cmdExitCode = 1
+			cmdExitCode = getErrorCode(err)
 			return
 		}
 
@@ -172,14 +183,14 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		err = a.Write(aciToModify, true, false, nil)
 		if err != nil {
 			stderr("%v", err)
-			cmdExitCode = 1
+			cmdExitCode = getErrorCode(err)
 			return
 		}
 
 		err = a.End()
 		if err != nil {
 			stderr("%v", err)
-			cmdExitCode = 1
+			cmdExitCode = getErrorCode(err)
 			return
 		}
 	}

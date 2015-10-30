@@ -42,8 +42,9 @@ func (a *ACBuild) SetName(name string) (err error) {
 		return err
 	}
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		s.Name = *acid
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
