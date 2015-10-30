@@ -48,7 +48,7 @@ func (a *ACBuild) setEventHandler(name string, exec []string) (err error) {
 		}
 	}()
 
-	fn := func(s *schema.ImageManifest) {
+	fn := func(s *schema.ImageManifest) error {
 		removeEventHandler(name, s)
 		if s.App == nil {
 			s.App = &types.App{}
@@ -58,6 +58,7 @@ func (a *ACBuild) setEventHandler(name string, exec []string) (err error) {
 				Name: name,
 				Exec: exec,
 			})
+		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
 }
