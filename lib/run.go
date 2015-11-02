@@ -47,6 +47,10 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		}
 	}()
 
+	if os.Geteuid() != 0 {
+		return fmt.Errorf("the run subcommand must be run as root")
+	}
+
 	err = util.RmAndMkdir(a.OverlayTargetPath)
 	if err != nil {
 		return err
