@@ -15,12 +15,13 @@
 package util
 
 import (
+	"archive/tar"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/tar"
+	rkttar "github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/tar"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
 )
 
@@ -72,5 +73,15 @@ func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
 	}
 	defer dr.Close()
 
-	return tar.ExtractTar(dr, dst, true, uid.NewBlankUidRange(), fileMap)
+	uidRange := uid.NewBlankUidRange()
+
+	if os.Geteuid() == 0 {
+		return rkttar.ExtractTar(dr, dst, true, uidRange, fileMap)
+	}
+
+	editor, err := rkttar.NewUidShiftingFilePermEditor(uidRange)
+	if err != nil {
+		return fmt.Errorf("error determining current user: %v", err)
+	}
+	return rkttar.ExtractTarInsecure(tar.NewReader(dr), dst, true, fileMap, editor)
 }
