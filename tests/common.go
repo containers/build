@@ -91,20 +91,20 @@ func runACBuild(workingDir string, args ...string) *acbuildError {
 	if err != nil {
 		panic(err)
 	}
-	stdoutch := make(chan []byte)
-	stderrch := make(chan []byte)
-	readTillClosed := func(in io.ReadCloser, out chan []byte) {
+	readTillClosed := func(in io.ReadCloser) []byte {
 		msg, err := ioutil.ReadAll(in)
 		if err != nil {
 			panic(err)
 		}
-		out <- msg
+		return msg
 	}
-	go readTillClosed(stdoutpipe, stdoutch)
-	go readTillClosed(stderrpipe, stderrch)
-	err = cmd.Run()
-	stdout := <-stdoutch
-	stderr := <-stderrch
+	err = cmd.Start()
+	if err != nil {
+		panic(err)
+	}
+	stdout := readTillClosed(stdoutpipe)
+	stderr := readTillClosed(stderrpipe)
+	err = cmd.Wait()
 	if exitErr, ok := err.(*exec.ExitError); ok {
 		code := exitErr.Sys().(syscall.WaitStatus).ExitStatus()
 		return &acbuildError{exitErr, code, stdout, stderr}
