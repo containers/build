@@ -18,7 +18,6 @@ import (
 	"github.com/appc/acbuild/util"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 // SetWorkingDir sets the workingDirectory value in the untarred ACI stored at
@@ -35,7 +34,7 @@ func (a *ACBuild) SetWorkingDir(dir string) (err error) {
 
 	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.WorkingDirectory = dir
 		return nil

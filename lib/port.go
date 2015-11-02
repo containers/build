@@ -24,7 +24,7 @@ import (
 func removePort(name types.ACName) func(*schema.ImageManifest) error {
 	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return nil
+			return ErrNotFound
 		}
 		foundOne := false
 		for i := len(s.App.Ports) - 1; i >= 0; i-- {
@@ -62,10 +62,10 @@ func (a *ACBuild) AddPort(name, protocol string, port, count uint, socketActivat
 	}
 
 	fn := func(s *schema.ImageManifest) error {
-		removePort(*acn)(s)
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
+		removePort(*acn)(s)
 		s.App.Ports = append(s.App.Ports,
 			types.Port{
 				Name:            *acn,

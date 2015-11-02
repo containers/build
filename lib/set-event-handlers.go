@@ -51,7 +51,7 @@ func (a *ACBuild) setEventHandler(name string, exec []string) (err error) {
 	fn := func(s *schema.ImageManifest) error {
 		removeEventHandler(name, s)
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.EventHandlers = append(s.App.EventHandlers,
 			types.EventHandler{

@@ -34,12 +34,7 @@ func manWithLabels(labels types.Labels) schema.ImageManifest {
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
 		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
-		Labels: append(systemLabels, labels...),
+		Labels:    append(systemLabels, labels...),
 	}
 }
 

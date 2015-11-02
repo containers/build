@@ -94,11 +94,6 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
 		Name:      *acid,
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
 		Labels: types.Labels{
 			types.Label{
 				*archlabel,

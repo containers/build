@@ -18,13 +18,12 @@ import (
 	"github.com/appc/acbuild/util"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 func removeFromEnv(name string) func(*schema.ImageManifest) error {
 	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return nil
+			return ErrNotFound
 		}
 		foundOne := false
 		for i := len(s.App.Environment) - 1; i >= 0; i-- {
@@ -57,7 +56,7 @@ func (a *ACBuild) AddEnv(name, value string) (err error) {
 
 	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.Environment.Set(name, value)
 		return nil

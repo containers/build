@@ -20,7 +20,6 @@ import (
 	"github.com/appc/acbuild/util"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 // SetUser sets the user the pod will run as in the untarred ACI stored at
@@ -40,7 +39,7 @@ func (a *ACBuild) SetUser(user string) (err error) {
 	}
 	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.User = user
 		return nil

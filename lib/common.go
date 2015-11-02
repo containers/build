@@ -20,14 +20,26 @@ import (
 	"path"
 	"syscall"
 
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+
 	"github.com/appc/acbuild/util"
 )
 
 const defaultWorkPath = ".acbuild"
 
-// ErrNotFound is returned when acbuild is asked to remove an element from
-// a list and the element is not present in the list
+// ErrNotFound is returned when acbuild is asked to remove an element from a
+// list and the element is not present in the list
 var ErrNotFound = fmt.Errorf("element to be removed does not exist in this ACI")
+
+// newManifestApp will generate a valid minimal types.App for use in a
+// schema.ImageManifest. This is necessary as placing a completely empty
+// types.App into a manifest will result in an invalid manifest.
+func newManifestApp() *types.App {
+	return &types.App{
+		User:  "0",
+		Group: "0",
+	}
+}
 
 // ACBuild contains all the information for a current build. Once an ACBuild
 // has been created, the functions available on it will perform different

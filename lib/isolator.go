@@ -26,7 +26,7 @@ import (
 func removeIsolatorFromMan(name types.ACIdentifier) func(*schema.ImageManifest) error {
 	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return nil
+			return ErrNotFound
 		}
 		foundOne := false
 		for i := len(s.App.Isolators) - 1; i >= 0; i-- {
@@ -61,6 +61,9 @@ func (a *ACBuild) AddIsolator(name string, value []byte) (err error) {
 	rawMsg := json.RawMessage(value)
 
 	fn := func(s *schema.ImageManifest) error {
+		if s.App == nil {
+			s.App = newManifestApp()
+		}
 		removeIsolatorFromMan(*acid)(s)
 		s.App.Isolators = append(s.App.Isolators,
 			types.Isolator{
