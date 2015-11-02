@@ -24,7 +24,7 @@ import (
 func removeMount(name types.ACName) func(*schema.ImageManifest) error {
 	return func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			return nil
+			return ErrNotFound
 		}
 		foundOne := false
 		for i := len(s.App.MountPoints) - 1; i >= 0; i-- {
@@ -64,7 +64,7 @@ func (a *ACBuild) AddMount(name, path string, readOnly bool) (err error) {
 	fn := func(s *schema.ImageManifest) error {
 		removeMount(*acn)(s)
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.MountPoints = append(s.App.MountPoints,
 			types.MountPoint{

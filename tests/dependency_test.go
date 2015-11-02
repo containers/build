@@ -40,14 +40,9 @@ func newLabel(key, val string) string {
 
 func manWithDeps(deps types.Dependencies) schema.ImageManifest {
 	return schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
+		ACKind:       schema.ImageManifestKind,
+		ACVersion:    schema.AppContainerVersion,
+		Name:         *types.MustACIdentifier("acbuild-unnamed"),
 		Dependencies: deps,
 		Labels:       systemLabels,
 	}

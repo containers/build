@@ -159,7 +159,7 @@ func TestAddRmMount(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifestWithApp)
 	checkEmptyRootfs(t, workingDir)
 }
 

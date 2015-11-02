@@ -49,6 +49,13 @@ var (
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
 		Name:      *types.MustACIdentifier("acbuild-unnamed"),
+		Labels:    systemLabels,
+	}
+
+	emptyManifestWithApp = schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-unnamed"),
 		App: &types.App{
 			Exec:  nil,
 			User:  "0",

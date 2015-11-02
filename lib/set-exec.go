@@ -18,7 +18,6 @@ import (
 	"github.com/appc/acbuild/util"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 // SetExec sets the exec command for the untarred ACI stored at
@@ -35,7 +34,7 @@ func (a *ACBuild) SetExec(cmd []string) (err error) {
 
 	fn := func(s *schema.ImageManifest) error {
 		if s.App == nil {
-			s.App = &types.App{}
+			s.App = newManifestApp()
 		}
 		s.App.Exec = cmd
 		return nil

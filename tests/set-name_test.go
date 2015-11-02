@@ -35,12 +35,7 @@ func TestSetName(t *testing.T) {
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
 		Name:      *types.MustACIdentifier(name),
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
-		Labels: systemLabels,
+		Labels:    systemLabels,
 	}
 
 	checkManifest(t, workingDir, man)
