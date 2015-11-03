@@ -24,7 +24,7 @@ func TestEnd(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "end")
+	_, _, _, err := runACBuild(workingDir, "end")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

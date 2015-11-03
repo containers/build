@@ -43,7 +43,7 @@ func TestAddAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -56,17 +56,17 @@ func TestAddRmAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "annotation", "remove", annoName)
+	_, _, _, err = runACBuild(workingDir, "annotation", "remove", annoName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -74,12 +74,12 @@ func TestAddOverwriteAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	_, _, _, err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -92,17 +92,17 @@ func TestRmNonexistentAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "annotation", "remove", annoName)
+	exitCode, _, _, err := runACBuild(workingDir, "annotation", "remove", annoName)
 	switch {
 	case err == nil:
 		t.Fatalf("annotation remove didn't return an error when asked to remove nonexistent annotation")
-	case err.exitCode == 2:
+	case exitCode == 2:
 		return
 	default:
 		t.Fatalf("error occurred when running annotation remove:\n%v", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -112,17 +112,17 @@ func TestAddAddRmAnnotation(t *testing.T) {
 
 	const suffix = "1"
 
-	err := runACBuild(workingDir, "annotation", "add", annoName+suffix, annoValue)
+	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName+suffix, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	_, _, _, err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "annotation", "remove", annoName+suffix)
+	_, _, _, err = runACBuild(workingDir, "annotation", "remove", annoName+suffix)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

@@ -18,18 +18,18 @@ import (
 	"testing"
 )
 
-func TestSetGroup(t *testing.T) {
+func TestSetWorkingDir(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	const group = "10"
+	const wd = "/root"
 
-	_, _, _, err := runACBuild(workingDir, "set-group", group)
+	_, _, _, err := runACBuild(workingDir, "set-working-dir", wd)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 	man := emptyManifestWithApp()
-	man.App.Group = group
+	man.App.WorkingDirectory = wd
 
 	checkManifest(t, workingDir, man)
 	checkEmptyRootfs(t, workingDir)

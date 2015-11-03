@@ -16,6 +16,7 @@ package tests
 
 import (
 	"archive/tar"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -23,69 +24,23 @@ import (
 	"testing"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 func TestBeginEmpty(t *testing.T) {
 	workingDir := mustTempDir()
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "begin")
+	_, _, _, err := runACBuild(workingDir, "begin")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
 
 func TestBeginLocalACI(t *testing.T) {
-	wantedManifest := schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-begin-test"),
-		Labels:    systemLabels,
-		App: &types.App{
-			Exec:  types.Exec{"/bin/nethack4", "-D", "wizard"},
-			User:  "0",
-			Group: "0",
-			Environment: types.Environment{
-				types.EnvironmentVariable{
-					Name:  "FOO",
-					Value: "BAR",
-				},
-			},
-			MountPoints: []types.MountPoint{
-				types.MountPoint{
-					Name:     *types.MustACName("nethack4-data"),
-					Path:     "/root/nethack4-data",
-					ReadOnly: true,
-				},
-			},
-			Ports: []types.Port{
-				types.Port{
-					Name:     *types.MustACName("gopher"),
-					Protocol: "tcp",
-					Port:     70,
-					Count:    1,
-				},
-			},
-		},
-		Annotations: types.Annotations{
-			types.Annotation{
-				Name:  *types.MustACIdentifier("author"),
-				Value: "the acbuild devs",
-			},
-		},
-		Dependencies: types.Dependencies{
-			types.Dependency{
-				ImageName: *types.MustACIdentifier("quay.io/gnu/hurd"),
-			},
-		},
-	}
-
-	manblob, err := wantedManifest.MarshalJSON()
+	manblob, err := json.Marshal(detailedManifest())
 	if err != nil {
 		panic(err)
 	}
@@ -109,7 +64,7 @@ func TestBeginLocalACI(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpaci.Name())
 
-	aw := aci.NewImageWriter(wantedManifest, tar.NewWriter(tmpaci))
+	aw := aci.NewImageWriter(detailedManifest(), tar.NewWriter(tmpaci))
 	err = filepath.Walk(tmpexpandedaci, aci.BuildWalker(tmpexpandedaci, aw, nil))
 	aw.Close()
 	if err != nil {
@@ -120,11 +75,11 @@ func TestBeginLocalACI(t *testing.T) {
 	workingDir := mustTempDir()
 	defer cleanUpTest(workingDir)
 
-	err1 := runACBuild(workingDir, "begin", tmpaci.Name())
+	_, _, _, err1 := runACBuild(workingDir, "begin", tmpaci.Name())
 	if err1 != nil {
 		t.Fatalf("%s\n", err1.Error())
 	}
 
-	checkManifest(t, workingDir, wantedManifest)
+	checkManifest(t, workingDir, detailedManifest())
 	checkEmptyRootfs(t, workingDir)
 }

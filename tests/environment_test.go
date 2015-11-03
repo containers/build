@@ -30,25 +30,16 @@ const (
 )
 
 func manWithEnv(env types.Environment) schema.ImageManifest {
-	return schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:        nil,
-			User:        "0",
-			Group:       "0",
-			Environment: env,
-		},
-		Labels: systemLabels,
-	}
+	man := emptyManifestWithApp()
+	man.App.Environment = env
+	return man
 }
 
 func TestAddEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -68,12 +59,12 @@ func TestAddTwoEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
+	_, _, _, err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -97,17 +88,17 @@ func TestAddAddRmEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
+	_, _, _, err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "environment", "rm", envName)
+	_, _, _, err = runACBuild(workingDir, "environment", "rm", envName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -127,12 +118,12 @@ func TestAddOverwriteEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "environment", "add", envName, envVal2)
+	_, _, _, err = runACBuild(workingDir, "environment", "add", envName, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -152,17 +143,17 @@ func TestAddRmEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "environment", "rm", envName)
+	_, _, _, err = runACBuild(workingDir, "environment", "rm", envName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifestWithApp)
+	checkManifest(t, workingDir, emptyManifestWithApp())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -170,16 +161,16 @@ func TestRmNonexistentEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "environment", "rm", envName)
+	exitCode, _, _, err := runACBuild(workingDir, "environment", "rm", envName)
 	switch {
 	case err == nil:
 		t.Fatalf("environment remove didn't return an error when asked to remove nonexistent environment variable")
-	case err.exitCode == 2:
+	case exitCode == 2:
 		return
 	default:
 		t.Fatalf("error occurred when running environment remove:\n%v", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }

@@ -15,8 +15,8 @@
 package tests
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -44,25 +44,6 @@ var (
 			runtime.GOOS,
 		},
 	}
-
-	emptyManifest = schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		Labels:    systemLabels,
-	}
-
-	emptyManifestWithApp = schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  nil,
-			User:  "0",
-			Group: "0",
-		},
-		Labels: systemLabels,
-	}
 )
 
 func init() {
@@ -76,56 +57,98 @@ func init() {
 	}
 }
 
-type acbuildError struct {
-	err      *exec.ExitError
-	exitCode int
-	stdout   []byte
-	stderr   []byte
+func emptyManifest() schema.ImageManifest {
+	return schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-unnamed"),
+		Labels:    systemLabels,
+	}
 }
 
-func (ae acbuildError) Error() string {
-	return fmt.Sprintf("non-zero exit code of %d: %v\nstdout:\n%s\nstderr:\n%s", ae.exitCode, ae.err, string(ae.stdout), string(ae.stderr))
+func emptyManifestWithApp() schema.ImageManifest {
+	return schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-unnamed"),
+		App: &types.App{
+			Exec:  nil,
+			User:  "0",
+			Group: "0",
+		},
+		Labels: systemLabels,
+	}
 }
 
-func runACBuild(workingDir string, args ...string) *acbuildError {
+func detailedManifest() schema.ImageManifest {
+	return schema.ImageManifest{
+		ACKind:    schema.ImageManifestKind,
+		ACVersion: schema.AppContainerVersion,
+		Name:      *types.MustACIdentifier("acbuild-begin-test"),
+		Labels:    systemLabels,
+		App: &types.App{
+			Exec:  types.Exec{"/bin/nethack4", "-D", "wizard"},
+			User:  "0",
+			Group: "0",
+			Environment: types.Environment{
+				types.EnvironmentVariable{
+					Name:  "FOO",
+					Value: "BAR",
+				},
+			},
+			MountPoints: []types.MountPoint{
+				types.MountPoint{
+					Name:     *types.MustACName("nethack4-data"),
+					Path:     "/root/nethack4-data",
+					ReadOnly: true,
+				},
+			},
+			Ports: []types.Port{
+				types.Port{
+					Name:     *types.MustACName("gopher"),
+					Protocol: "tcp",
+					Port:     70,
+					Count:    1,
+				},
+			},
+		},
+		Annotations: types.Annotations{
+			types.Annotation{
+				Name:  *types.MustACIdentifier("author"),
+				Value: "the acbuild devs",
+			},
+		},
+		Dependencies: types.Dependencies{
+			types.Dependency{
+				ImageName: *types.MustACIdentifier("quay.io/gnu/hurd"),
+			},
+		},
+	}
+}
+
+// runACBuild takes the workingDir and args to call ACBuild with, calls
+// acbuild, and returns it's exit code, what it printed to stdout, what it
+// printed to stderr, and an error in the event of a non-0 exit code.
+func runACBuild(workingDir string, args ...string) (int, string, string, error) {
+	var stdout, stderr bytes.Buffer
 	cmd := exec.Command(acbuildBinPath, args...)
-	cmd.Dir = workingDir
-	stdoutpipe, err := cmd.StdoutPipe()
-	if err != nil {
-		panic(err)
-	}
-	stderrpipe, err := cmd.StderrPipe()
-	if err != nil {
-		panic(err)
-	}
-	readTillClosed := func(in io.ReadCloser) []byte {
-		msg, err := ioutil.ReadAll(in)
-		if err != nil {
-			panic(err)
-		}
-		return msg
-	}
-	err = cmd.Start()
-	if err != nil {
-		panic(err)
-	}
-	stdout := readTillClosed(stdoutpipe)
-	stderr := readTillClosed(stderrpipe)
-	err = cmd.Wait()
+	cmd.Dir, cmd.Stdout, cmd.Stderr = workingDir, &stdout, &stderr
+	err := cmd.Run()
 	if exitErr, ok := err.(*exec.ExitError); ok {
 		code := exitErr.Sys().(syscall.WaitStatus).ExitStatus()
-		return &acbuildError{exitErr, code, stdout, stderr}
+		acbuildOutput := fmt.Sprintf("stdout:\n%s\nstderr:\n%s\n", stdout.String(), stderr.String())
+		return code, stdout.String(), stderr.String(), fmt.Errorf("non-zero exit code of %d: %s", code, acbuildOutput)
 	}
 	if err != nil {
 		panic(err)
 	}
-	return nil
+	return 0, stdout.String(), stderr.String(), nil
 }
 
 func setUpTest(t *testing.T) string {
 	tmpdir := mustTempDir()
 
-	err := runACBuild(tmpdir, "begin")
+	_, _, _, err := runACBuild(tmpdir, "begin")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -143,6 +166,14 @@ func mustTempDir() string {
 		panic(err)
 	}
 	return dir
+}
+
+func mustTempFile() *os.File {
+	file, err := ioutil.TempFile("", "acbuild-test")
+	if err != nil {
+		panic(err)
+	}
+	return file
 }
 
 func checkManifest(t *testing.T, workingDir string, wantedManifest schema.ImageManifest) {

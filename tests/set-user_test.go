@@ -16,9 +16,6 @@ package tests
 
 import (
 	"testing"
-
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 func TestSetUser(t *testing.T) {
@@ -27,21 +24,13 @@ func TestSetUser(t *testing.T) {
 
 	const user = "10"
 
-	err := runACBuild(workingDir, "set-user", user)
+	_, _, _, err := runACBuild(workingDir, "set-user", user)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
-	man := schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  nil,
-			User:  user,
-			Group: "0",
-		},
-		Labels: systemLabels,
-	}
+
+	man := emptyManifestWithApp()
+	man.App.User = user
 
 	checkManifest(t, workingDir, man)
 	checkEmptyRootfs(t, workingDir)
