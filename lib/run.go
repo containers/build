@@ -21,6 +21,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"syscall"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 
@@ -100,19 +101,20 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		for i, dep := range deps {
 			deps[i] = path.Join(a.DepStoreExpandedPath, dep, aci.RootfsDir)
 		}
-		options := "-olowerdir=" + strings.Join(deps, ":") +
+		options := "lowerdir=" + strings.Join(deps, ":") +
 			",upperdir=" + path.Join(a.CurrentACIPath, aci.RootfsDir) +
 			",workdir=" + a.OverlayWorkPath
-		err := util.Exec("mount", "-t", "overlay",
-			"overlay", options, a.OverlayTargetPath)
+		err := syscall.Mount("overlay", a.OverlayTargetPath, "overlay", 0, options)
 		if err != nil {
 			return err
 		}
 
-		umount := exec.Command("umount", a.OverlayTargetPath)
-		umount.Stdout = os.Stdout
-		umount.Stderr = os.Stderr
-		defer umount.Run()
+		defer func() {
+			err1 := syscall.Unmount(a.OverlayTargetPath, 0)
+			if err == nil {
+				err = err1
+			}
+		}()
 
 		nspawnpath = a.OverlayTargetPath
 	}

@@ -24,7 +24,6 @@ which it's run:
 
 - `systemd-nspawn`
 - `cp`
-- `mount`
 - `modprobe`
 - `gpg`
 
