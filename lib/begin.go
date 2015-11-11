@@ -17,6 +17,8 @@ package lib
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
+	"net/url"
 	"os"
 	"path"
 	"runtime"
@@ -64,12 +66,24 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 		}
 	}()
 
+	defer func() {
+		// If there was an error while beginning, we don't want to produce an
+		// unexpected build context
+		if err != nil {
+			os.RemoveAll(a.ContextPath)
+		}
+	}()
+
 	if start != "" {
 		err = os.MkdirAll(a.CurrentACIPath, 0755)
 		if err != nil {
 			return err
 		}
-		return a.beginFromImage(start, insecure)
+		if start[0] == '.' || start[0] == '/' {
+			return a.beginFromLocalImage(start)
+		} else {
+			return a.beginFromRemoteImage(start, insecure)
+		}
 	}
 
 	err = os.MkdirAll(path.Join(a.CurrentACIPath, aci.RootfsDir), 0755)
@@ -131,25 +145,23 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 	return nil
 }
 
-func (a *ACBuild) beginFromImage(start string, insecure bool) error {
-	// Check if we're starting with a file
+func (a *ACBuild) beginFromLocalImage(start string) error {
 	finfo, err := os.Stat(start)
 	if err == nil {
 		if finfo.IsDir() {
 			return fmt.Errorf("provided starting ACI is a directory: %s", start)
 		}
 		return util.ExtractImage(start, a.CurrentACIPath, nil)
-	} else if !os.IsNotExist(err) {
-		return err
 	}
+	return err
+}
 
+func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
 	// Check if we're starting with a docker image
 	if strings.HasPrefix(start, "docker://") {
 		// TODO use docker2aci
 		return fmt.Errorf("docker containers are currently unsupported")
 	}
-
-	// Perform meta discovery, download the ACI, and start with that.
 
 	app, err := discovery.NewAppFromString(start)
 	if err != nil {
@@ -181,6 +193,15 @@ func (a *ACBuild) beginFromImage(start string, insecure bool) error {
 
 	err = reg.Fetch(app.Name, labels, 0, false)
 	if err != nil {
+		if urlerr, ok := err.(*url.Error); ok {
+			if operr, ok := urlerr.Err.(*net.OpError); ok {
+				if dnserr, ok := operr.Err.(*net.DNSError); ok {
+					if dnserr.Err == "no such host" {
+						return fmt.Errorf("unknown host when fetching image, check your connection and local file paths must start with '/' or '.'")
+					}
+				}
+			}
+		}
 		return err
 	}
 
