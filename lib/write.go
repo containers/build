@@ -72,6 +72,15 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 	}
 	defer ofile.Close()
 
+	defer func() {
+		// When write is done, if an error is encountered remove the partial
+		// ACI that had been written.
+		if err != nil {
+			os.Remove(output)
+			os.Remove(output + ".asc")
+		}
+	}()
+
 	// setup compression
 	gzwriter := gzip.NewWriter(ofile)
 	defer gzwriter.Close()
@@ -87,8 +96,6 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 	if sign {
 		err = signACI(output, output+".asc", gpgflags)
 		if err != nil {
-			os.Remove(output)
-			os.Remove(output + ".asc")
 			return err
 		}
 	}
