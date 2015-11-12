@@ -21,15 +21,17 @@ import (
 	"syscall"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-
-	"github.com/appc/acbuild/util"
 )
 
 const defaultWorkPath = ".acbuild"
 
-// ErrNotFound is returned when acbuild is asked to remove an element from a
-// list and the element is not present in the list
-var ErrNotFound = fmt.Errorf("element to be removed does not exist in this ACI")
+var (
+	// ErrNotFound is returned when acbuild is asked to remove an element from a
+	// list and the element is not present in the list
+	ErrNotFound = fmt.Errorf("element to be removed does not exist in this ACI")
+
+	errNoBuildInProgress = fmt.Errorf("no build in progress in this working dir - try \"acbuild begin\"")
+)
 
 // newManifestApp will generate a valid minimal types.App for use in a
 // schema.ImageManifest. This is necessary as placing a completely empty
@@ -73,12 +75,12 @@ func NewACBuild(cwd string, debug bool) *ACBuild {
 }
 
 func (a *ACBuild) lock() error {
-	ex, err := util.Exists(a.ContextPath)
-	if err != nil {
+	_, err := os.Stat(a.ContextPath)
+	switch {
+	case os.IsNotExist(err):
+		return errNoBuildInProgress
+	case err != nil:
 		return err
-	}
-	if !ex {
-		return fmt.Errorf("build not in progress in this working dir - try \"acbuild begin\"")
 	}
 
 	if a.lockFile != nil {

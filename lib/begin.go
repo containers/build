@@ -40,11 +40,13 @@ var (
 // an empty ACI, otherwise the ACI stored at start will be used at the starting
 // point.
 func (a *ACBuild) Begin(start string, insecure bool) (err error) {
-	ex, err := util.Exists(a.ContextPath)
-	if err != nil {
+	_, err = os.Stat(a.ContextPath)
+	switch {
+	case os.IsNotExist(err):
+		break
+	case err != nil:
 		return err
-	}
-	if ex {
+	default:
 		return fmt.Errorf("build already in progress in this working dir")
 	}
 

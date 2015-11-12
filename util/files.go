@@ -43,17 +43,6 @@ func RmAndMkdir(path string) error {
 	return nil
 }
 
-// Exists will return whether or not anything exists at path
-func Exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	} else if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
-
 // ExtractImage will extract the contents of the image at path to the directory
 // at dst. If fileMap is set, only files in it will be extracted.
 func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
