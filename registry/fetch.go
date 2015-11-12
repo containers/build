@@ -75,15 +75,17 @@ func (r Registry) FetchAndRender(imagename types.ACIdentifier, labels types.Labe
 		return err
 	}
 
+filesloop:
 	for _, fs := range filesToRender {
-		ex, err := util.Exists(
-			path.Join(r.DepStoreExpandedPath, fs.Key, "rendered"))
-		if err != nil {
+		_, err := os.Stat(path.Join(r.DepStoreExpandedPath, fs.Key, "rendered"))
+		switch {
+		case os.IsNotExist(err):
+			break
+		case err != nil:
 			return err
-		}
-		if ex {
-			//This ACI has already been rendered
-			continue
+		default:
+			// This ACI has already been rendered
+			continue filesloop
 		}
 
 		err = util.ExtractImage(path.Join(r.DepStoreTarPath, fs.Key),

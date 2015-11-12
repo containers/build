@@ -54,11 +54,13 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 
 	fileFlags := os.O_CREATE | os.O_WRONLY
 
-	ex, err := util.Exists(output)
-	if err != nil {
+	_, err = os.Stat(output)
+	switch {
+	case os.IsNotExist(err):
+		break
+	case err != nil:
 		return err
-	}
-	if ex {
+	default:
 		if !overwrite {
 			return fmt.Errorf("ACI already exists: %s", output)
 		}

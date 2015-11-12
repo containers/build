@@ -15,21 +15,18 @@
 package lib
 
 import (
-	"fmt"
 	"os"
-
-	"github.com/appc/acbuild/util"
 )
 
 // End will stop the current build. An error will be returned if no build is in
 // progress.
 func (a *ACBuild) End() error {
-	ok, err := util.Exists(a.ContextPath)
-	if err != nil {
+	_, err := os.Stat(a.ContextPath)
+	switch {
+	case os.IsNotExist(err):
+		return errNoBuildInProgress
+	case err != nil:
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("build not in progress")
 	}
 
 	if err = a.lock(); err != nil {
