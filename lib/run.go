@@ -168,18 +168,19 @@ func supportsOverlay() bool {
 }
 
 func findCmdInPath(pathlist []string, cmd, prefix string) (string, error) {
-	if len(cmd) != 0 && cmd[0] == '/' {
+	if path.IsAbs(cmd) {
 		return cmd, nil
 	}
 
 	for _, p := range pathlist {
-		ex, err := util.Exists(path.Join(prefix, p, cmd))
-		if err != nil {
+		_, err := os.Lstat(path.Join(prefix, p, cmd))
+		switch {
+		case os.IsNotExist(err):
+			continue
+		case err != nil:
 			return "", err
 		}
-		if ex {
-			return path.Join(p, cmd), nil
-		}
+		return path.Join(p, cmd), nil
 	}
 	return "", fmt.Errorf("%s not found in any of: %v", cmd, pathlist)
 }
