@@ -29,12 +29,12 @@ func TestEnd(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, err1 := os.Stat(path.Join(workingDir, ".acbuild"))
+	_, err = os.Stat(path.Join(workingDir, ".acbuild"))
 	switch {
-	case os.IsNotExist(err1):
+	case os.IsNotExist(err):
 		return
-	case err1 != nil:
-		panic(err1)
+	case err != nil:
+		panic(err)
 	default:
 		t.Fatalf("end failed to remove acbuild working directory")
 	}

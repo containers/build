@@ -19,16 +19,18 @@ import (
 )
 
 var (
-	cmdCopy = &cobra.Command{
-		Use:     "copy PATH_ON_HOST PATH_IN_ACI",
+	explicitTarget bool
+	cmdCopy        = &cobra.Command{
+		Use:     "copy PATH_ON_HOST... PATH_IN_ACI",
 		Short:   "Copy a file or directory into an ACI",
-		Example: "acbuild copy nginx.conf /etc/nginx/nginx.conf",
+		Example: "acbuild copy stuff/* nginx.conf /etc/nginx/",
 		Run:     runWrapper(runCopy),
 	}
 )
 
 func init() {
 	cmdAcbuild.AddCommand(cmdCopy)
+	cmdCopy.Flags().BoolVarP(&explicitTarget, "explicit-target", "T", false, "copy a single file/directory to the specified path")
 }
 
 func runCopy(cmd *cobra.Command, args []string) (exit int) {
@@ -36,7 +38,7 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 		cmd.Usage()
 		return 1
 	}
-	if len(args) != 2 {
+	if len(args) < 2 || (explicitTarget && len(args) != 2) {
 		stderr("copy: incorrect number of arguments")
 		return 1
 	}
@@ -45,7 +47,12 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Copying host:%s to aci:%s", args[0], args[1])
 	}
 
-	err := newACBuild().Copy(args[0], args[1])
+	var err error
+	if explicitTarget {
+		err = newACBuild().CopyToTarget(args[0], args[1])
+	} else {
+		err = newACBuild().CopyToDir(args[:len(args)-1], args[len(args)-1])
+	}
 
 	if err != nil {
 		stderr("copy: %v", err)
