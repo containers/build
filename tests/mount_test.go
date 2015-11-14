@@ -30,25 +30,16 @@ const (
 )
 
 func manWithMounts(mounts []types.MountPoint) schema.ImageManifest {
-	return schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:        nil,
-			User:        "0",
-			Group:       "0",
-			MountPoints: mounts,
-		},
-		Labels: systemLabels,
-	}
+	man := emptyManifestWithApp()
+	man.App.MountPoints = mounts
+	return man
 }
 
 func TestAddMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath)
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -68,7 +59,7 @@ func TestAddMountReadOnly(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -89,12 +80,12 @@ func TestAdd2Mounts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
+	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -119,17 +110,17 @@ func TestAddAddRmMounts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
+	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "mount", "rm", mountName)
+	_, _, _, err = runACBuild(workingDir, "mount", "rm", mountName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -149,17 +140,17 @@ func TestAddRmMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "mount", "rm", mountName)
+	_, _, _, err = runACBuild(workingDir, "mount", "rm", mountName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifestWithApp)
+	checkManifest(t, workingDir, emptyManifestWithApp())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -167,12 +158,12 @@ func TestOverwriteMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "mount", "add", mountName, mountPath2)
+	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -192,16 +183,16 @@ func TestRmNonexistentMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "mount", "rm", mountName)
+	exitCode, _, _, err := runACBuild(workingDir, "mount", "rm", mountName)
 	switch {
 	case err == nil:
 		t.Fatalf("mount remove didn't return an error when asked to remove nonexistent mount")
-	case err.exitCode == 2:
+	case exitCode == 2:
 		return
 	default:
 		t.Fatalf("error occurred when running mount remove:\n%v", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }

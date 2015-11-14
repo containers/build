@@ -39,20 +39,16 @@ func newLabel(key, val string) string {
 }
 
 func manWithDeps(deps types.Dependencies) schema.ImageManifest {
-	return schema.ImageManifest{
-		ACKind:       schema.ImageManifestKind,
-		ACVersion:    schema.AppContainerVersion,
-		Name:         *types.MustACIdentifier("acbuild-unnamed"),
-		Dependencies: deps,
-		Labels:       systemLabels,
-	}
+	man := emptyManifest()
+	man.Dependencies = deps
+	return man
 }
 
 func TestAddDependency(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName)
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -71,7 +67,7 @@ func TestAddDependencyWithImageID(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName, "--image-id", depImageID)
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName, "--image-id", depImageID)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -96,7 +92,7 @@ func TestAddDependencyWithLabels(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName,
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName,
 		"--label", newLabel(depLabel1Key, depLabel1Val),
 		"--label", newLabel(depLabel2Key, depLabel2Val))
 	if err != nil {
@@ -127,7 +123,7 @@ func TestAddDependencyWithSize(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName, "--size", strconv.Itoa(int(depSize)))
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName, "--size", strconv.Itoa(int(depSize)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -147,7 +143,7 @@ func TestAdd2Dependencies(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName,
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName,
 		"--image-id", depImageID,
 		"--label", newLabel(depLabel1Key, depLabel1Val),
 		"--label", newLabel(depLabel2Key, depLabel2Val),
@@ -156,7 +152,7 @@ func TestAdd2Dependencies(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "dependency", "add", depName2)
+	_, _, _, err = runACBuild(workingDir, "dependency", "add", depName2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -195,7 +191,7 @@ func TestAddAddRmDependencies(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName,
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName,
 		"--image-id", depImageID,
 		"--label", newLabel(depLabel1Key, depLabel1Val),
 		"--label", newLabel(depLabel2Key, depLabel2Val),
@@ -204,12 +200,12 @@ func TestAddAddRmDependencies(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "dependency", "add", depName2)
+	_, _, _, err = runACBuild(workingDir, "dependency", "add", depName2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "dependency", "remove", depName)
+	_, _, _, err = runACBuild(workingDir, "dependency", "remove", depName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -228,7 +224,7 @@ func TestAddRmDependencie(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName,
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName,
 		"--image-id", depImageID,
 		"--label", newLabel(depLabel1Key, depLabel1Val),
 		"--label", newLabel(depLabel2Key, depLabel2Val),
@@ -237,12 +233,12 @@ func TestAddRmDependencie(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "dependency", "remove", depName)
+	_, _, _, err = runACBuild(workingDir, "dependency", "remove", depName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -250,7 +246,7 @@ func TestOverwriteDependency(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "add", depName,
+	_, _, _, err := runACBuild(workingDir, "dependency", "add", depName,
 		"--image-id", depImageID,
 		"--label", newLabel(depLabel1Key, depLabel1Val),
 		"--label", newLabel(depLabel2Key, depLabel2Val),
@@ -259,7 +255,7 @@ func TestOverwriteDependency(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "dependency", "add", depName)
+	_, _, _, err = runACBuild(workingDir, "dependency", "add", depName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -278,16 +274,16 @@ func TestRmNonexistentDependency(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "dependency", "remove", depName)
+	exitCode, _, _, err := runACBuild(workingDir, "dependency", "remove", depName)
 	switch {
 	case err == nil:
 		t.Fatalf("dependency remove didn't return an error when asked to remove nonexistent dependency")
-	case err.exitCode == 2:
+	case exitCode == 2:
 		return
 	default:
 		t.Fatalf("error occurred when running dependency remove:\n%v", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }

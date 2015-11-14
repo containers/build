@@ -16,9 +16,6 @@ package tests
 
 import (
 	"testing"
-
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 func TestSetExec(t *testing.T) {
@@ -27,21 +24,13 @@ func TestSetExec(t *testing.T) {
 
 	var exec = []string{"/bin/nethack4", "-D", "wizard"}
 
-	err := runACBuild(workingDir, append([]string{"set-exec", "--"}, exec...)...)
+	_, _, _, err := runACBuild(workingDir, append([]string{"set-exec", "--"}, exec...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
-	man := schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		App: &types.App{
-			Exec:  exec,
-			User:  "0",
-			Group: "0",
-		},
-		Labels: systemLabels,
-	}
+
+	man := emptyManifestWithApp()
+	man.App.Exec = exec
 
 	checkManifest(t, workingDir, man)
 	checkEmptyRootfs(t, workingDir)

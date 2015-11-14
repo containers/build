@@ -17,7 +17,6 @@ package tests
 import (
 	"testing"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
@@ -27,16 +26,13 @@ func TestSetName(t *testing.T) {
 
 	const name = "example.com/app"
 
-	err := runACBuild(workingDir, "set-name", name)
+	_, _, _, err := runACBuild(workingDir, "set-name", name)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
-	man := schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier(name),
-		Labels:    systemLabels,
-	}
+
+	man := emptyManifest()
+	man.Name = *types.MustACIdentifier(name)
 
 	checkManifest(t, workingDir, man)
 	checkEmptyRootfs(t, workingDir)

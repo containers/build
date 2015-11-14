@@ -30,19 +30,16 @@ const (
 )
 
 func manWithLabels(labels types.Labels) schema.ImageManifest {
-	return schema.ImageManifest{
-		ACKind:    schema.ImageManifestKind,
-		ACVersion: schema.AppContainerVersion,
-		Name:      *types.MustACIdentifier("acbuild-unnamed"),
-		Labels:    append(systemLabels, labels...),
-	}
+	man := emptyManifest()
+	man.Labels = append(man.Labels, labels...)
+	return man
 }
 
 func TestAddLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -62,12 +59,12 @@ func TestAddTwoLabels(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
+	_, _, _, err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -91,17 +88,17 @@ func TestAddAddRmLabels(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
+	_, _, _, err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "label", "rm", labelName)
+	_, _, _, err = runACBuild(workingDir, "label", "rm", labelName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -121,12 +118,12 @@ func TestAddOverwriteLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "label", "add", labelName, labelVal2)
+	_, _, _, err = runACBuild(workingDir, "label", "add", labelName, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -146,17 +143,17 @@ func TestAddRmLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	err = runACBuild(workingDir, "label", "rm", labelName)
+	_, _, _, err = runACBuild(workingDir, "label", "rm", labelName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
 
@@ -164,16 +161,16 @@ func TestRmNonexistentLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	err := runACBuild(workingDir, "label", "rm", labelName)
+	exitCode, _, _, err := runACBuild(workingDir, "label", "rm", labelName)
 	switch {
 	case err == nil:
 		t.Fatalf("label remove didn't return an error when asked to remove nonexistent label")
-	case err.exitCode == 2:
+	case exitCode == 2:
 		return
 	default:
 		t.Fatalf("error occurred when running label remove:\n%v", err)
 	}
 
-	checkManifest(t, workingDir, emptyManifest)
+	checkManifest(t, workingDir, emptyManifest())
 	checkEmptyRootfs(t, workingDir)
 }
