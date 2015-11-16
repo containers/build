@@ -4,6 +4,8 @@ acbuild is a command line utility to build and modify App Container Images
 (ACIs), the container image format defined in the 
 [App Container (appc) spec](https://github.com/appc/spec).
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WcnIDm80y68" frameborder="0" allowfullscreen></iframe>
+
 ## Rationale
 
 Dockerfiles are powerful and feature useful concepts such as build layers, 
