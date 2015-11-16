@@ -19,7 +19,9 @@ import (
 	"compress/gzip"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"syscall"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
@@ -92,7 +94,21 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 	err = filepath.Walk(a.CurrentACIPath, aci.BuildWalker(a.CurrentACIPath, aw, nil))
 	defer aw.Close()
 	if err != nil {
-		return err
+		pathErr, ok := err.(*os.PathError)
+		if !ok {
+			fmt.Printf("not a path error!\n")
+			return err
+		}
+		syscallErrno, ok := pathErr.Err.(syscall.Errno)
+		if !ok {
+			fmt.Printf("not a syscall errno!\n")
+			return err
+		}
+		if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
+			return err
+		}
+		problemPath := pathErr.Path[len(path.Join(a.CurrentACIPath, aci.RootfsDir)):]
+		return fmt.Errorf("%q: permission denied - call write as root", problemPath)
 	}
 
 	if sign {
