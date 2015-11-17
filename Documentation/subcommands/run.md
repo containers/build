@@ -19,7 +19,7 @@ run` is to be used on a system without overlayfs, the ACI and its dependencies
 must be flattened into a single ACI without dependencies. A command called
 `acbuild squash` is being worked on to do this.
 
-## systmed-nspawn
+## systemd-nspawn
 
 acbuild currently uses `systemd-nspawn` to run commands inside the ACI. This
 means that the machine running acbuild must have systemd installed to be able
