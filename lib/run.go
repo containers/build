@@ -78,7 +78,7 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 
 	if len(man.Dependencies) != 0 {
 		if !supportsOverlay() {
-			err := util.Exec("modprobe", "overlay")
+			err := exec.Command("modprobe", "overlay").Run()
 			if err != nil {
 				return err
 			}
@@ -135,9 +135,14 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 	}
 	nspawncmd = append(nspawncmd, abscmd)
 	nspawncmd = append(nspawncmd, cmd[1:]...)
-	//fmt.Printf("%v\n", nspawncmd)
 
-	err = util.Exec(nspawncmd[0], nspawncmd[1:]...)
+	execCmd := exec.Command(nspawncmd[0], nspawncmd[1:]...)
+	execCmd.Stdin = os.Stdin
+	execCmd.Stdout = os.Stdout
+	execCmd.Stderr = os.Stderr
+	execCmd.Env = []string{"SYSTEMD_LOG_LEVEL=err"}
+
+	err = execCmd.Run()
 	if err != nil {
 		if err == exec.ErrNotFound {
 			return fmt.Errorf("systemd-nspawn is required but not found")
