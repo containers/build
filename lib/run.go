@@ -17,9 +17,11 @@ package lib
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -124,6 +126,11 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		for _, evar := range man.App.Environment {
 			nspawncmd = append(nspawncmd, "--setenv", evar.Name+"="+evar.Value)
 		}
+	}
+
+	err = a.mirrorLocalZoneInfo()
+	if err != nil {
+		return err
 	}
 
 	if len(cmd) == 0 {
@@ -251,4 +258,36 @@ func genDeplist(acipath string, reg registry.Registry) ([]string, error) {
 
 	deps = append(deps, key)
 	return deps, nil
+}
+
+func (a *ACBuild) mirrorLocalZoneInfo() error {
+	zif, err := os.Readlink("/etc/localtime")
+	if err != nil {
+		return err
+	}
+
+	src, err := os.Open(zif)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	destp := filepath.Join(a.CurrentACIPath, aci.RootfsDir, zif)
+
+	if err = os.MkdirAll(filepath.Dir(destp), 0755); err != nil {
+		return err
+	}
+
+	dest, err := os.OpenFile(destp, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer dest.Close()
+
+	_, err = io.Copy(dest, src)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
