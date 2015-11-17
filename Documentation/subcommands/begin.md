@@ -45,6 +45,11 @@ When an ACI is specified, it is used as the starting point for the build as
 opposed to an empty image. If the image is to be fetched via meta discovery
 over http (as opposed to https), the `--insecure` flag must be used.
 
+If the ACI to begin from is on the local filesystem, the path to it must start
+with `.`, `~`, or `/`. As an example, if the ACI is in the current directory,
+then instead of passing in `alpine-latest-linux-amd64.aci`, what would be
+passed in is `./alpine-latest-linux-amd64.aci`.
+
 ## Examples
 
 ```bash
