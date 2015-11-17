@@ -15,6 +15,7 @@
 package lib
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -23,9 +24,47 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
 )
 
-// Copy will copy the directory/file at from to the path to inside the untarred
-// ACI at a.CurrentACIPath.
-func (a *ACBuild) Copy(from, to string) (err error) {
+// CopyToDir will copy all elements specified in the froms slice into the
+// directory inside the current ACI specified by the to string.
+func (a *ACBuild) CopyToDir(froms []string, to string) (err error) {
+	if err = a.lock(); err != nil {
+		return err
+	}
+	defer func() {
+		if err1 := a.unlock(); err == nil {
+			err = err1
+		}
+	}()
+
+	target := path.Join(a.CurrentACIPath, aci.RootfsDir, to)
+
+	targetInfo, err := os.Stat(target)
+	switch {
+	case os.IsNotExist(err):
+		err := os.MkdirAll(target, 0755)
+		if err != nil {
+			return err
+		}
+	case err != nil:
+		return err
+	case !targetInfo.IsDir():
+		return fmt.Errorf("target %q is not a directory", to)
+	}
+
+	for _, from := range froms {
+		_, file := path.Split(from)
+		tmptarget := path.Join(target, file)
+		err := fileutil.CopyTree(from, tmptarget, uid.NewBlankUidRange())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// CopyToTarget will copy a single file/directory from the from string to the
+// path specified by the to string inside the current ACI.
+func (a *ACBuild) CopyToTarget(from string, to string) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}

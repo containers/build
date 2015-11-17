@@ -75,9 +75,9 @@ func TestBeginLocalACI(t *testing.T) {
 	workingDir := mustTempDir()
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err1 := runACBuild(workingDir, "begin", tmpaci.Name())
-	if err1 != nil {
-		t.Fatalf("%s\n", err1.Error())
+	_, _, _, err = runACBuild(workingDir, "begin", tmpaci.Name())
+	if err != nil {
+		t.Fatalf("%s\n", err.Error())
 	}
 
 	checkManifest(t, workingDir, detailedManifest())

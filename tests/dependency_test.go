@@ -72,9 +72,9 @@ func TestAddDependencyWithImageID(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	hash, err1 := types.NewHash(depImageID)
-	if err1 != nil {
-		panic(err1)
+	hash, err := types.NewHash(depImageID)
+	if err != nil {
+		panic(err)
 	}
 
 	deps := types.Dependencies{
@@ -157,9 +157,9 @@ func TestAdd2Dependencies(t *testing.T) {
 		t.Fatalf("%v\n", err)
 	}
 
-	hash, err1 := types.NewHash(depImageID)
-	if err1 != nil {
-		panic(err1)
+	hash, err := types.NewHash(depImageID)
+	if err != nil {
+		panic(err)
 	}
 
 	deps := types.Dependencies{
