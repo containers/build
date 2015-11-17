@@ -19,6 +19,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"syscall"
@@ -127,5 +128,9 @@ func signACI(acipath, signaturepath string, flags []string) error {
 	}
 	flags = append(flags, "--output", signaturepath, "--detach-sig", acipath)
 
-	return util.Exec("gpg", flags...)
+	gpgCmd := exec.Command("gpg", flags...)
+	gpgCmd.Stdin = os.Stdin
+	gpgCmd.Stdout = os.Stdout
+	gpgCmd.Stderr = os.Stderr
+	return gpgCmd.Run()
 }
