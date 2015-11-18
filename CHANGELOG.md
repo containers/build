@@ -1,3 +1,27 @@
+## v0.2.0
+
+appc spec version: v0.7.1+git5a7af19
+
+- Automatically fills in the `os` and `arch` labels on new builds.
+- The `--modify` flag failed to properly use an alternate work context.
+- The help page has been reformatted.
+- Extracting ACIs during begin no longer requires root.
+- Modifying an existing ACI that didn't have the `app` field set would cause an
+  error.
+- Copy now has two modes of operation, toggled with the `-T` flag. The new mode
+  allows copying many files at once into the ACI, as opposed to a single one.
+- When using begin with a local file, the path must now start with a `.`, `~`,
+  or `/`.
+
+The following commands have been added to acbuild since the last release:
+- cat-manifest
+- isolator add
+- isolator remove
+- replace-manifest
+- set-event-handler pre-start
+- set-event-handler post-stop
+- set-working-directory
+
 ## v0.1.1
 
 appc spec version: v0.7.1+git5a7af19
