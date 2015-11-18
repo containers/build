@@ -10,7 +10,11 @@ fi
 acbuild --debug begin
 
 # In the event of the script exiting, end the build
-trap "{ export EXT=$?; acbuild --debug end && exit $EXT; }" EXIT
+acbuildEnd() {
+    export EXIT=$?
+    acbuild --debug end && exit $EXIT 
+}
+trap acbuildEnd EXIT
 
 # Name the ACI
 acbuild --debug set-name example.com/nginx
