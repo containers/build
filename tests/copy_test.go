@@ -120,7 +120,7 @@ func TestCopyOneDir(t *testing.T) {
 
 	mustBuildFS(sourceDir, files)
 
-	_, _, _, err = runACBuild(workingDir, "--debug", "copy", "-T", sourceDir, dest)
+	_, _, _, err = runACBuild(workingDir, "--debug", "copy", sourceDir, dest)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -143,7 +143,7 @@ func TestCopyOneFile(t *testing.T) {
 	sourceFile.Close()
 	defer os.RemoveAll(sourceFile.Name())
 
-	_, _, _, err = runACBuild(workingDir, "copy", "-T", sourceFile.Name(), dest)
+	_, _, _, err = runACBuild(workingDir, "copy", sourceFile.Name(), dest)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -168,7 +168,7 @@ func TestCopyOneDirToExistingDir(t *testing.T) {
 
 	const expectedErrorMsg = "copy: mkdir .acbuild/currentaci/rootfs/test: file exists\n"
 
-	_, _, stderr, err := runACBuild(workingDir, "copy", "-T", sourceDir, dest)
+	_, _, stderr, err := runACBuild(workingDir, "copy", sourceDir, dest)
 	if err != nil && stderr != expectedErrorMsg {
 		t.Fatalf("was expecting an error, but not this one:\n%v", err)
 	}
@@ -207,7 +207,7 @@ func TestCopyManyDirs(t *testing.T) {
 	}
 
 	// golang--
-	_, _, _, err = runACBuild(workingDir, append([]string{"copy"}, append(froms, dest)...)...)
+	_, _, _, err = runACBuild(workingDir, append([]string{"copy", "--to-dir"}, append(froms, dest)...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -242,7 +242,7 @@ func TestCopyDirsAndFiles(t *testing.T) {
 	}
 
 	// golang--
-	_, _, _, err = runACBuild(workingDir, append([]string{"copy"}, append(froms, dest)...)...)
+	_, _, _, err = runACBuild(workingDir, append([]string{"copy", "--to-dir"}, append(froms, dest)...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
