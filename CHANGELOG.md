@@ -1,3 +1,12 @@
+## v0.2.1
+
+appc spec version: v0.7.1+git5a7af19
+
+v0.2.0 changed the default behavior of the copy command, requiring that the
+user passed the `-T` flag to use the previous default behavior. This release
+flips that, such that the default will be as it was before, and a new flag must
+be passed to use the new behavior.
+
 ## v0.2.0
 
 appc spec version: v0.7.1+git5a7af19
