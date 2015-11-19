@@ -171,28 +171,43 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 
 		a := newACBuild()
 
-		err = a.Begin(aciToModify, false)
+		err = a.Begin(absoluteAciToModify, false)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
 			return
 		}
+
+		defer func() {
+			err = a.End()
+			if err != nil {
+				stderr("%v", err)
+				if cmdExitCode == 0 {
+					cmdExitCode = getErrorCode(err)
+				}
+			}
+		}()
 
 		cmdExitCode = cf(cmd, args)
 
-		err = a.Write(aciToModify, true, false, nil)
+		dir, file := path.Split(aciToModify)
+		tmpACIFile := path.Join(dir, "."+file+".tmp")
+
+		err = a.Write(tmpACIFile, true, false, nil)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
 			return
 		}
 
-		err = a.End()
+		err = os.Rename(tmpACIFile, aciToModify)
 		if err != nil {
+			os.Remove(tmpACIFile)
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
 			return
 		}
+
 	}
 }
 
