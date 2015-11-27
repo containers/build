@@ -137,7 +137,7 @@ echo "Hello, world!" > test/index.html
 ... using the ACI is something as simple as the following command:
 
 ```bash
-rkt run --insecure-skip-verify ./nginx.aci --volume html,kind=host,source=/path/to/test --net=host
+rkt run --insecure-options=image ./nginx.aci --volume html,kind=host,source=/path/to/test --net=host
 ```
 
 Now point your browser at [`http://localhost`](http://localhost).
