@@ -120,7 +120,7 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 
 		nspawnpath = a.OverlayTargetPath
 	}
-	nspawncmd := []string{"systemd-nspawn", "-q", "-D", nspawnpath}
+	nspawncmd := []string{"systemd-nspawn", "-q", "--register=no", "-D", nspawnpath}
 
 	if man.App != nil {
 		for _, evar := range man.App.Environment {
