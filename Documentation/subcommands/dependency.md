@@ -36,6 +36,30 @@ The `add` command also has the following optional flags:
 - `--size`: the size of the dependency being added, in bytes. When this ACI is
   run, the retrieved dependency must have this size.
 
+The dependency being added also has a shorthand for specifying a version label
+with a `:` on the dependency's name. For example, the following two lines will
+behave identically:
+
+```bash
+acbuild dependency add example.com/debian --label version=jessie
+acbuild dependency add example.com/debian:jessie
+```
+
+## Image Name
+
+The `IMAGE_NAME` argument is a string that can define both the name used in
+meta discovery and a handful of labels. The syntax looks like this:
+`name[:version][,label1=value][,label2=value]`
+
+Everything except the name is optional. Some examples of this:
+
+```
+example.com/reduce-worker
+example.com/reduce-worker:1.0.0
+example.com/reduce-worker:1.0.0,channel=alpha
+example.com/reduce-worker:1.0.0,channel=alpha,env=staging
+```
+
 ## Examples
 
 ```bash

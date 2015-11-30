@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/discovery"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 )
@@ -71,8 +72,36 @@ func runAddDep(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding dependency %q", args[0])
 	}
 
-	err := newACBuild().AddDependency(args[0], imageId,
-		types.Labels(labels), size)
+	app, err := discovery.NewAppFromString(args[0])
+	if err != nil {
+		stderr("dependency add: couldn't parse dependency name: %v", err)
+		return 1
+	}
+
+	appcLabels := types.Labels(labels)
+
+	for name, value := range app.Labels {
+		if _, ok := appcLabels.Get(string(name)); ok {
+			stderr("multiple %s labels specified", name)
+			return 1
+		}
+		appcLabels = append(appcLabels, types.Label{
+			Name:  name,
+			Value: value,
+		})
+	}
+
+	var hash *types.Hash
+	if imageId != "" {
+		var err error
+		hash, err = types.NewHash(imageId)
+		if err != nil {
+			stderr("dependency add: couldn't parse image ID: %v", err)
+			return 1
+		}
+	}
+
+	err = newACBuild().AddDependency(app.Name, hash, appcLabels, size)
 
 	if err != nil {
 		stderr("dependency add: %v", err)
