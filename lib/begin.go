@@ -31,6 +31,8 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/discovery"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
 )
 
 var (
@@ -80,17 +82,59 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 			return err
 		}
 		if start[0] == '.' || start[0] == '/' {
-			return a.beginFromLocalImage(start)
+			finfo, err := os.Stat(start)
+			switch {
+			case os.IsNotExist(err):
+				return fmt.Errorf("no such file or directory: %s", start)
+			case err != nil:
+				return err
+			case finfo.IsDir():
+				a.beginFromLocalDirectory(start)
+			default:
+				return a.beginFromLocalImage(start)
+			}
 		} else {
 			return a.beginFromRemoteImage(start, insecure)
 		}
 	}
+	return a.beginWithEmptyACI()
+}
 
-	err = os.MkdirAll(path.Join(a.CurrentACIPath, aci.RootfsDir), 0755)
+func (a *ACBuild) beginFromLocalImage(start string) error {
+	finfo, err := os.Stat(start)
+	if err != nil {
+		return err
+	}
+	if finfo.IsDir() {
+		return fmt.Errorf("provided starting ACI is a directory: %s", start)
+	}
+	return util.ExtractImage(start, a.CurrentACIPath, nil)
+}
+
+func (a *ACBuild) beginFromLocalDirectory(start string) error {
+	err := os.MkdirAll(a.CurrentACIPath, 0755)
 	if err != nil {
 		return err
 	}
 
+	err = fileutil.CopyTree(start, path.Join(a.CurrentACIPath, aci.RootfsDir), uid.NewBlankUidRange())
+	if err != nil {
+		return err
+	}
+
+	return a.writeEmptyManifest()
+}
+
+func (a *ACBuild) beginWithEmptyACI() error {
+	err := os.MkdirAll(path.Join(a.CurrentACIPath, aci.RootfsDir), 0755)
+	if err != nil {
+		return err
+	}
+
+	return a.writeEmptyManifest()
+}
+
+func (a *ACBuild) writeEmptyManifest() error {
 	acid, err := types.NewACIdentifier("acbuild-unnamed")
 	if err != nil {
 		return err
@@ -143,17 +187,6 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 	}
 
 	return nil
-}
-
-func (a *ACBuild) beginFromLocalImage(start string) error {
-	finfo, err := os.Stat(start)
-	if err == nil {
-		if finfo.IsDir() {
-			return fmt.Errorf("provided starting ACI is a directory: %s", start)
-		}
-		return util.ExtractImage(start, a.CurrentACIPath, nil)
-	}
-	return err
 }
 
 func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
