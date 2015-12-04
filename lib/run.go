@@ -120,7 +120,15 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 
 		nspawnpath = a.OverlayTargetPath
 	}
-	nspawncmd := []string{"systemd-nspawn", "-q", "--register=no", "-D", nspawnpath}
+	nspawncmd := []string{"systemd-nspawn", "-D", nspawnpath}
+
+	version, err := getSystemdVersion()
+	if err != nil {
+		return err
+	}
+	if version >= 209 {
+		nspawncmd = append(nspawncmd, "--quiet", "--register=no")
+	}
 
 	if man.App != nil {
 		for _, evar := range man.App.Environment {
@@ -295,4 +303,27 @@ func (a *ACBuild) mirrorLocalZoneInfo() error {
 	}
 
 	return nil
+}
+
+func getSystemdVersion() (int, error) {
+	_, err := exec.LookPath("systemctl")
+	if err == exec.ErrNotFound {
+		return 0, fmt.Errorf("system does not have systemd")
+	}
+
+	blob, err := exec.Command("systemctl", "--version").Output()
+	if err != nil {
+		return 0, err
+	}
+	for _, line := range strings.Split(string(blob), "\n") {
+		if strings.HasPrefix(line, "systemd ") {
+			var version int
+			_, err := fmt.Sscanf(line, "systemd %d", &version)
+			if err != nil {
+				return 0, err
+			}
+			return version, nil
+		}
+	}
+	return 0, fmt.Errorf("error parsing output from `systemctl --version`")
 }
