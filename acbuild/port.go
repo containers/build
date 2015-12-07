@@ -31,7 +31,7 @@ var (
 		Use:     "add NAME PROTOCOL PORT",
 		Short:   "Add a port",
 		Long:    "Updates the ACI to contain a port with the given name, protocol, and port. If the port already exists, its values will be changed.",
-		Example: "acbuild port add https 443 tcp --socket-activated",
+		Example: "acbuild port add https tcp 443 --socket-activated",
 		Run:     runWrapper(runAddPort),
 	}
 	cmdRmPort = &cobra.Command{
