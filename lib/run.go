@@ -266,7 +266,7 @@ func genDeplist(acipath string, reg registry.Registry) ([]string, error) {
 }
 
 func (a *ACBuild) mirrorLocalZoneInfo() error {
-	zif, err := os.Readlink("/etc/localtime")
+	zif, err := filepath.EvalSymlinks("/etc/localtime")
 	if err != nil {
 		return err
 	}
