@@ -24,7 +24,7 @@ func TestSetExec(t *testing.T) {
 
 	var exec = []string{"/bin/nethack4", "-D", "wizard"}
 
-	_, _, _, err := runACBuild(workingDir, append([]string{"set-exec", "--"}, exec...)...)
+	err := runACBuildNoHist(workingDir, append([]string{"set-exec", "--"}, exec...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

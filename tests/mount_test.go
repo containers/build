@@ -39,7 +39,7 @@ func TestAddMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath)
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -59,7 +59,7 @@ func TestAddMountReadOnly(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -80,12 +80,12 @@ func TestAdd2Mounts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
+	err = runACBuildNoHist(workingDir, "mount", "add", mountName2, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -110,17 +110,17 @@ func TestAddAddRmMounts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName2, mountPath2)
+	err = runACBuildNoHist(workingDir, "mount", "add", mountName2, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "mount", "rm", mountName)
+	err = runACBuildNoHist(workingDir, "mount", "rm", mountName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -140,12 +140,12 @@ func TestAddRmMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "mount", "rm", mountName)
+	err = runACBuildNoHist(workingDir, "mount", "rm", mountName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -158,12 +158,12 @@ func TestOverwriteMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "mount", "add", mountName, mountPath, "--read-only")
+	err := runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath, "--read-only")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "mount", "add", mountName, mountPath2)
+	err = runACBuildNoHist(workingDir, "mount", "add", mountName, mountPath2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -183,7 +183,7 @@ func TestRmNonexistentMount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	exitCode, _, _, err := runACBuild(workingDir, "mount", "rm", mountName)
+	exitCode, _, _, err := runACBuild(workingDir, "--no-history", "mount", "rm", mountName)
 	switch {
 	case err == nil:
 		t.Fatalf("mount remove didn't return an error when asked to remove nonexistent mount")

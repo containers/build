@@ -43,7 +43,7 @@ func TestAddAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	err := runACBuildNoHist(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -56,12 +56,12 @@ func TestAddRmAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	err := runACBuildNoHist(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "annotation", "remove", annoName)
+	err = runACBuildNoHist(workingDir, "annotation", "remove", annoName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -74,12 +74,12 @@ func TestAddOverwriteAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	err := runACBuildNoHist(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	err = runACBuildNoHist(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -92,7 +92,7 @@ func TestRmNonexistentAnnotation(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	exitCode, _, _, err := runACBuild(workingDir, "annotation", "remove", annoName)
+	exitCode, _, _, err := runACBuild(workingDir, "--no-history", "annotation", "remove", annoName)
 	switch {
 	case err == nil:
 		t.Fatalf("annotation remove didn't return an error when asked to remove nonexistent annotation")
@@ -112,17 +112,17 @@ func TestAddAddRmAnnotation(t *testing.T) {
 
 	const suffix = "1"
 
-	_, _, _, err := runACBuild(workingDir, "annotation", "add", annoName+suffix, annoValue)
+	err := runACBuildNoHist(workingDir, "annotation", "add", annoName+suffix, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "annotation", "add", annoName, annoValue)
+	err = runACBuildNoHist(workingDir, "annotation", "add", annoName, annoValue)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "annotation", "remove", annoName+suffix)
+	err = runACBuildNoHist(workingDir, "annotation", "remove", annoName+suffix)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

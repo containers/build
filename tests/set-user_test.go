@@ -24,7 +24,7 @@ func TestSetUser(t *testing.T) {
 
 	const user = "10"
 
-	_, _, _, err := runACBuild(workingDir, "set-user", user)
+	err := runACBuildNoHist(workingDir, "set-user", user)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

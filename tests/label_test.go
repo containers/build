@@ -39,7 +39,7 @@ func TestAddLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	err := runACBuildNoHist(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -59,12 +59,12 @@ func TestAddTwoLabels(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	err := runACBuildNoHist(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
+	err = runACBuildNoHist(workingDir, "label", "add", labelName2, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -88,17 +88,17 @@ func TestAddAddRmLabels(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	err := runACBuildNoHist(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "label", "add", labelName2, labelVal2)
+	err = runACBuildNoHist(workingDir, "label", "add", labelName2, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "label", "rm", labelName)
+	err = runACBuildNoHist(workingDir, "label", "rm", labelName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -118,12 +118,12 @@ func TestAddOverwriteLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	err := runACBuildNoHist(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "label", "add", labelName, labelVal2)
+	err = runACBuildNoHist(workingDir, "label", "add", labelName, labelVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -143,12 +143,12 @@ func TestAddRmLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "label", "add", labelName, labelVal)
+	err := runACBuildNoHist(workingDir, "label", "add", labelName, labelVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "label", "rm", labelName)
+	err = runACBuildNoHist(workingDir, "label", "rm", labelName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -161,7 +161,7 @@ func TestRmNonexistentLabel(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	exitCode, _, _, err := runACBuild(workingDir, "label", "rm", labelName)
+	exitCode, _, _, err := runACBuild(workingDir, "--no-history", "label", "rm", labelName)
 	switch {
 	case err == nil:
 		t.Fatalf("label remove didn't return an error when asked to remove nonexistent label")

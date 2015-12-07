@@ -54,7 +54,7 @@ func testReplaceWithManifest(t *testing.T, workingDir string, manblob []byte) {
 	}
 	file.Close()
 
-	_, _, _, err = runACBuild(workingDir, "replace-manifest", file.Name())
+	err = runACBuildNoHist(workingDir, "replace-manifest", file.Name())
 	if err != nil {
 		t.Fatalf("%v", err)
 	}

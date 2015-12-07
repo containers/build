@@ -126,6 +126,11 @@ func detailedManifest() schema.ImageManifest {
 	}
 }
 
+func runACBuildNoHist(workingDir string, args ...string) error {
+	_, _, _, err := runACBuild(workingDir, append([]string{"--no-history"}, args...)...)
+	return err
+}
+
 // runACBuild takes the workingDir and args to call ACBuild with, calls
 // acbuild, and returns it's exit code, what it printed to stdout, what it
 // printed to stderr, and an error in the event of a non-0 exit code.
