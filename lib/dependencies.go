@@ -42,7 +42,7 @@ func removeDep(imageName types.ACIdentifier) func(*schema.ImageManifest) error {
 // AddDependency will add a dependency with the given name, id, labels, and size
 // to the untarred ACI stored at a.CurrentACIPath. If the dependency already
 // exists its fields will be updated to the new values.
-func (a *ACBuild) AddDependency(imageName, imageId string, labels types.Labels, size uint) (err error) {
+func (a *ACBuild) AddDependency(imageName types.ACIdentifier, imageId *types.Hash, labels types.Labels, size uint) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -52,26 +52,12 @@ func (a *ACBuild) AddDependency(imageName, imageId string, labels types.Labels, 
 		}
 	}()
 
-	acid, err := types.NewACIdentifier(imageName)
-	if err != nil {
-		return err
-	}
-
-	var hash *types.Hash
-	if imageId != "" {
-		var err error
-		hash, err = types.NewHash(imageId)
-		if err != nil {
-			return err
-		}
-	}
-
 	fn := func(s *schema.ImageManifest) error {
-		removeDep(*acid)(s)
+		removeDep(imageName)(s)
 		s.Dependencies = append(s.Dependencies,
 			types.Dependency{
-				ImageName: *acid,
-				ImageID:   hash,
+				ImageName: imageName,
+				ImageID:   imageId,
 				Labels:    labels,
 				Size:      size,
 			})
