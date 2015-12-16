@@ -39,7 +39,7 @@ func TestAddEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	err := runACBuildNoHist(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -59,12 +59,12 @@ func TestAddTwoEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	err := runACBuildNoHist(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
+	err = runACBuildNoHist(workingDir, "environment", "add", envName2, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -88,17 +88,17 @@ func TestAddAddRmEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	err := runACBuildNoHist(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "environment", "add", envName2, envVal2)
+	err = runACBuildNoHist(workingDir, "environment", "add", envName2, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "environment", "rm", envName)
+	err = runACBuildNoHist(workingDir, "environment", "rm", envName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -118,12 +118,12 @@ func TestAddOverwriteEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	err := runACBuildNoHist(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "environment", "add", envName, envVal2)
+	err = runACBuildNoHist(workingDir, "environment", "add", envName, envVal2)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -143,12 +143,12 @@ func TestAddRmEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "environment", "add", envName, envVal)
+	err := runACBuildNoHist(workingDir, "environment", "add", envName, envVal)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "environment", "rm", envName)
+	err = runACBuildNoHist(workingDir, "environment", "rm", envName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -161,7 +161,7 @@ func TestRmNonexistentEnv(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	exitCode, _, _, err := runACBuild(workingDir, "environment", "rm", envName)
+	exitCode, _, _, err := runACBuild(workingDir, "--no-history", "environment", "rm", envName)
 	switch {
 	case err == nil:
 		t.Fatalf("environment remove didn't return an error when asked to remove nonexistent environment variable")

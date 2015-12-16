@@ -26,7 +26,7 @@ func TestSetName(t *testing.T) {
 
 	const name = "example.com/app"
 
-	_, _, _, err := runACBuild(workingDir, "set-name", name)
+	err := runACBuildNoHist(workingDir, "set-name", name)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

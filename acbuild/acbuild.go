@@ -28,6 +28,7 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/lib"
+	"github.com/appc/acbuild/util"
 )
 
 const (
@@ -63,9 +64,10 @@ OPTIONS:
 )
 
 var (
-	debug       bool
-	contextpath string
-	aciToModify string
+	debug          bool
+	contextpath    string
+	aciToModify    string
+	disableHistory bool
 
 	cmdExitCode int
 
@@ -91,6 +93,7 @@ func init() {
 	cmdAcbuild.PersistentFlags().BoolVar(&debug, "debug", false, "Print out debug information to stderr")
 	cmdAcbuild.PersistentFlags().StringVar(&contextpath, "work-path", ".", "Path to place working files in")
 	cmdAcbuild.PersistentFlags().StringVar(&aciToModify, "modify", "", "Path to an ACI to modify (ignores build context)")
+	cmdAcbuild.PersistentFlags().BoolVar(&disableHistory, "no-history", false, "Don't add annotations with the command that was run")
 
 	cobra.EnablePrefixMatching = true
 }
@@ -117,16 +120,27 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 	return func(cmd *cobra.Command, args []string) {
 		if aciToModify == "" {
 			cmdExitCode = cf(cmd, args)
+			switch cmd.Name() {
+			case "cat-manifest", "begin", "write", "end", "version":
+				return
+			}
+			if cmdExitCode == 0 && !disableHistory {
+				err := addACBuildAnnotation(cmd, args)
+				if err != nil {
+					stderr("%v", err)
+					cmdExitCode = 1
+					return
+				}
+			}
 			return
 		}
 
-		command := strings.Split(cmd.Use, " ")[0]
-		switch command {
+		switch cmd.Name() {
 		case "cat-manifest":
 			cmdExitCode = runCatOnACI(aciToModify)
 			return
 		case "begin", "write", "end", "version":
-			stderr("Can't use the --modify flag with %s.", command)
+			stderr("Can't use the --modify flag with %s.", cmd.Name())
 			cmdExitCode = 1
 			return
 		}
@@ -190,6 +204,15 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 
 		cmdExitCode = cf(cmd, args)
 
+		if cmdExitCode == 0 && !disableHistory {
+			err := addACBuildAnnotation(cmd, args)
+			if err != nil {
+				stderr("%v", err)
+				cmdExitCode = 1
+				return
+			}
+		}
+
 		dir, file := path.Split(aciToModify)
 		tmpACIFile := path.Join(dir, "."+file+".tmp")
 
@@ -238,4 +261,40 @@ func stderr(format string, a ...interface{}) {
 func stdout(format string, a ...interface{}) {
 	out := fmt.Sprintf(format, a...)
 	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
+}
+
+func addACBuildAnnotation(cmd *cobra.Command, args []string) error {
+	const annoNamePattern = "appc.io/acbuild/command-%d"
+
+	acb := newACBuild()
+
+	man, err := util.GetManifest(acb.CurrentACIPath)
+	if err != nil {
+		return err
+	}
+
+	var acbuildCount int
+	for _, ann := range man.Annotations {
+		var tmpCount int
+		n, _ := fmt.Sscanf(string(ann.Name), annoNamePattern, &tmpCount)
+		if n == 1 && tmpCount > acbuildCount {
+			acbuildCount = tmpCount
+		}
+	}
+
+	command := cmd.Name()
+	tmpcmd := cmd.Parent()
+	for {
+		command = tmpcmd.Name() + " " + command
+		if tmpcmd == cmdAcbuild {
+			break
+		}
+		tmpcmd = tmpcmd.Parent()
+	}
+
+	for _, a := range args {
+		command += fmt.Sprintf(" %q", a)
+	}
+
+	return acb.AddAnnotation(fmt.Sprintf(annoNamePattern, acbuildCount+1), command)
 }

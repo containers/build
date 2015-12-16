@@ -33,7 +33,7 @@ func TestEHPreStart(t *testing.T) {
 
 	var prestart = []string{"/bin/sh", "-c", "'chmod 755 /'"}
 
-	_, _, _, err := runACBuild(workingDir, append([]string{"set-event-handler", "pre-start", "--"}, prestart...)...)
+	err := runACBuildNoHist(workingDir, append([]string{"set-event-handler", "pre-start", "--"}, prestart...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -53,7 +53,7 @@ func TestEHPostStop(t *testing.T) {
 
 	var poststop = []string{"/bin/rm", "-rf", "/Plex Media Server/plexmediaserver.pid"}
 
-	_, _, _, err := runACBuild(workingDir, append([]string{"set-event-handler", "post-stop", "--"}, poststop...)...)
+	err := runACBuildNoHist(workingDir, append([]string{"set-event-handler", "post-stop", "--"}, poststop...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

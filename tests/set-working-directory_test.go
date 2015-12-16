@@ -24,7 +24,7 @@ func TestSetWorkingDir(t *testing.T) {
 
 	const wd = "/root"
 
-	_, _, _, err := runACBuild(workingDir, "set-working-dir", wd)
+	err := runACBuildNoHist(workingDir, "set-working-dir", wd)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}

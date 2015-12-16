@@ -43,7 +43,7 @@ func TestAddPort(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -65,7 +65,7 @@ func TestAddPortWithCount(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)),
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)),
 		"--count", strconv.Itoa(int(portCount)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -88,7 +88,7 @@ func TestAddPortWithSocketActivated(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)),
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)),
 		"--socket-activated")
 	if err != nil {
 		t.Fatalf("%v\n", err)
@@ -113,7 +113,7 @@ func TestAddNegativePort(t *testing.T) {
 	defer cleanUpTest(workingDir)
 
 	// The "--" is required to prevent cobra from parsing the "-1" as a flag
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, "--", "-1")
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, "--", "-1")
 	if err == nil {
 		t.Fatalf("port add didn't return an error when asked to add a port with a negative number")
 	}
@@ -126,7 +126,7 @@ func TestAddPortThatsTooHigh(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, "65536")
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, "65536")
 	if err == nil {
 		t.Fatalf("port add didn't return an error when asked to add a port with a number > 65535")
 	}
@@ -139,12 +139,12 @@ func TestAddTwoPorts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "port", "add", portName2, portProtocol2, strconv.Itoa(int(portNumber2)))
+	err = runACBuildNoHist(workingDir, "port", "add", portName2, portProtocol2, strconv.Itoa(int(portNumber2)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -172,12 +172,12 @@ func TestAddRmPorts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "port", "rm", portName)
+	err = runACBuildNoHist(workingDir, "port", "rm", portName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -190,17 +190,17 @@ func TestAddAddRmPorts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	_, _, _, err := runACBuild(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
+	err := runACBuildNoHist(workingDir, "port", "add", portName, portProtocol, strconv.Itoa(int(portNumber)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "port", "add", portName2, portProtocol2, strconv.Itoa(int(portNumber2)))
+	err = runACBuildNoHist(workingDir, "port", "add", portName2, portProtocol2, strconv.Itoa(int(portNumber2)))
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 
-	_, _, _, err = runACBuild(workingDir, "port", "rm", portName)
+	err = runACBuildNoHist(workingDir, "port", "rm", portName)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -222,7 +222,7 @@ func TestRmNonexistentPorts(t *testing.T) {
 	workingDir := setUpTest(t)
 	defer cleanUpTest(workingDir)
 
-	exitCode, _, _, err := runACBuild(workingDir, "port", "remove", portName)
+	exitCode, _, _, err := runACBuild(workingDir, "--no-history", "port", "remove", portName)
 	switch {
 	case err == nil:
 		t.Fatalf("port remove didn't return an error when asked to remove nonexistent port")

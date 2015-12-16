@@ -24,7 +24,7 @@ func TestSetGroup(t *testing.T) {
 
 	const group = "10"
 
-	_, _, _, err := runACBuild(workingDir, "set-group", group)
+	err := runACBuildNoHist(workingDir, "set-group", group)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
