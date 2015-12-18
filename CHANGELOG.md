@@ -1,3 +1,21 @@
+## v0.2.2
+
+appc spec version: v0.7.1+git
+
+v0.2.2 is a minor release incorporating a handful of changes since v0.2.1.
+Things this release includes:
+
+- Don't require a starting character of `.` or `/` when specifying an image for
+  the `--modify` flag.
+- Adds support for specifying a local directory with `begin`, for use as the
+  initial rootfs of the ACI.
+- Adds support for the `run` command on systems with a version of systemd <
+  209.
+- Versions of dependencies can be specified using tag syntax.
+- A bug related to the handling of hard links in tars was found, and fixed.
+- A history of acbuild commands performed is now tracked in annotations in the
+  ACI being worked on. This can be disabled via a flag.
+
 ## v0.2.1
 
 appc spec version: v0.7.1+git5a7af19
