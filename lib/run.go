@@ -135,6 +135,7 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 			nspawncmd = append(nspawncmd, "--setenv", evar.Name+"="+evar.Value)
 		}
 	}
+	nspawncmd = append(nspawncmd, "--setenv", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
 	err = a.mirrorLocalZoneInfo()
 	if err != nil {
