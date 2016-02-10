@@ -23,7 +23,7 @@ var (
 		Use:     "set-name ACI_NAME",
 		Short:   "Set the image name",
 		Long:    "Sets the name of the ACI in the manifest",
-		Example: "acbuild name quay.io/coreos/etcd",
+		Example: "acbuild set-name quay.io/coreos/etcd",
 		Run:     runWrapper(runSetName),
 	}
 )
