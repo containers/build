@@ -82,6 +82,9 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		if !supportsOverlay() {
 			err := exec.Command("modprobe", "overlay").Run()
 			if err != nil {
+				if _, ok := err.(*exec.ExitError); ok {
+					return fmt.Errorf("overlayfs is not supported on your system")
+				}
 				return err
 			}
 			if !supportsOverlay() {
