@@ -54,6 +54,11 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		return fmt.Errorf("the run subcommand must be run as root")
 	}
 
+	err = util.MaybeUnmount(a.OverlayTargetPath)
+	if err != nil {
+		return err
+	}
+
 	err = util.RmAndMkdir(a.OverlayTargetPath)
 	if err != nil {
 		return err
