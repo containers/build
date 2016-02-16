@@ -109,4 +109,4 @@ applications being packaged into ACIs with `acbuild`.
 - https://github.com/appc/spec/tree/master/actool - particularly the `build` and
   `patch-manifest` subcommands. `acbuild` may subsume such functionality,
   leaving `actool` as a validator only.
-- https://github.com/blablacar/cnt
+- https://github.com/blablacar/dgr
