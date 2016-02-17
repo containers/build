@@ -25,3 +25,9 @@ acbuild currently uses `systemd-nspawn` to run commands inside the ACI. This
 means that the machine running acbuild must have systemd installed to be able
 to use `acbuild run`. Alternate execution tools (like `runc`) will be added in
 the future.
+
+## Exiting out of systemd-nspawn
+
+All acbuild commands can be cancelled with Ctrl+c with the exception of
+`acbuild run` once it has executed systemd-nspawn. To break out of a
+system-nspawn call, press Ctrl+] three times.
