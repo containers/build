@@ -15,40 +15,49 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 )
 
 var (
-	cmdCopy = &cobra.Command{
-		Use:     "copy PATH_ON_HOST PATH_IN_ACI",
-		Short:   "Copy a file or directory into an ACI",
-		Example: "acbuild copy nginx.conf /etc/nginx/nginx.conf",
-		Run:     runWrapper(runCopy),
+	toDir        bool
+	cmdCopyToDir = &cobra.Command{
+		Use:     "copy-to-dir PATH1_ON_HOST PATH2_ON_HOST ... PATH_IN_ACI",
+		Short:   "Copy a file or directory into a directory in an ACI",
+		Example: "acbuild copy-to-dir build/bin/* /usr/bin",
+		Run:     runWrapper(runCopyToDir),
 	}
 )
 
 func init() {
-	cmdAcbuild.AddCommand(cmdCopy)
+	cmdAcbuild.AddCommand(cmdCopyToDir)
 }
 
-func runCopy(cmd *cobra.Command, args []string) (exit int) {
+func runCopyToDir(cmd *cobra.Command, args []string) (exit int) {
 	if len(args) == 0 {
 		cmd.Usage()
 		return 1
 	}
-	if len(args) != 2 {
-		stderr("copy: incorrect number of arguments")
+	if len(args) < 2 {
+		stderr("copy-to-dir: incorrect number of arguments")
 		return 1
 	}
 
 	if debug {
-		stderr("Copying host:%s to aci:%s", args[0], args[1])
+		logMsg := "Copying "
+		for i := 0; i < len(args)-1; i++ {
+			logMsg += fmt.Sprintf("%s ", args[i])
+		}
+		logMsg += "to "
+		logMsg += fmt.Sprintf("%s", args[len(args)-1])
+		stderr(logMsg)
 	}
 
-	err := newACBuild().CopyToTarget(args[0], args[1])
+	err := newACBuild().CopyToDir(args[:len(args)-1], args[len(args)-1])
 
 	if err != nil {
-		stderr("copy: %v", err)
+		stderr("copy-to-dir: %v", err)
 		return getErrorCode(err)
 	}
 
