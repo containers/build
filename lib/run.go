@@ -122,11 +122,11 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 	}
 	nspawncmd := []string{"systemd-nspawn", "-D", nspawnpath}
 
-	version, err := getSystemdVersion()
+	systemdVersion, err := getSystemdVersion()
 	if err != nil {
 		return err
 	}
-	if version >= 209 {
+	if systemdVersion >= 209 {
 		nspawncmd = append(nspawncmd, "--quiet", "--register=no")
 	}
 
@@ -149,6 +149,17 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 	if err != nil {
 		return err
 	}
+
+	finfo, err := os.Lstat(path.Join(nspawnpath, abscmd))
+	switch {
+	case os.IsNotExist(err):
+		return fmt.Errorf("the binary %q doesn't exist", abscmd)
+	case err != nil:
+		return err
+	case finfo.Mode()&os.ModeSymlink != 0 && systemdVersion < 228:
+		fmt.Fprintf(os.Stderr, "Warning: %q is a symlink, which systemd-nspawn version %d might error on\n", abscmd, systemdVersion)
+	}
+
 	nspawncmd = append(nspawncmd, abscmd)
 	nspawncmd = append(nspawncmd, cmd[1:]...)
 
