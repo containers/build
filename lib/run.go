@@ -82,7 +82,7 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 		if !supportsOverlay() {
 			err := exec.Command("modprobe", "overlay").Run()
 			if err != nil {
-				return err
+				return fmt.Errorf("modprobe overlay failed (required for using run with dependencies): %v", err)
 			}
 			if !supportsOverlay() {
 				return fmt.Errorf(
