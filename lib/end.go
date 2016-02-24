@@ -16,6 +16,8 @@ package lib
 
 import (
 	"os"
+
+	"github.com/appc/acbuild/util"
 )
 
 // End will stop the current build. An error will be returned if no build is in
@@ -30,6 +32,11 @@ func (a *ACBuild) End() error {
 	}
 
 	if err = a.lock(); err != nil {
+		return err
+	}
+
+	err = util.MaybeUnmount(a.OverlayTargetPath)
+	if err != nil {
 		return err
 	}
 
