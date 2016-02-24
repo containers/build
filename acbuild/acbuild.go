@@ -71,6 +71,8 @@ var (
 
 	cmdExitCode int
 
+	errCobra = fmt.Errorf("cobra error")
+
 	templFuncs = template.FuncMap{
 		"subcmdList": func(cmds []*cobra.Command) string {
 			var subcmds []string
@@ -106,6 +108,8 @@ func getErrorCode(err error) int {
 	switch err {
 	case lib.ErrNotFound:
 		return 2
+	case errCobra:
+		return 3
 	case nil:
 		return 0
 	default:
@@ -249,7 +253,10 @@ func main() {
 	// Make help just show the usage
 	cmdAcbuild.SetHelpTemplate(`{{.UsageString}}`)
 
-	cmdAcbuild.Execute()
+	err := cmdAcbuild.Execute()
+	if cmdExitCode == 0 && err != nil {
+		cmdExitCode = getErrorCode(errCobra)
+	}
 	os.Exit(cmdExitCode)
 }
 
