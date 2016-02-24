@@ -108,7 +108,45 @@ func (a *ACBuild) beginFromLocalImage(start string) error {
 	if finfo.IsDir() {
 		return fmt.Errorf("provided starting ACI is a directory: %s", start)
 	}
-	return util.ExtractImage(start, a.CurrentACIPath, nil)
+	err = util.ExtractImage(start, a.CurrentACIPath, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range []struct {
+		FileName string
+		FilePath string
+	}{
+		{"manifest file", path.Join(a.CurrentACIPath, aci.ManifestFile)},
+		{"rootfs directory", path.Join(a.CurrentACIPath, aci.RootfsDir)},
+	} {
+		_, err = os.Stat(file.FilePath)
+		switch {
+		case os.IsNotExist(err):
+			fmt.Fprintf(os.Stderr, "%s is missing, assuming build is beginning with a tar of a rootfs\n", file.FileName)
+			return a.startedFromTar()
+		case err != nil:
+			return err
+		}
+	}
+	return nil
+}
+
+func (a *ACBuild) startedFromTar() error {
+	tmpPath := path.Join(a.ContextPath, "rootfs")
+	err := os.Rename(a.CurrentACIPath, tmpPath)
+	if err != nil {
+		return err
+	}
+	err = a.beginWithEmptyACI()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(path.Join(a.CurrentACIPath, aci.RootfsDir))
+	if err != nil {
+		return err
+	}
+	return os.Rename(tmpPath, path.Join(a.CurrentACIPath, aci.RootfsDir))
 }
 
 func (a *ACBuild) beginFromLocalDirectory(start string) error {
