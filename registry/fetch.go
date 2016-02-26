@@ -414,7 +414,14 @@ func (r Registry) download(url, path, label string) error {
 func newIoprogress(label string, size int64, rdr io.Reader) io.Reader {
 	prefix := "Downloading " + label
 	fmtBytesSize := 18
+
+	// if barSize < 2, drawing the bar will panic; 3 will at least give a spinny
+	// thing.
 	barSize := int64(80 - len(prefix) - fmtBytesSize)
+	if barSize < 2 {
+		barSize = 2
+	}
+
 	bar := ioprogress.DrawTextFormatBarForW(barSize, os.Stderr)
 	fmtfunc := func(progress, total int64) string {
 		// Content-Length is set to -1 when unknown.
