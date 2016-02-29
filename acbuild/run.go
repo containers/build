@@ -19,8 +19,9 @@ import (
 )
 
 var (
-	insecure = false
-	cmdRun   = &cobra.Command{
+	insecure   = false
+	workingdir = ""
+	cmdRun     = &cobra.Command{
 		Use:     "run CMD [ARGS]",
 		Short:   "Run a command in an ACI",
 		Long:    "Run a given command in an ACI, and save the resulting container as a new ACI",
@@ -33,6 +34,7 @@ func init() {
 	cmdAcbuild.AddCommand(cmdRun)
 
 	cmdRun.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over http")
+	cmdRun.Flags().StringVar(&workingdir, "working-dir", "", "The working directory inside the container for this command")
 }
 
 func runRun(cmd *cobra.Command, args []string) (exit int) {
@@ -45,7 +47,7 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Running: %v", args)
 	}
 
-	err := newACBuild().Run(args, insecure)
+	err := newACBuild().Run(args, workingdir, insecure)
 
 	if err != nil {
 		stderr("run: %v", err)

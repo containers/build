@@ -39,8 +39,10 @@ var pathlist = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin",
 // download dependencies into, a.DepStoreExpandedPath is where the dependencies
 // are expanded into, a.OverlayWorkPath is the work directory used by
 // overlayfs, and insecure signifies whether downloaded images should be
-// fetched over http or https.
-func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
+// fetched over http or https. If workingdir is specified, the current
+// directory inside the container is changed to its value before running the
+// given command.
+func (a *ACBuild) Run(cmd []string, workingdir string, insecure bool) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -136,6 +138,12 @@ func (a *ACBuild) Run(cmd []string, insecure bool) (err error) {
 	}
 	if systemdVersion >= 209 {
 		nspawncmd = append(nspawncmd, "--quiet", "--register=no")
+	}
+	if workingdir != "" {
+		if systemdVersion < 229 {
+			return fmt.Errorf("the working dir can only be set on systems with systemd-nspawn >= 229")
+		}
+		nspawncmd = append(nspawncmd, "--chdir", workingdir)
 	}
 
 	if man.App != nil {
