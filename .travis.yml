@@ -2,14 +2,15 @@ language: go
 matrix:
   include:
     - go: 1.4.2
-    - go: 1.5.1
+    - go: 1.5.3
+    - go: 1.6
 
 install:
  - 
 
 script:
  - ./build
- - ./test
+ - ./test -v
 
 notifications:
   email: false

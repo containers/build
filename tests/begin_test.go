@@ -15,16 +15,10 @@
 package tests
 
 import (
-	"archive/tar"
-	"encoding/json"
 	"io/ioutil"
 	"os"
-	"path"
-	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/appc/spec/aci"
 )
 
 func TestBeginEmpty(t *testing.T) {
@@ -41,36 +35,14 @@ func TestBeginEmpty(t *testing.T) {
 }
 
 func TestBeginLocalACI(t *testing.T) {
-	manblob, err := json.Marshal(detailedManifest())
-	if err != nil {
-		panic(err)
-	}
-
-	tmpexpandedaci := mustTempDir()
-	defer os.RemoveAll(tmpexpandedaci)
-
-	err = ioutil.WriteFile(path.Join(tmpexpandedaci, aci.ManifestFile), manblob, 0644)
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.Mkdir(path.Join(tmpexpandedaci, aci.RootfsDir), 0755)
-	if err != nil {
-		panic(err)
-	}
-
 	tmpaci, err := ioutil.TempFile("", "acbuild-test")
 	if err != nil {
 		panic(err)
 	}
 	defer os.RemoveAll(tmpaci.Name())
 
-	aw := aci.NewImageWriter(detailedManifest(), tar.NewWriter(tmpaci))
-	err = filepath.Walk(tmpexpandedaci, aci.BuildWalker(tmpexpandedaci, aw, nil))
-	aw.Close()
-	if err != nil {
-		panic(err)
-	}
+	makeACI(tmpaci, detailedManifest())
+
 	tmpaci.Close()
 
 	workingDir := mustTempDir()

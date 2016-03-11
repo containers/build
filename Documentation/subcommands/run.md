@@ -19,14 +19,20 @@ run` is to be used on a system without overlayfs, the ACI and its dependencies
 must be flattened into a single ACI without dependencies. A command called
 `acbuild squash` is being worked on to do this.
 
-## systemd-nspawn
+## Engines
 
-acbuild currently uses `systemd-nspawn` to run commands inside the ACI. This
-means that the machine running acbuild must have systemd installed to be able
-to use `acbuild run`. Alternate execution tools (like `runc`) will be added in
-the future.
+acbuild can use different engines to perform the actual execution of the given
+command. The flag `--engine` can be used to select a non-default engine.
 
-## Exiting out of systemd-nspawn
+### systemd-nspawn
+
+The default engine in acbuild is called `systemd-nspawn`, which rather
+obviously uses `systemd-nspawn` to run the given command. This means that the
+machine running acbuild must have systemd installed to be able to use `acbuild
+run` with the default engine. Alternate execution tools (like `runc`) will be
+added in the future.
+
+### Exiting out of systemd-nspawn
 
 All acbuild commands can be cancelled with Ctrl+c with the exception of
 `acbuild run` once it has executed systemd-nspawn. To break out of a
