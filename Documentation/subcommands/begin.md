@@ -53,13 +53,16 @@ must start with `.`, `~`, or `/`. As an example, if the ACI is in the current
 directory, then instead of passing in `alpine-latest-linux-amd64.aci`, what
 would be passed in is `./alpine-latest-linux-amd64.aci`.
 
-## Starting with a pre-existing rootfs
+## Starting with a local, pre-existing rootfs
 
-If the user has a rootfs they wish to use in the ACI, perhaps produced by a
-tool like [buildroot](http://buildroot.org/), a directory can be passed to
-begin. The contents of the directory will be copied into the ACI, and the ACI
-will have a manifest identical to when the begin command is not passed a
-directory.
+A build can be started with a rootfs of a container. This rootfs could perhaps
+be produced by a tool like [buildroot](http://buildroot.org/), or downloaded
+from somewhere like the [Ubuntu Core
+releases](http://cdimage.ubuntu.com/ubuntu-core/releases/14.04/release/).
+
+The rootfs can either be in a local directory, or a local tar file. In either
+case, the rootfs is copied into the container and an empty manifest is created
+that is identical to beginning with an empty ACI.
 
 When specifying something on the local filesystem to the begin command, the
 path to it _must_ start with `.`, `~`, or `/`. As an example, if the directory
@@ -74,4 +77,5 @@ acbuild begin ./my-app.aci
 acbuild begin quay.io/coreos/alpine-sh
 acbuild --work-path /tmp/mybuild begin
 acbuild begin ~/projects/buildroot/output/target
+acbuild begin ./ubuntu-core-14.04-core-amd64.tar.gz
 ```
