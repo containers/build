@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+# Gets the directory that this script is stored in.
+# https://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 ORG_PATH="github.com/appc"
 REPO_PATH="${ORG_PATH}/acbuild"
-VERSION=$(git describe --dirty)
+VERSION=$(cd "${DIR}" && git describe --dirty)
 GLDFLAGS="-X github.com/appc/acbuild/lib.Version=${VERSION}"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
@@ -11,8 +15,8 @@ if [ ! -h gopath/src/${REPO_PATH} ]; then
 	ln -s ../../../.. gopath/src/${REPO_PATH} || exit 255
 fi
 
-export GOBIN=${PWD}/bin
-export GOPATH=${PWD}/gopath
+export GOBIN=${DIR}/bin
+export GOPATH=${DIR}/Godeps/_workspace:${DIR}/gopath
 
 eval $(go env)
 export GOOS GOARCH

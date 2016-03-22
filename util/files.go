@@ -20,9 +20,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	rkttar "github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/tar"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
+	"github.com/appc/spec/aci"
+	rkttar "github.com/coreos/rkt/pkg/tar"
+	"github.com/coreos/rkt/pkg/uid"
 )
 
 // RmAndMkdir will remove anything at path if it exists, and then create a

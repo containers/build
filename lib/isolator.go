@@ -19,8 +19,8 @@ import (
 
 	"github.com/appc/acbuild/util"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 )
 
 func removeIsolatorFromMan(name types.ACIdentifier) func(*schema.ImageManifest) error {

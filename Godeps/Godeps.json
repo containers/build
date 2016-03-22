@@ -1,39 +1,54 @@
 {
 	"ImportPath": "github.com/appc/acbuild",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.5",
+	"GodepVersion": "v60",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/appc/spec/aci",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/discovery",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/acirenderer",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/device",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/tarheader",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/schema",
-			"Comment": "v0.7.1-16-g5a7af19",
-			"Rev": "5a7af198346710d6a432b109b4ddda1c11aad963"
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/schema/common",
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+		},
+		{
+			"ImportPath": "github.com/appc/spec/schema/types",
+			"Comment": "v0.7.4",
+			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+		},
+		{
+			"ImportPath": "github.com/camlistore/camlistore/pkg/errorutil",
+			"Rev": "9868aa0f8d8a93ff0b30ff0de46cc351b6b88b30"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
@@ -41,32 +56,41 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/ioprogress",
-			"Rev": "4637e494fd9b23c5565ee193e89f91fdc1639bc0"
+			"Rev": "e7fc03058804de5488baed8df5b89f3924b9ec9a"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
-			"Comment": "v0.13.0-37-g0492a25",
-			"Rev": "0492a2580b04b31c285bf348e9a1896cd1aaad46"
+			"Comment": "v1.2.0",
+			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/multicall",
-			"Comment": "v0.13.0-37-g0492a25",
-			"Rev": "0492a2580b04b31c285bf348e9a1896cd1aaad46"
+			"Comment": "v1.2.0",
+			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/sys",
-			"Comment": "v0.13.0-37-g0492a25",
-			"Rev": "0492a2580b04b31c285bf348e9a1896cd1aaad46"
+			"Comment": "v1.2.0",
+			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/tar",
-			"Comment": "v0.13.0-37-g0492a25",
-			"Rev": "0492a2580b04b31c285bf348e9a1896cd1aaad46"
+			"Comment": "v1.2.0",
+			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/uid",
-			"Comment": "v0.13.0-37-g0492a25",
-			"Rev": "0492a2580b04b31c285bf348e9a1896cd1aaad46"
+			"Comment": "v1.2.0",
+			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+		},
+		{
+			"ImportPath": "github.com/cpuguy83/go-md2man/md2man",
+			"Comment": "v1.0.4",
+			"Rev": "71acacd42f85e5e82f70a55327789582a5200a90"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/errwrap",
+			"Rev": "7554cd9344cec97297fa6649b055a8c98c2a1e55"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
@@ -81,12 +105,21 @@
 			"Rev": "21cb3784d9bda523911b96719efba02b7e983256"
 		},
 		{
+			"ImportPath": "github.com/russross/blackfriday",
+			"Comment": "v1.4-2-g300106c",
+			"Rev": "300106c228d52c8941d4b3de6054a6062a86dda3"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
+			"Rev": "10ef21a441db47d8b13ebcc5fd2310f636973c77"
+		},
+		{
 			"ImportPath": "github.com/spf13/cobra",
-			"Rev": "66816bcd0378e248c613e3c443c020f544c28804"
+			"Rev": "1c44ec8d3f1552cac48999f9306da23c4d8a288b"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
+			"Rev": "08b1a584251b5b62f458943640fc8ebd4d50aaa5"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
@@ -98,12 +131,16 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/html",
-			"Rev": "1dfe7915deaf3f80b962c163b918868d8a6d8974"
+			"Rev": "c2528b2dd8352441850638a8bb678c2ad056fd3e"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
+			"Rev": "c2528b2dd8352441850638a8bb678c2ad056fd3e"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
-			"Comment": "v1.1.0-alpha.1-1388-gcf75b0d",
-			"Rev": "cf75b0d023e0815160a1a5d66d3375818ee2afe8"
+			"Comment": "v0.12.0-270-g53ec66c",
+			"Rev": "53ec66caf4e952a1384ec93b9f0cde37616e4caf"
 		},
 		{
 			"ImportPath": "speter.net/go/exp/math/dec/inf",

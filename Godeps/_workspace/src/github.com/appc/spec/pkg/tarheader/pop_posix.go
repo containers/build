@@ -21,7 +21,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/device"
+	"github.com/appc/spec/pkg/device"
 )
 
 func init() {

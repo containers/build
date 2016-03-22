@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/spec/aci"
 )
 
 func TestBeginEmpty(t *testing.T) {

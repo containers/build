@@ -15,14 +15,14 @@
 package schema
 
 import (
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/spec/schema/types"
 )
 
 const (
 	// version represents the canonical version of the appc spec and tooling.
 	// For now, the schema and tooling is coupled with the spec itself, so
 	// this must be kept in sync with the VERSION file in the root of the repo.
-	version string = "0.7.1+git"
+	version string = "0.7.4"
 )
 
 var (

@@ -17,7 +17,7 @@ package lib
 import (
 	"github.com/appc/acbuild/util"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/spec/schema"
 )
 
 func removeFromEnv(name string) func(*schema.ImageManifest) error {

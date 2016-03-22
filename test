@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 set -e
 
+# Gets the directory that this script is stored in.
+# https://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 ORG_PATH="github.com/appc"
 REPO_PATH="${ORG_PATH}/acbuild"
 TESTS_PATH="${REPO_PATH}/tests"
 
-export ACBUILD_BIN="${PWD}/bin/acbuild"
-export GOPATH="${PWD}/gopath"
+export ACBUILD_BIN="${DIR}/bin/acbuild"
+export GOPATH=${DIR}/Godeps/_workspace:${DIR}/gopath
 
-source "${GOPATH}/src/${REPO_PATH}/build"
+source "${DIR}/gopath/src/${REPO_PATH}/build"
 
 go test "${TESTS_PATH}" "$@"

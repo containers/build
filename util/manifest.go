@@ -21,8 +21,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/spec/aci"
+	"github.com/appc/spec/schema"
 )
 
 // GetManifest will read in the manifest from the untarred ACI stored at acipath

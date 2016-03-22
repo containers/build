@@ -20,7 +20,7 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/spec/schema/types"
 )
 
 const defaultWorkPath = ".acbuild"

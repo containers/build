@@ -20,8 +20,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/spec/aci"
+	"github.com/appc/spec/schema"
 )
 
 // ReplaceManifest will replace the manifest in the expanded ACI stored at

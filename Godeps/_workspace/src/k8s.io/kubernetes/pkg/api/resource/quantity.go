@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 Google Inc. All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import (
 	"regexp"
 	"strings"
 
-	flag "github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/pflag"
-	"github.com/appc/acbuild/Godeps/_workspace/src/speter.net/go/exp/math/dec/inf"
+	flag "github.com/spf13/pflag"
+	"speter.net/go/exp/math/dec/inf"
 )
 
 // Quantity is a fixed-point representation of a number.
@@ -190,9 +190,7 @@ func ParseQuantity(str string) (*Quantity, error) {
 	// of an amount.
 	// Arguably, this should be inf.RoundHalfUp (normal rounding), but
 	// that would have the side effect of rounding values < .5m to zero.
-	if v, ok := amount.Unscaled(); v != int64(0) || !ok {
-		amount.Round(amount, 3, inf.RoundUp)
-	}
+	amount.Round(amount, 3, inf.RoundUp)
 
 	// The max is just a simple cap.
 	if amount.Cmp(maxAllowed) > 0 {
@@ -236,11 +234,6 @@ func removeFactors(d, factor *big.Int) (result *big.Int, times int) {
 //   rounded up. (1.1i becomes 2i.)
 func (q *Quantity) Canonicalize() (string, suffix) {
 	if q.Amount == nil {
-		return "0", ""
-	}
-
-	// zero is zero always
-	if q.Amount.Cmp(&inf.Dec{}) == 0 {
 		return "0", ""
 	}
 
@@ -299,40 +292,6 @@ func (q *Quantity) Canonicalize() (string, suffix) {
 func (q *Quantity) String() string {
 	number, suffix := q.Canonicalize()
 	return number + string(suffix)
-}
-
-// Cmp compares q and y and returns:
-//
-//   -1 if q <  y
-//    0 if q == y
-//   +1 if q >  y
-//
-func (q *Quantity) Cmp(y Quantity) int {
-	num1 := q.Value()
-	num2 := y.Value()
-	if num1 < MaxMilliValue && num2 < MaxMilliValue {
-		num1 = q.MilliValue()
-		num2 = y.MilliValue()
-	}
-	if num1 < num2 {
-		return -1
-	} else if num1 > num2 {
-		return 1
-	}
-	return 0
-}
-
-func (q *Quantity) Add(y Quantity) error {
-	q.Amount.Add(q.Amount, y.Amount)
-	return nil
-}
-
-func (q *Quantity) Sub(y Quantity) error {
-	if q.Format != y.Format {
-		return fmt.Errorf("format mismatch: %v vs. %v", q.Format, y.Format)
-	}
-	q.Amount.Sub(q.Amount, y.Amount)
-	return nil
 }
 
 // MarshalJSON implements the json.Marshaller interface.
