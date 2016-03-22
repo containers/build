@@ -207,7 +207,7 @@ func TestCopyManyDirs(t *testing.T) {
 	}
 
 	// golang--
-	err = runACBuildNoHist(workingDir, append([]string{"copy", "--to-dir"}, append(froms, dest)...)...)
+	err = runACBuildNoHist(workingDir, append([]string{"copy-to-dir"}, append(froms, dest)...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -242,7 +242,7 @@ func TestCopyDirsAndFiles(t *testing.T) {
 	}
 
 	// golang--
-	err = runACBuildNoHist(workingDir, append([]string{"copy", "--to-dir"}, append(froms, dest)...)...)
+	err = runACBuildNoHist(workingDir, append([]string{"copy-to-dir"}, append(froms, dest)...)...)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
