@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/discovery"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
+	"github.com/appc/spec/discovery"
+	"github.com/appc/spec/schema/types"
+	"github.com/spf13/cobra"
 )
 
 var (

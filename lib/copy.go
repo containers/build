@@ -19,9 +19,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/fileutil"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
+	"github.com/appc/spec/aci"
+	"github.com/coreos/rkt/pkg/fileutil"
+	"github.com/coreos/rkt/pkg/uid"
 )
 
 // CopyToDir will copy all elements specified in the froms slice into the

@@ -24,8 +24,8 @@ import (
 	"text/tabwriter"
 	"text/template"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
+	"github.com/coreos/rkt/pkg/multicall"
+	"github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/lib"
 	"github.com/appc/acbuild/util"

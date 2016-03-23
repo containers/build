@@ -19,8 +19,8 @@ import (
 
 	"github.com/appc/acbuild/util"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 )
 
 // SetName sets the name for the untarred ACI stored at a.CurrentACIPath

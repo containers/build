@@ -14,7 +14,7 @@
 
 package lib
 
-import "github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+import "github.com/appc/spec/schema"
 
 var Version = "0.0.0+was-not-built-correctly"
 var AppcVersion = schema.AppContainerVersion

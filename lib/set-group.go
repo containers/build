@@ -19,7 +19,7 @@ import (
 
 	"github.com/appc/acbuild/util"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/spec/schema"
 )
 
 // SetGroup sets the group the pod will run as in the untarred ACI stored at

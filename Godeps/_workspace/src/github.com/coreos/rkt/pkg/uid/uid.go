@@ -18,10 +18,13 @@
 package uid
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/hashicorp/errwrap"
 )
 
 const DefaultRangeCount = 0x10000
@@ -66,6 +69,13 @@ func (r *UidRange) ShiftRange(uid uint32, gid uint32) (uint32, uint32, error) {
 	return uid + r.Shift, gid + r.Shift, nil
 }
 
+func (r *UidRange) UnshiftRange(uid, gid uint32) (uint32, uint32, error) {
+	if uid < r.Shift || gid < r.Shift || (r.Count > 0 && (uid >= r.Shift+r.Count || gid >= r.Shift+r.Count)) {
+		return 0, 0, fmt.Errorf("uid %d or gid %d are out of range %d after unshifting", uid, gid, r.Count)
+	}
+	return uid - r.Shift, gid - r.Shift, nil
+}
+
 func (r *UidRange) Serialize() []byte {
 	return []byte(fmt.Sprintf("%d:%d", r.Shift, r.Count))
 }
@@ -76,7 +86,7 @@ func (r *UidRange) Deserialize(uidRange []byte) error {
 	}
 	_, err := fmt.Sscanf(string(uidRange), "%d:%d", &r.Shift, &r.Count)
 	if err != nil {
-		return fmt.Errorf("error deserializing uid range: %v", err)
+		return errwrap.Wrap(errors.New("error deserializing uid range"), err)
 	}
 
 	return nil

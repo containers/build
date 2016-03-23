@@ -28,12 +28,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/discovery"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/acirenderer"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/ioprogress"
-	"github.com/appc/acbuild/Godeps/_workspace/src/xi2.org/x/xz"
+	"github.com/appc/spec/aci"
+	"github.com/appc/spec/discovery"
+	"github.com/appc/spec/pkg/acirenderer"
+	"github.com/appc/spec/schema/types"
+	"github.com/coreos/ioprogress"
+	"xi2.org/x/xz"
 
 	"github.com/appc/acbuild/util"
 )
@@ -331,7 +331,12 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 		app.Labels["os"] = runtime.GOOS
 	}
 
-	eps, attempts, err := discovery.DiscoverEndpoints(*app, r.Insecure)
+	insecure := discovery.InsecureNone
+	if r.Insecure {
+		insecure = discovery.InsecureHttp
+	}
+
+	eps, attempts, err := discovery.DiscoverEndpoints(*app, nil, insecure)
 	if err != nil {
 		return nil, err
 	}

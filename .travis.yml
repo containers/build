@@ -4,6 +4,9 @@ matrix:
     - go: 1.4.2
     - go: 1.5.1
 
+install:
+ - 
+
 script:
  - ./build
  - ./test

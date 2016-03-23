@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // DrawFunc is the callback type for drawing progress.
@@ -108,9 +108,6 @@ func DrawTextFormatBarForW(width int64, w io.Writer) DrawTextFormatFunc {
 
 	return func(progress, total int64) string {
 		current := int64((float64(progress) / float64(total)) * float64(width))
-		if current < 0 || current > width {
-			return fmt.Sprintf("[%s]", strings.Repeat(" ", int(width)))
-		}
 		return fmt.Sprintf(
 			"[%s%s]",
 			strings.Repeat("=", int(current)),

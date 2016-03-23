@@ -27,12 +27,12 @@ import (
 	"github.com/appc/acbuild/registry"
 	"github.com/appc/acbuild/util"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/discovery"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/fileutil"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
+	"github.com/appc/spec/aci"
+	"github.com/appc/spec/discovery"
+	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
+	"github.com/coreos/rkt/pkg/fileutil"
+	"github.com/coreos/rkt/pkg/uid"
 )
 
 var (

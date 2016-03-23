@@ -22,9 +22,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/uid"
+	"github.com/coreos/rkt/pkg/uid"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/device"
+	"github.com/appc/spec/pkg/device"
 )
 
 func CopyRegularFile(src, dest string) (err error) {
@@ -200,4 +200,28 @@ func TimeToTimespec(time time.Time) (ts syscall.Timespec) {
 		nsec = time.UnixNano()
 	}
 	return syscall.NsecToTimespec(nsec)
+}
+
+// DirSize takes a path and returns its size in bytes
+func DirSize(path string) (int64, error) {
+	seenInode := make(map[uint64]struct{})
+
+	if _, err := os.Stat(path); err == nil {
+		var sz int64
+		err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			if hasHardLinks(info) {
+				ino := getInode(info)
+				if _, ok := seenInode[ino]; !ok {
+					seenInode[ino] = struct{}{}
+					sz += info.Size()
+				}
+			} else {
+				sz += info.Size()
+			}
+			return err
+		})
+		return sz, err
+	}
+
+	return 0, nil
 }

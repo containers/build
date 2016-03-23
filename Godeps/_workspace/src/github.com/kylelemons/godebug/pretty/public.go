@@ -20,7 +20,7 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/kylelemons/godebug/diff"
+	"github.com/kylelemons/godebug/diff"
 )
 
 // A Config represents optional configuration parameters for formatting.
