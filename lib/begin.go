@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"unsafe"
 
 	"github.com/appc/acbuild/registry"
 	"github.com/appc/acbuild/util"
@@ -196,6 +197,22 @@ func (a *ACBuild) writeEmptyManifest() error {
 		return err
 	}
 
+	archvalue := runtime.GOARCH
+	if runtime.GOOS == "linux" && (archvalue == "arm" || archvalue == "arm64") {
+		var x uint32 = 0x01020304
+		test := *(*byte)(unsafe.Pointer(&x))
+		switch {
+		case test == 0x01 && archvalue == "arm":
+			archvalue = "armv7b"
+		case test == 0x04 && archvalue == "arm":
+			archvalue = "armv7l"
+		case test == 0x01 && archvalue == "arm64":
+			archvalue = "aarch64_be"
+		case test == 0x04 && archvalue == "arm64":
+			archvalue = "aarch64"
+		}
+	}
+
 	manifest := &schema.ImageManifest{
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
@@ -203,7 +220,7 @@ func (a *ACBuild) writeEmptyManifest() error {
 		Labels: types.Labels{
 			types.Label{
 				*archlabel,
-				runtime.GOARCH,
+				archvalue,
 			},
 			types.Label{
 				*oslabel,
