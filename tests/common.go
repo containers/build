@@ -15,12 +15,16 @@
 package tests
 
 import (
+	"archive/tar"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"syscall"
 	"testing"
@@ -209,4 +213,44 @@ func checkEmptyRootfs(t *testing.T, workingDir string) {
 	if len(files) != 0 {
 		t.Errorf("rootfs in aci contains files, should be empty")
 	}
+}
+
+type fileInfo struct {
+	name     string
+	contents []byte
+}
+
+func makeACI(output io.Writer, manifest schema.ImageManifest, files ...fileInfo) error {
+	manblob, err := json.Marshal(detailedManifest())
+	if err != nil {
+		return err
+	}
+
+	tmpexpandedaci := mustTempDir()
+	defer os.RemoveAll(tmpexpandedaci)
+
+	err = ioutil.WriteFile(path.Join(tmpexpandedaci, aci.ManifestFile), manblob, 0644)
+	if err != nil {
+		return err
+	}
+
+	err = os.Mkdir(path.Join(tmpexpandedaci, aci.RootfsDir), 0755)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+		err := ioutil.WriteFile(path.Join(tmpexpandedaci, aci.RootfsDir, f.name), f.contents, 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	aw := aci.NewImageWriter(manifest, tar.NewWriter(output))
+	err = filepath.Walk(tmpexpandedaci, aci.BuildWalker(tmpexpandedaci, aw, nil))
+	aw.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }

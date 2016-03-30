@@ -26,23 +26,28 @@ import (
 	"syscall"
 
 	"github.com/appc/spec/aci"
+	"github.com/appc/spec/schema/types"
 
+	"github.com/appc/acbuild/engine"
 	"github.com/appc/acbuild/registry"
 	"github.com/appc/acbuild/util"
 )
 
-var pathlist = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin",
-	"/usr/bin", "/sbin", "/bin"}
-
 // Run will execute the given command in the ACI being built. a.CurrentACIPath
 // is where the untarred ACI is stored, a.DepStoreTarPath is the directory to
 // download dependencies into, a.DepStoreExpandedPath is where the dependencies
-// are expanded into, a.OverlayWorkPath is the work directory used by
-// overlayfs, and insecure signifies whether downloaded images should be
-// fetched over http or https. If workingdir is specified, the current
-// directory inside the container is changed to its value before running the
-// given command.
-func (a *ACBuild) Run(cmd []string, workingdir string, insecure bool) (err error) {
+// are expanded into, and a.OverlayWorkPath is the work directory used by
+// overlayfs.
+//
+// Arguments:
+//
+// - cmd:        The command to run and its arguments.
+//
+// - workingDir: If specified, the current directory inside the container is
+// changed to its value before running the given command.
+//
+// - runEngine:  The engine used to perform the execution of the command.
+func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine engine.Engine) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -54,6 +59,10 @@ func (a *ACBuild) Run(cmd []string, workingdir string, insecure bool) (err error
 
 	if os.Geteuid() != 0 {
 		return fmt.Errorf("the run subcommand must be run as root")
+	}
+
+	if len(cmd) == 0 {
+		return fmt.Errorf("command to run not set")
 	}
 
 	err = util.MaybeUnmount(a.OverlayTargetPath)
@@ -106,9 +115,9 @@ func (a *ACBuild) Run(cmd []string, workingdir string, insecure bool) (err error
 		return err
 	}
 
-	var nspawnpath string
+	var chrootDir string
 	if deps == nil {
-		nspawnpath = path.Join(a.CurrentACIPath, aci.RootfsDir)
+		chrootDir = path.Join(a.CurrentACIPath, aci.RootfsDir)
 	} else {
 		for i, dep := range deps {
 			deps[i] = path.Join(a.DepStoreExpandedPath, dep, aci.RootfsDir)
@@ -128,68 +137,23 @@ func (a *ACBuild) Run(cmd []string, workingdir string, insecure bool) (err error
 			}
 		}()
 
-		nspawnpath = a.OverlayTargetPath
-	}
-	nspawncmd := []string{"systemd-nspawn", "-D", nspawnpath}
-
-	systemdVersion, err := getSystemdVersion()
-	if err != nil {
-		return err
-	}
-	if systemdVersion >= 209 {
-		nspawncmd = append(nspawncmd, "--quiet", "--register=no")
-	}
-	if workingdir != "" {
-		if systemdVersion < 229 {
-			return fmt.Errorf("the working dir can only be set on systems with systemd-nspawn >= 229")
-		}
-		nspawncmd = append(nspawncmd, "--chdir", workingdir)
+		chrootDir = a.OverlayTargetPath
 	}
 
+	var env types.Environment
 	if man.App != nil {
-		for _, evar := range man.App.Environment {
-			nspawncmd = append(nspawncmd, "--setenv", evar.Name+"="+evar.Value)
-		}
+		env = man.App.Environment
+	} else {
+		env = types.Environment{}
 	}
-	nspawncmd = append(nspawncmd, "--setenv", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
 	err = a.mirrorLocalZoneInfo()
 	if err != nil {
 		return err
 	}
 
-	if len(cmd) == 0 {
-		return fmt.Errorf("command to run not set")
-	}
-	abscmd, err := findCmdInPath(pathlist, cmd[0], nspawnpath)
+	err = runEngine.Run(cmd[0], cmd[1:], env, chrootDir, workingDir)
 	if err != nil {
-		return err
-	}
-
-	finfo, err := os.Lstat(path.Join(nspawnpath, abscmd))
-	switch {
-	case os.IsNotExist(err):
-		return fmt.Errorf("the binary %q doesn't exist", abscmd)
-	case err != nil:
-		return err
-	case finfo.Mode()&os.ModeSymlink != 0 && systemdVersion < 228:
-		fmt.Fprintf(os.Stderr, "Warning: %q is a symlink, which systemd-nspawn version %d might error on\n", abscmd, systemdVersion)
-	}
-
-	nspawncmd = append(nspawncmd, abscmd)
-	nspawncmd = append(nspawncmd, cmd[1:]...)
-
-	execCmd := exec.Command(nspawncmd[0], nspawncmd[1:]...)
-	execCmd.Stdin = os.Stdin
-	execCmd.Stdout = os.Stdout
-	execCmd.Stderr = os.Stderr
-	execCmd.Env = []string{"SYSTEMD_LOG_LEVEL=err"}
-
-	err = execCmd.Run()
-	if err != nil {
-		if err == exec.ErrNotFound {
-			return fmt.Errorf("systemd-nspawn is required but not found")
-		}
 		return err
 	}
 
@@ -213,24 +177,6 @@ func supportsOverlay() bool {
 		}
 	}
 	return false
-}
-
-func findCmdInPath(pathlist []string, cmd, prefix string) (string, error) {
-	if path.IsAbs(cmd) {
-		return cmd, nil
-	}
-
-	for _, p := range pathlist {
-		_, err := os.Lstat(path.Join(prefix, p, cmd))
-		switch {
-		case os.IsNotExist(err):
-			continue
-		case err != nil:
-			return "", err
-		}
-		return path.Join(p, cmd), nil
-	}
-	return "", fmt.Errorf("%s not found in any of: %v", cmd, pathlist)
 }
 
 func (a *ACBuild) renderACI(insecure, debug bool) ([]string, error) {
@@ -331,27 +277,4 @@ func (a *ACBuild) mirrorLocalZoneInfo() error {
 	}
 
 	return nil
-}
-
-func getSystemdVersion() (int, error) {
-	_, err := exec.LookPath("systemctl")
-	if err == exec.ErrNotFound {
-		return 0, fmt.Errorf("system does not have systemd")
-	}
-
-	blob, err := exec.Command("systemctl", "--version").Output()
-	if err != nil {
-		return 0, err
-	}
-	for _, line := range strings.Split(string(blob), "\n") {
-		if strings.HasPrefix(line, "systemd ") {
-			var version int
-			_, err := fmt.Sscanf(line, "systemd %d", &version)
-			if err != nil {
-				return 0, err
-			}
-			return version, nil
-		}
-	}
-	return 0, fmt.Errorf("error parsing output from `systemctl --version`")
 }

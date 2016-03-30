@@ -15,12 +15,19 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/appc/acbuild/engine"
+	"github.com/appc/acbuild/engine/systemdnspawn"
+
 	"github.com/spf13/cobra"
 )
 
 var (
 	insecure   = false
 	workingdir = ""
+	engineName = ""
 	cmdRun     = &cobra.Command{
 		Use:     "run CMD [ARGS]",
 		Short:   "Run a command in an ACI",
@@ -28,13 +35,24 @@ var (
 		Example: "acbuild run yum install nginx",
 		Run:     runWrapper(runRun),
 	}
+
+	engines = map[string]engine.Engine{
+		"systemd-nspawn": systemdnspawn.Engine{},
+	}
 )
 
 func init() {
 	cmdAcbuild.AddCommand(cmdRun)
 
+	var engineNames []string
+	for engine, _ := range engines {
+		engineNames = append(engineNames, engine)
+	}
+	engineList := fmt.Sprintf("[%s]", strings.Join(engineNames, ","))
+
 	cmdRun.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over http")
 	cmdRun.Flags().StringVar(&workingdir, "working-dir", "", "The working directory inside the container for this command")
+	cmdRun.Flags().StringVar(&engineName, "engine", "systemd-nspawn", "The engine used to run the command. Supported engines: "+engineList)
 }
 
 func runRun(cmd *cobra.Command, args []string) (exit int) {
@@ -47,7 +65,13 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Running: %v", args)
 	}
 
-	err := newACBuild().Run(args, workingdir, insecure)
+	engine, ok := engines[engineName]
+	if !ok {
+		stderr("run: no such engine %q", engineName)
+		return 1
+	}
+
+	err := newACBuild().Run(args, workingdir, insecure, engine)
 
 	if err != nil {
 		stderr("run: %v", err)

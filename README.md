@@ -27,10 +27,12 @@ Instructions on how to do this are a little further down in this document.
 acbuild requires a handful of commands be available on the system on 
 which it's run:
 
-- `systemd-nspawn`
 - `cp`
 - `modprobe`
 - `gpg`
+
+Additionally `systemd-nspawn` is required to use the [default
+engine](Documentation/subcommands/run.md) for acbuild run.
 
 ### Prebuilt Binaries
 
