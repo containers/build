@@ -1,3 +1,21 @@
+## v0.3.0
+
+appc spec version: v0.7.4
+
+- Sets the PATH environment variable inside of acbuild run commands, instead of
+  propagating the variable from the host.
+- Copy has been split out into copy and copy-to-dir. copy is for copying a
+  given file/directory to a specific path, and copy-to-dir is for copying one
+  or more files/directories into a given directory.  error.
+- The run and end subcommands now contain a check for if .acbuild/target is
+  mounted, and will attempt to unmount it before performing their actions.
+- The flag --working-dir has been added to the run subcommand, for specifying
+  the working directory to run the given command in. This requires systemd >=
+  229.
+- Added support for passing the begin command a tarball, which when not a valid
+  ACI will be used as the starting rootfs for the build.
+- Now uses version 0.7.4 of the AppC spec.
+
 ## v0.2.2
 
 appc spec version: v0.7.1+git
