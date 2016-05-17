@@ -41,7 +41,7 @@ The easiest way to get `acbuild` is to download one of the
 
 ### Build from source
 
-The other way to get `acbuild` is to build it from source.
+The other way to get `acbuild` is to build it from source. Building from source requires [Go 1.5+](https://golang.org/dl/).
 
 Follow these steps to do so:
 
