@@ -29,4 +29,4 @@ if [ "${GOOS}" = "freebsd" ]; then
 fi
 
 echo "Building acbuild..."
-go build -o $GOBIN/acbuild -ldflags "${GLDFLAGS}" ${REPO_PATH}/acbuild
+go build -o $GOBIN/acbuild -ldflags "${GLDFLAGS}" ${ACBUILD_BUILD_TAGS} ${REPO_PATH}/acbuild
