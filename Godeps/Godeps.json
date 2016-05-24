@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/appc/acbuild",
 	"GoVersion": "go1.5",
-	"GodepVersion": "v60",
+	"GodepVersion": "v62",
 	"Packages": [
 		"./..."
 	],
@@ -115,11 +115,15 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/cobra",
-			"Rev": "1c44ec8d3f1552cac48999f9306da23c4d8a288b"
+			"Rev": "f368244301305f414206f889b1735a54cfc8bde8"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra/doc",
+			"Rev": "f368244301305f414206f889b1735a54cfc8bde8"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "08b1a584251b5b62f458943640fc8ebd4d50aaa5"
+			"Rev": "cb88ea77998c3f024757528e3305022ab50b43be"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
