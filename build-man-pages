@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+# Gets the directory that this script is stored in.
+# https://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+ACBUILD_BUILD_TAGS="-tags 'manpages'"
+
+source "${DIR}/build"
+
+${DIR}/bin/acbuild gen-man-pages
+
+# Don't want to leave acbuild with the gen-man-pages support lying around
+rm ${DIR}/bin/acbuild

@@ -125,7 +125,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		if aciToModify == "" {
 			cmdExitCode = cf(cmd, args)
 			switch cmd.Name() {
-			case "cat-manifest", "begin", "write", "end", "version":
+			case "cat-manifest", "begin", "write", "end", "version", "gen-man-pages":
 				return
 			}
 			if cmdExitCode == 0 && !disableHistory {
@@ -143,7 +143,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		case "cat-manifest":
 			cmdExitCode = runCatOnACI(aciToModify)
 			return
-		case "begin", "write", "end", "version":
+		case "begin", "write", "end", "version", "gen-man-pages":
 			stderr("Can't use the --modify flag with %s.", cmd.Name())
 			cmdExitCode = 1
 			return
