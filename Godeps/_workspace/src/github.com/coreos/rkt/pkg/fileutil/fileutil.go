@@ -22,7 +22,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/coreos/rkt/pkg/uid"
+	"github.com/coreos/rkt/pkg/user"
 
 	"github.com/appc/spec/pkg/device"
 )
@@ -60,7 +60,7 @@ func CopySymlink(src, dest string) error {
 	return nil
 }
 
-func CopyTree(src, dest string, uidRange *uid.UidRange) error {
+func CopyTree(src, dest string, uidRange *user.UidRange) error {
 	cleanSrc := filepath.Clean(src)
 
 	dirs := make(map[string][]syscall.Timespec)
@@ -224,4 +224,15 @@ func DirSize(path string) (int64, error) {
 	}
 
 	return 0, nil
+}
+
+// IsExecutable checks if the given path points to an executable file by
+// checking the executable bit. Inspired by os.exec.LookPath()
+func IsExecutable(path string) bool {
+	d, err := os.Stat(path)
+	if err == nil {
+		m := d.Mode()
+		return !m.IsDir() && m&0111 != 0
+	}
+	return false
 }

@@ -8,47 +8,43 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/appc/spec/aci",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/discovery",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/acirenderer",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/device",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/pkg/tarheader",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/schema",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/schema/common",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/appc/spec/schema/types",
-			"Comment": "v0.7.4",
-			"Rev": "0875c991a496fe2b65ed296551c667b199a6bfb8"
-		},
-		{
-			"ImportPath": "github.com/camlistore/camlistore/pkg/errorutil",
-			"Rev": "9868aa0f8d8a93ff0b30ff0de46cc351b6b88b30"
+			"Comment": "v0.8.4",
+			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
@@ -60,28 +56,38 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
-			"Comment": "v1.2.0",
-			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/group",
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/multicall",
-			"Comment": "v1.2.0",
-			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
+		},
+		{
+			"ImportPath": "github.com/coreos/rkt/pkg/passwd",
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/sys",
-			"Comment": "v1.2.0",
-			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/tar",
-			"Comment": "v1.2.0",
-			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
 		},
 		{
-			"ImportPath": "github.com/coreos/rkt/pkg/uid",
-			"Comment": "v1.2.0",
-			"Rev": "c8ec502f6908419fd209a372cc0cd26917477228"
+			"ImportPath": "github.com/coreos/rkt/pkg/user",
+			"Comment": "v1.7.0",
+			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
 		},
 		{
 			"ImportPath": "github.com/cpuguy83/go-md2man/md2man",
@@ -128,6 +134,10 @@
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
 			"Rev": "8e4cdcb3c22b40d5e330ade0b68cb2e2a3cf6f98"
+		},
+		{
+			"ImportPath": "go4.org/errorutil",
+			"Rev": "03efcb870d84809319ea509714dd6d19a1498483"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/ssh/terminal",

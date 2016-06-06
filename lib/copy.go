@@ -21,7 +21,7 @@ import (
 
 	"github.com/appc/spec/aci"
 	"github.com/coreos/rkt/pkg/fileutil"
-	"github.com/coreos/rkt/pkg/uid"
+	"github.com/coreos/rkt/pkg/user"
 )
 
 // CopyToDir will copy all elements specified in the froms slice into the
@@ -54,7 +54,7 @@ func (a *ACBuild) CopyToDir(froms []string, to string) (err error) {
 	for _, from := range froms {
 		_, file := path.Split(from)
 		tmptarget := path.Join(target, file)
-		err := fileutil.CopyTree(from, tmptarget, uid.NewBlankUidRange())
+		err := fileutil.CopyTree(from, tmptarget, user.NewBlankUidRange())
 		if err != nil {
 			return err
 		}
@@ -84,5 +84,5 @@ func (a *ACBuild) CopyToTarget(from string, to string) (err error) {
 		}
 	}
 
-	return fileutil.CopyTree(from, target, uid.NewBlankUidRange())
+	return fileutil.CopyTree(from, target, user.NewBlankUidRange())
 }
