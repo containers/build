@@ -1,3 +1,13 @@
+## v0.3.1
+
+appc spec version: v0.8.4
+
+This minor release largely exists to bump the version of the AppC spec the
+acbuild is using.
+
+- Bumps the version of the AppC spec to v0.8.4.
+- Adds the ability for acbuild to generate man pages for itself.
+
 ## v0.3.0
 
 appc spec version: v0.7.4
