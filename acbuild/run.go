@@ -29,10 +29,10 @@ var (
 	workingdir = ""
 	engineName = ""
 	cmdRun     = &cobra.Command{
-		Use:     "run CMD [ARGS]",
+		Use:     "run -- CMD [ARGS]",
 		Short:   "Run a command in an ACI",
 		Long:    "Run a given command in an ACI, and save the resulting container as a new ACI",
-		Example: "acbuild run yum install nginx",
+		Example: "acbuild run -- yum install nginx",
 		Run:     runWrapper(runRun),
 	}
 

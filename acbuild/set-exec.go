@@ -20,10 +20,10 @@ import (
 
 var (
 	cmdSetExec = &cobra.Command{
-		Use:     "set-exec CMD [ARGS]",
+		Use:     "set-exec -- CMD [ARGS]",
 		Short:   "Set the exec command",
 		Long:    "Sets the exec command in the ACI's manifest",
-		Example: "acbuild set-exec /usr/sbin/nginx -g \"daemon off;\"",
+		Example: "acbuild set-exec -- /usr/sbin/nginx -g \"daemon off;\"",
 		Run:     runWrapper(runSetExec),
 	}
 )
