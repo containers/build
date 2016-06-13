@@ -333,10 +333,10 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 
 	insecure := discovery.InsecureNone
 	if r.Insecure {
-		insecure = discovery.InsecureHttp
+		insecure = discovery.InsecureHTTP
 	}
 
-	eps, attempts, err := discovery.DiscoverEndpoints(*app, nil, insecure)
+	acis, attempts, err := discovery.DiscoverACIEndpoints(*app, nil, insecure)
 	if err != nil {
 		return nil, err
 	}
@@ -346,12 +346,12 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 				a.Prefix, a.Error)
 		}
 	}
-	if len(eps.ACIEndpoints) == 0 {
+	if len(acis) == 0 {
 		return nil, fmt.Errorf("no endpoints discovered to download %s",
 			imageName)
 	}
 
-	return &eps.ACIEndpoints[0], nil
+	return &acis[0], nil
 }
 
 func (r Registry) download(url, path, label string) error {

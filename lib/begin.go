@@ -32,7 +32,7 @@ import (
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 	"github.com/coreos/rkt/pkg/fileutil"
-	"github.com/coreos/rkt/pkg/uid"
+	"github.com/coreos/rkt/pkg/user"
 )
 
 var (
@@ -155,7 +155,7 @@ func (a *ACBuild) beginFromLocalDirectory(start string) error {
 		return err
 	}
 
-	err = fileutil.CopyTree(start, path.Join(a.CurrentACIPath, aci.RootfsDir), uid.NewBlankUidRange())
+	err = fileutil.CopyTree(start, path.Join(a.CurrentACIPath, aci.RootfsDir), user.NewBlankUidRange())
 	if err != nil {
 		return err
 	}

@@ -22,7 +22,7 @@ import (
 
 	"github.com/appc/spec/aci"
 	rkttar "github.com/coreos/rkt/pkg/tar"
-	"github.com/coreos/rkt/pkg/uid"
+	"github.com/coreos/rkt/pkg/user"
 )
 
 // RmAndMkdir will remove anything at path if it exists, and then create a
@@ -62,7 +62,7 @@ func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
 	}
 	defer dr.Close()
 
-	uidRange := uid.NewBlankUidRange()
+	uidRange := user.NewBlankUidRange()
 
 	if os.Geteuid() == 0 {
 		return rkttar.ExtractTar(dr, dst, true, uidRange, fileMap)
