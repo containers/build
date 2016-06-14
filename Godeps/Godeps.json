@@ -7,6 +7,56 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/appc/docker2aci/lib",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/common",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/backend/file",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/backend/repository",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/docker",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/tarball",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/types",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/lib/internal/util",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
+			"ImportPath": "github.com/appc/docker2aci/pkg/log",
+			"Comment": "v0.11.1",
+			"Rev": "355af275fa8d48b4ecdd361a5feaf173abff81e7"
+		},
+		{
 			"ImportPath": "github.com/appc/spec/aci",
 			"Comment": "v0.8.4",
 			"Rev": "f82c741e743001237821b5e0bb9a8ebd324d3117"
@@ -55,6 +105,11 @@
 			"Rev": "e7fc03058804de5488baed8df5b89f3924b9ec9a"
 		},
 		{
+			"ImportPath": "github.com/coreos/pkg/progressutil",
+			"Comment": "v2-4-g938dc0a",
+			"Rev": "938dc0af5bf1b9907f3be6fefe4d2592a5658030"
+		},
+		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
 			"Comment": "v1.7.0",
 			"Rev": "9549a059c85915f1136a4ce1e7fdd7b8cf25fd08"
@@ -95,12 +150,42 @@
 			"Rev": "71acacd42f85e5e82f70a55327789582a5200a90"
 		},
 		{
+			"ImportPath": "github.com/docker/distribution/digest",
+			"Comment": "v2.4.0-rc.1-139-g8b7c698",
+			"Rev": "8b7c698036e65e6be11b8d11f01ea8e9ef6abfb6"
+		},
+		{
+			"ImportPath": "github.com/docker/distribution/reference",
+			"Comment": "v2.4.0-rc.1-139-g8b7c698",
+			"Rev": "8b7c698036e65e6be11b8d11f01ea8e9ef6abfb6"
+		},
+		{
 			"ImportPath": "github.com/hashicorp/errwrap",
 			"Rev": "7554cd9344cec97297fa6649b055a8c98c2a1e55"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
 			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+		},
+		{
+			"ImportPath": "github.com/klauspost/compress/flate",
+			"Comment": "v1.0-12-g14eb9c4",
+			"Rev": "14eb9c4951195779ecfbec34431a976de7335b0a"
+		},
+		{
+			"ImportPath": "github.com/klauspost/cpuid",
+			"Comment": "v1.0",
+			"Rev": "09cded8978dc9e80714c4d85b0322337b0a1e5e0"
+		},
+		{
+			"ImportPath": "github.com/klauspost/crc32",
+			"Comment": "v1.0",
+			"Rev": "19b0b332c9e4516a6370a0456e6182c3b5036720"
+		},
+		{
+			"ImportPath": "github.com/klauspost/pgzip",
+			"Comment": "v1.0",
+			"Rev": "95e8170c5d4da28db9c64dfc9ec3138ea4466fd4"
 		},
 		{
 			"ImportPath": "github.com/kylelemons/godebug/diff",
