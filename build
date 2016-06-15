@@ -16,7 +16,9 @@ if [ ! -h gopath/src/${REPO_PATH} ]; then
 fi
 
 export GOBIN=${DIR}/bin
-export GOPATH=${DIR}/Godeps/_workspace:${DIR}/gopath
+export GOPATH=${DIR}/gopath
+
+export GO15VENDOREXPERIMENT=1
 
 eval $(go env)
 export GOOS GOARCH

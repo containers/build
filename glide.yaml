@@ -1,0 +1,77 @@
+package: github.com/appc/acbuild
+import:
+- package: github.com/appc/spec
+  version: v0.8.4
+  subpackages:
+  - aci
+  - discovery
+  - pkg/acirenderer
+  - pkg/device
+  - pkg/tarheader
+  - schema
+  - schema/common
+  - schema/types
+- package: github.com/coreos/go-semver
+  version: 6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa
+  subpackages:
+  - semver
+- package: github.com/coreos/ioprogress
+  version: e7fc03058804de5488baed8df5b89f3924b9ec9a
+- package: github.com/coreos/rkt
+  version: v1.7.0
+  subpackages:
+  - pkg/fileutil
+  - pkg/group
+  - pkg/multicall
+  - pkg/passwd
+  - pkg/sys
+  - pkg/tar
+  - pkg/user
+- package: github.com/cpuguy83/go-md2man
+  version: v1.0.4
+  subpackages:
+  - md2man
+- package: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- package: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- package: github.com/kylelemons/godebug
+  version: 21cb3784d9bda523911b96719efba02b7e983256
+  subpackages:
+  - diff
+  - pretty
+- package: github.com/russross/blackfriday
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
+- package: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
+- package: github.com/spf13/cobra
+  version: f368244301305f414206f889b1735a54cfc8bde8
+  subpackages:
+  - doc
+- package: github.com/spf13/pflag
+  version: cb88ea77998c3f024757528e3305022ab50b43be
+- package: github.com/syndtr/gocapability
+  version: 8e4cdcb3c22b40d5e330ade0b68cb2e2a3cf6f98
+  subpackages:
+  - capability
+- package: go4.org
+  version: 03efcb870d84809319ea509714dd6d19a1498483
+  subpackages:
+  - errorutil
+- package: golang.org/x/crypto
+  version: a7ead6ddf06233883deca151dffaef2effbf498f
+  subpackages:
+  - ssh/terminal
+- package: golang.org/x/net
+  version: c2528b2dd8352441850638a8bb678c2ad056fd3e
+  subpackages:
+  - html
+  - html/atom
+- package: k8s.io/kubernetes
+  version: v1.3.0-alpha.4
+  subpackages:
+  - pkg/api/resource
+- package: xi2.org/x/xz
+  version: 18c6b7129324841d920ee8dc1ab66ec07054998f
+- package: github.com/appc/docker2aci
+  version: v0.11.1
