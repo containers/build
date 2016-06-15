@@ -21,12 +21,15 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/appc/acbuild/registry"
 	"github.com/appc/acbuild/util"
 
+	docker2aci "github.com/appc/docker2aci/lib"
+	"github.com/appc/docker2aci/lib/common"
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/discovery"
 	"github.com/appc/spec/schema"
@@ -94,6 +97,11 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 				return a.beginFromLocalImage(start)
 			}
 		} else {
+			dockerPrefix := "docker://"
+			if strings.HasPrefix(start, dockerPrefix) {
+				start = strings.TrimPrefix(start, dockerPrefix)
+				return a.beginFromRemoteDockerImage(start, insecure)
+			}
 			return a.beginFromRemoteImage(start, insecure)
 		}
 	}
@@ -228,12 +236,6 @@ func (a *ACBuild) writeEmptyManifest() error {
 }
 
 func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
-	// Check if we're starting with a docker image
-	if strings.HasPrefix(start, "docker://") {
-		// TODO use docker2aci
-		return fmt.Errorf("docker containers are currently unsupported")
-	}
-
 	app, err := discovery.NewAppFromString(start)
 	if err != nil {
 		return err
@@ -294,4 +296,51 @@ func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
 	}
 
 	return util.ExtractImage(path.Join(tmpDepStoreTarPath, files[0].Name()), a.CurrentACIPath, nil)
+}
+
+func (a *ACBuild) beginFromRemoteDockerImage(start string, insecure bool) (err error) {
+	outputDir, err := ioutil.TempDir("", "acbuild")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(outputDir)
+
+	tempDir, err := ioutil.TempDir("", "acbuild")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	insecureConf := common.InsecureConfig{
+		SkipVerify: insecure,
+		AllowHTTP:  insecure,
+	}
+
+	config := docker2aci.RemoteConfig{
+		CommonConfig: docker2aci.CommonConfig{
+			Squash:      true,
+			OutputDir:   outputDir,
+			TmpDir:      tempDir,
+			Compression: common.GzipCompression,
+		},
+		Username: "",
+		Password: "",
+		Insecure: insecureConf,
+	}
+	renderedACIs, err := docker2aci.ConvertRemoteRepo(start, config)
+	if err != nil {
+		return err
+	}
+	if len(renderedACIs) > 1 {
+		return fmt.Errorf("internal error: docker2aci didn't squash the image")
+	}
+	if len(renderedACIs) == 0 {
+		return fmt.Errorf("internal error: docker2aci didn't produce any images")
+	}
+	absRenderedACI, err := filepath.Abs(renderedACIs[0])
+	if err != nil {
+		return err
+	}
+
+	return util.ExtractImage(absRenderedACI, a.CurrentACIPath, nil)
 }
