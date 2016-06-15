@@ -14,4 +14,5 @@ export GOPATH=${DIR}/Godeps/_workspace:${DIR}/gopath
 
 source "${DIR}/gopath/src/${REPO_PATH}/build"
 
+go test ${REPO_PATH}/acbuild
 go test "${TESTS_PATH}" "$@"

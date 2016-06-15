@@ -18,9 +18,11 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"text/tabwriter"
 	"text/template"
 
@@ -105,6 +107,9 @@ func newACBuild() *lib.ACBuild {
 }
 
 func getErrorCode(err error) int {
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		return exitErr.Sys().(syscall.WaitStatus).ExitStatus()
+	}
 	switch err {
 	case lib.ErrNotFound:
 		return 2
@@ -125,7 +130,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		if aciToModify == "" {
 			cmdExitCode = cf(cmd, args)
 			switch cmd.Name() {
-			case "cat-manifest", "begin", "write", "end", "version", "gen-man-pages":
+			case "cat-manifest", "begin", "write", "end", "version", "gen-man-pages", "script":
 				return
 			}
 			if cmdExitCode == 0 && !disableHistory {
@@ -143,7 +148,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		case "cat-manifest":
 			cmdExitCode = runCatOnACI(aciToModify)
 			return
-		case "begin", "write", "end", "version", "gen-man-pages":
+		case "begin", "write", "end", "version", "gen-man-pages", "script":
 			stderr("Can't use the --modify flag with %s.", cmd.Name())
 			cmdExitCode = 1
 			return
@@ -239,6 +244,13 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 }
 
 func main() {
+	multicall.Add("acbuild-script", func() error {
+		cmd := exec.Command("acbuild", append([]string{"script"}, os.Args[1:]...)...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd.Run()
+	})
 	// check if acbuild is executed with a multicall command
 	multicall.MaybeExec()
 

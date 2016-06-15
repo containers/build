@@ -1,0 +1,28 @@
+#!/usr/bin/env acbuild-script
+
+# Start the build with an empty ACI
+begin
+
+# Name the ACI
+set-name example.com/apache
+
+# Based on alpine
+dep add quay.io/coreos/alpine-sh
+
+# Install apache
+run -- apk update
+run -- apk add apache2
+
+run -- /bin/sh -c "echo 'ServerName localhost' >> /etc/apache2/httpd.conf"
+
+# Add a port for http traffic on port 80
+port add http tcp 80
+
+# Add a mount point for files to serve
+mount add html /var/www/localhost/htdocs
+
+# Run apache, and remain in the foreground
+set-exec -- /bin/sh -c "chmod 755 / && /usr/sbin/httpd -D FOREGROUND"
+
+# Write the result
+write --overwrite apache-latest-linux-amd64.aci
