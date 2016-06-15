@@ -2,6 +2,13 @@
 
 `acbuild run` will run the given command inside the ACI.
 
+## Options Parsing
+
+acbuild needs to be able to differentiate between flags to acbuild and flags to
+pass along to the binary being run. This is accomplished with `--`. Any flags
+occurring before this are considered as being intended for acbuild, and any
+flags after it are assumed to belong to the command being run.
+
 ## Dependencies
 
 In order to be able to run the command, all dependencies of the current ACI
