@@ -75,6 +75,7 @@ func (e Engine) Run(command string, args []string, environment types.Environment
 	nspawncmd = append(nspawncmd, args...)
 
 	execCmd := exec.Command(nspawncmd[0], nspawncmd[1:]...)
+	execCmd.Stdin = os.Stdin
 	execCmd.Stdout = os.Stdout
 	execCmd.Stderr = os.Stderr
 	execCmd.Env = []string{"SYSTEMD_LOG_LEVEL=err"}
