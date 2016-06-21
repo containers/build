@@ -47,6 +47,25 @@ func (e Engine) Run(command string, args []string, environment types.Environment
 		}
 		nspawncmd = append(nspawncmd, "--chdir", workingDir)
 	}
+	if systemdVersion >= 230 {
+		machineIdFile := path.Join(chroot, "/etc/machine-id")
+		_, err := os.Stat(machineIdFile)
+		switch {
+		case os.IsNotExist(err):
+			err := os.MkdirAll(path.Dir(machineIdFile), 0755)
+			if err != nil {
+				return err
+			}
+			f, err := os.Create(machineIdFile)
+			if err != nil {
+				return err
+			}
+			f.Close()
+			defer os.RemoveAll(path.Join(chroot, machineIdFile))
+		case err != nil:
+			return err
+		}
+	}
 
 	for _, envVar := range environment {
 		nspawncmd = append(nspawncmd, "--setenv", envVar.Name+"="+envVar.Value)
