@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/appc/acbuild/engine"
+	"github.com/appc/acbuild/engine/chroot"
 	"github.com/appc/acbuild/engine/systemdnspawn"
 
 	"github.com/spf13/cobra"
@@ -38,6 +39,7 @@ var (
 
 	engines = map[string]engine.Engine{
 		"systemd-nspawn": systemdnspawn.Engine{},
+		"chroot":         chroot.Engine{},
 	}
 )
 

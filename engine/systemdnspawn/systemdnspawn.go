@@ -22,11 +22,9 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/appc/acbuild/engine"
 	"github.com/appc/spec/schema/types"
 )
-
-var pathlist = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin",
-	"/usr/bin", "/sbin", "/bin"}
 
 type Engine struct{}
 
@@ -73,7 +71,7 @@ func (e Engine) Run(command string, args []string, environment types.Environment
 
 	nspawncmd = append(nspawncmd, "--setenv", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")
 
-	abscmd, err := findCmdInPath(pathlist, command, chroot)
+	abscmd, err := findCmdInPath(engine.Pathlist, command, chroot)
 	if err != nil {
 		return err
 	}
