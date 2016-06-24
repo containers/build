@@ -31,6 +31,22 @@ When an empty ACI is created with `acbuild begin`, by default the `os` and
 `arch` labels are created for you. Their default values are the current
 system's OS and architecture, as determined by golang's `runtime` package.
 
+## The Arch Label on ARM
+
+When `acbuild begin` is used without any starting image, `runtime.GOARCH` is
+used to determine the default value for the `arch` label. This doesn't
+differentiate between different arm versions, and according to the AppC spec
+acbuild needs to pick one of `armv6l`, `armv7l`, and `armv7b`.
+
+To account for this acbuild will inspect the endinanness of the machine it is
+running on and pick `armv7l` or `armv7b` accordingly. As a result if acbuild is
+on a platform where the label should be `armv6l`, the following command should
+be used to override the default label.
+
+```
+acbuild label add arch armv6l
+```
+
 ## Examples
 
 ```bash
