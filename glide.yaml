@@ -1,7 +1,7 @@
 package: github.com/appc/acbuild
 import:
 - package: github.com/appc/spec
-  version: v0.8.4
+  version: v0.8.5
   subpackages:
   - aci
   - discovery
@@ -18,7 +18,7 @@ import:
 - package: github.com/coreos/ioprogress
   version: e7fc03058804de5488baed8df5b89f3924b9ec9a
 - package: github.com/coreos/rkt
-  version: v1.7.0
+  version: v1.9.0
   subpackages:
   - pkg/fileutil
   - pkg/group

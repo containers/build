@@ -1,5 +1,5 @@
-hash: 2ea43224f85d832deed89437e067f137d35b9fb88f4f441d4b61d94162bd16e7
-updated: 2016-07-06T16:33:57.393702438+02:00
+hash: 184c0c37269a0f6733ba567a8e609e494856f6b83cb4f5c82144dd3727337951
+updated: 2016-07-11T16:10:12.747988885-07:00
 imports:
 - name: github.com/appc/docker2aci
   version: 355af275fa8d48b4ecdd361a5feaf173abff81e7
@@ -15,7 +15,7 @@ imports:
   - lib/internal/util
   - pkg/log
 - name: github.com/appc/spec
-  version: f82c741e743001237821b5e0bb9a8ebd324d3117
+  version: fd5e3d8f5d596c6fbd506e80b5e13ba8a97b704c
   subpackages:
   - aci
   - discovery
@@ -37,7 +37,7 @@ imports:
   - dlopen
   - progressutil
 - name: github.com/coreos/rkt
-  version: 9549a059c85915f1136a4ce1e7fdd7b8cf25fd08
+  version: d6874f787c60b3b4593e58030a2a20b55cc763e2
   subpackages:
   - pkg/fileutil
   - pkg/group
