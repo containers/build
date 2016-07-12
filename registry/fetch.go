@@ -336,7 +336,7 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 		insecure = discovery.InsecureHTTP
 	}
 
-	acis, attempts, err := discovery.DiscoverACIEndpoints(*app, nil, insecure)
+	acis, attempts, err := discovery.DiscoverACIEndpoints(*app, nil, insecure, 0)
 	if err != nil {
 		return nil, err
 	}
