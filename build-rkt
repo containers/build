@@ -1,0 +1,15 @@
+#!/bin/sh
+
+export SRC_DIR=`pwd`
+
+sudo rkt run \
+    --volume rslvconf,kind=host,source=/etc/resolv.conf \
+    --mount volume=rslvconf,target=/etc/resolv.conf \
+    --volume src-dir,kind=host,source=$SRC_DIR \
+    --mount volume=src-dir,target=/opt/rkt \
+    --interactive \
+    --insecure-options=image \
+    docker://alpine:3.4 \
+    --exec /bin/sh \
+    -- -c 'export GOPATH=/opt/rkt && export PATH=$PATH:/usr/lib/go/bin:/opt/rkt/bin && cd /opt/rkt && ./install-deps.sh && ./build'
+
