@@ -16,6 +16,7 @@ package lib
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/appc/acbuild/util"
 
@@ -64,12 +65,27 @@ func (a *ACBuild) AddIsolator(name string, value []byte) (err error) {
 		if s.App == nil {
 			s.App = newManifestApp()
 		}
+		_, ok := types.ResourceIsolatorNames[*acid]
+		if !ok {
+			_, ok = types.LinuxIsolatorNames[*acid]
+			if !ok {
+				return fmt.Errorf("unknown isolator name: %s", name)
+			}
+		}
+		i := &types.Isolator{
+			Name:     *acid,
+			ValueRaw: &rawMsg,
+		}
+		blob, err := json.Marshal(i)
+		if err != nil {
+			return err
+		}
+		err = i.UnmarshalJSON(blob)
+		if err != nil {
+			return err
+		}
 		removeIsolatorFromMan(*acid)(s)
-		s.App.Isolators = append(s.App.Isolators,
-			types.Isolator{
-				Name:     *acid,
-				ValueRaw: &rawMsg,
-			})
+		s.App.Isolators = append(s.App.Isolators, *i)
 		return nil
 	}
 	return util.ModifyManifest(fn, a.CurrentACIPath)
