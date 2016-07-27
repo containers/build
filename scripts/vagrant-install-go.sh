@@ -28,4 +28,4 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 EOF
 
 # not essential but go get depends on it
-which git || sudo apt-get update && sudo apt-get install -y git
+which git || { sudo apt-get update && sudo apt-get install -y git; }
