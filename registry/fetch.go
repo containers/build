@@ -361,10 +361,9 @@ func (r Registry) download(url, path, label string) error {
 		return err
 	}
 	transport := http.DefaultTransport
+	transport.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	if r.Insecure {
-		transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
+		transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	client := &http.Client{Transport: transport}
