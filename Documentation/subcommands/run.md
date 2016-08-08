@@ -36,8 +36,15 @@ command. The flag `--engine` can be used to select a non-default engine.
 The default engine in acbuild is called `systemd-nspawn`, which rather
 obviously uses `systemd-nspawn` to run the given command. This means that the
 machine running acbuild must have systemd installed to be able to use `acbuild
-run` with the default engine. Alternate execution tools (like `runc`) will be
-added in the future.
+run` with the default engine.
+
+### chroot
+
+An alternative engine is called `chroot`, which uses the chroot syscall to
+enter into the container and run the specified command. There's no namespacing
+involved, so the command will be able to see and possibly interact with other
+processes on the host. This engine notably has no dependency on systemd, unlike
+the `systemd-nspawn` engine.
 
 ### Exiting out of systemd-nspawn
 
