@@ -1,3 +1,18 @@
+## v0.4.0
+
+appc spec version: v0.8.5
+
+This release includes a handful of new features, improvements, and bug fixes.
+
+- stdin is now attached during run commands
+- godeps has been replaced with glide
+- a fix to allow the systemd-nspawn engine to work with systemd >= 230
+- better arm support
+- a new script mode, so acbuild can run scripts written in a special DSL
+- fixed proxy support
+- fixed isolator commands
+- added a chroot engine for the run command, so systemd-nspawn isn't needed
+
 ## v0.3.1
 
 appc spec version: v0.8.4
