@@ -58,7 +58,7 @@ would be passed in is `./alpine-latest-linux-amd64.aci`.
 A build can be started with a rootfs of a container. This rootfs could perhaps
 be produced by a tool like [buildroot](http://buildroot.org/), or downloaded
 from somewhere like the [Ubuntu Core
-releases](http://cdimage.ubuntu.com/ubuntu-core/releases/14.04/release/).
+releases](http://cdimage.ubuntu.com/ubuntu-core/xenial/daily-preinstalled/current/).
 
 The rootfs can either be in a local directory, or a local tar file. In either
 case, the rootfs is copied into the container and an empty manifest is created
