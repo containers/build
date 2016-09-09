@@ -1,18 +1,24 @@
-# acbuild
+# acbuild - the awesome container build tool
 
-acbuild is a command line utility to build and modify App Container Images 
-(ACIs), the container image format defined in the 
-[App Container (appc) spec](https://github.com/appc/spec).
+acbuild, the _awesome container build_ tool, is a command line utility to build
+and modify container images.
+
+It is intended to provide an image build workflow independent of specific
+formats; currently, it can output the following types of container images:
+* ACI, the container image format defined in the [App Container (appc) 
+ spec](https://github.com/appc/spec).
+* _**coming soon**_ OCI, the format defined in the [Open Containers Image
+ Format specification](https://github.com/opencontainers/image-spec)
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/WcnIDm80y68" frameborder="0" allowfullscreen></iframe>
 
 ## Rationale
 
-We needed a powerful tool for constructing and manipulating ACIs that made it
-easy to iteratively build containers, both from scratch and atop existing
-images. We wanted that tool to integrate well with Unix mechanisms like the
-shell and `Makefile`s so it would fit seamlessly into well-known administrator
-and developer workflows.
+We needed a powerful tool for constructing and manipulating container images
+that made it easy to iteratively build containers, both from scratch and atop
+existing images. We wanted that tool to integrate well with Unix mechanisms
+like the shell and `Makefile`s so it would fit seamlessly into well-known
+administrator and developer workflows.
 
 ## Installation
 
