@@ -1,7 +1,6 @@
-# acbuild - the awesome container build tool
+# acbuild - another container build tool
 
-acbuild, the _awesome container build_ tool, is a command line utility to build
-and modify container images.
+acbuild is a command line utility to build and modify container images.
 
 It is intended to provide an image build workflow independent of specific
 formats; currently, it can output the following types of container images:
