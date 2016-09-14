@@ -29,8 +29,8 @@ import (
 	"github.com/coreos/rkt/pkg/multicall"
 	"github.com/spf13/cobra"
 
-	"github.com/appc/acbuild/lib"
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/lib"
+	"github.com/containers/build/util"
 )
 
 const (

@@ -27,7 +27,7 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema/types"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 // Write will produce the resulting ACI from the current build context, saving

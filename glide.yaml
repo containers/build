@@ -1,4 +1,4 @@
-package: github.com/appc/acbuild
+package: github.com/containers/build
 import:
 - package: github.com/appc/spec
   version: v0.8.5

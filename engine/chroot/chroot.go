@@ -19,7 +19,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/appc/acbuild/engine"
+	"github.com/containers/build/engine"
 	"github.com/appc/spec/schema/types"
 	"github.com/coreos/rkt/pkg/fileutil"
 	"github.com/coreos/rkt/pkg/multicall"

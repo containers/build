@@ -22,7 +22,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/appc/acbuild/engine"
+	"github.com/containers/build/engine"
 	"github.com/appc/spec/schema/types"
 )
 

@@ -26,8 +26,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/appc/acbuild/registry"
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/registry"
+	"github.com/containers/build/util"
 
 	docker2aci "github.com/appc/docker2aci/lib"
 	"github.com/appc/docker2aci/lib/common"

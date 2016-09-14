@@ -23,7 +23,7 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 // CatManifest will print to stdout the manifest from the expanded ACI stored

@@ -5,8 +5,8 @@ set -e
 # https://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ORG_PATH="github.com/appc"
-REPO_PATH="${ORG_PATH}/acbuild"
+ORG_PATH="github.com/containers"
+REPO_PATH="${ORG_PATH}/build"
 TESTS_PATH="${REPO_PATH}/tests"
 
 export ACBUILD_BIN="${DIR}/bin/acbuild"
