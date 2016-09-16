@@ -42,7 +42,7 @@ engine](Documentation/subcommands/run.md) for acbuild run. Thus on Ubuntu the `s
 ### Prebuilt Binaries
 
 The easiest way to get `acbuild` is to download one of the
-[releases](https://github.com/appc/acbuild/releases) from GitHub.
+[releases](https://github.com/containers/build/releases) from GitHub.
 
 ### Build from source
 
@@ -53,7 +53,7 @@ Follow these steps to do so:
 1. Grab the source code for `acbuild` by `git clone`ing the source repository:
    ```
    cd ~
-   git clone https://github.com/appc/acbuild
+   git clone https://github.com/containers/build
    ```
 
 2. Run the `build` script from the root source repository directory:
@@ -91,7 +91,7 @@ can quickly get you set up with a Linux VM that has both acbuild and rkt. The
 following steps will grab acbuild, set up the machine, and ssh into it.
 
 ```
-git clone https://github.com/appc/acbuild
+git clone https://github.com/containers/build
 cd acbuild
 vagrant up
 vagrant ssh
@@ -101,13 +101,13 @@ vagrant ssh
 
 Documentation about acbuild and many of its commands is available in the
 [`Documentation`
-directory](https://github.com/appc/acbuild/tree/master/Documentation) in this
+directory](https://github.com/containers/build/tree/master/Documentation) in this
 repository.
 
 ## Examples
 
 Check out the [`examples`
-directory](https://github.com/appc/acbuild/tree/master/examples) for some common
+directory](https://github.com/containers/build/tree/master/examples) for some common
 applications being packaged into ACIs with `acbuild`.
 
 ## Related work

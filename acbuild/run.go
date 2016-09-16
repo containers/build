@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appc/acbuild/engine"
-	"github.com/appc/acbuild/engine/chroot"
-	"github.com/appc/acbuild/engine/systemdnspawn"
+	"github.com/containers/build/engine"
+	"github.com/containers/build/engine/chroot"
+	"github.com/containers/build/engine/systemdnspawn"
 
 	"github.com/spf13/cobra"
 )

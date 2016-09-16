@@ -35,7 +35,7 @@ import (
 	"github.com/coreos/ioprogress"
 	"xi2.org/x/xz"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 func (r Registry) tmppath() string {

@@ -17,7 +17,7 @@ package lib
 import (
 	"os"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 // End will stop the current build. An error will be returned if no build is in

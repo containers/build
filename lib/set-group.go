@@ -17,7 +17,7 @@ package lib
 import (
 	"fmt"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 
 	"github.com/appc/spec/schema"
 )

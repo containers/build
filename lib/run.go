@@ -28,9 +28,9 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema/types"
 
-	"github.com/appc/acbuild/engine"
-	"github.com/appc/acbuild/registry"
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/engine"
+	"github.com/containers/build/registry"
+	"github.com/containers/build/util"
 )
 
 // Run will execute the given command in the ACI being built. a.CurrentACIPath

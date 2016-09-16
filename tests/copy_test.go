@@ -26,7 +26,7 @@ import (
 
 	"github.com/appc/spec/aci"
 
-	"github.com/appc/acbuild/util/fsdiffer"
+	"github.com/containers/build/util/fsdiffer"
 )
 
 const dest = "/test"

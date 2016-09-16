@@ -17,7 +17,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/appc/acbuild/lib"
+	"github.com/containers/build/lib"
 )
 
 var (
