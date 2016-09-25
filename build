@@ -32,5 +32,7 @@ fi
 
 echo "Building acbuild..."
 go build -o $GOBIN/acbuild -ldflags "${GLDFLAGS}" ${ACBUILD_BUILD_TAGS} ${REPO_PATH}/acbuild
-ln -f $GOBIN/acbuild $GOBIN/acbuild-script
-ln -f $GOBIN/acbuild $GOBIN/acbuild-chroot
+pushd "$GOBIN"
+ln -sf acbuild acbuild-script
+ln -sf acbuild acbuild-chroot
+popd
