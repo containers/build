@@ -53,7 +53,7 @@ Follow these steps to do so:
 1. Grab the source code for `acbuild` by `git clone`ing the source repository:
    ```
    cd ~
-   git clone https://github.com/containers/build
+   git clone https://github.com/containers/build acbuild
    ```
 
 2. Run the `build` script from the root source repository directory:
