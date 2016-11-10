@@ -91,7 +91,7 @@ can quickly get you set up with a Linux VM that has both acbuild and rkt. The
 following steps will grab acbuild, set up the machine, and ssh into it.
 
 ```
-git clone https://github.com/containers/build
+git clone https://github.com/containers/build acbuild
 cd acbuild
 vagrant up
 vagrant ssh
