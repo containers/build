@@ -48,6 +48,6 @@ dependencies (which happens if you use the `run` command after a `dep add`
 command) it immediately falls back to performing AppC discovery to find the
 image. This means that local dependencies are not currently supported.
 
-[1]: Documentation/subcommands/begin.md
-[2]: Documentation/subcommands/dependency.md
+[1]: subcommands/begin.md
+[2]: subcommands/dependency.md
 [3]: https://github.com/appc/spec/blob/master/spec/discovery.md
