@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2017 The acbuild Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,27 +19,26 @@ import (
 )
 
 var (
-	cmdSetExec = &cobra.Command{
-		Use:     "set-exec -- CMD [ARGS]",
-		Short:   "Set the exec command",
-		Long:    "Sets the exec command in the ACI's manifest",
-		Example: "acbuild set-exec -- /usr/sbin/nginx -g \"daemon off;\"",
-		Run:     runWrapper(runSetExec),
+	cmdLayer = &cobra.Command{
+		Use:     "layer",
+		Short:   "Creates a new layer in the image (OCI only)",
+		Example: "acbuild layer",
+		Run:     runWrapper(runLayer),
 	}
 )
 
 func init() {
-	cmdAcbuild.AddCommand(cmdSetExec)
+	cmdAcbuild.AddCommand(cmdLayer)
 }
 
-func runSetExec(cmd *cobra.Command, args []string) (exit int) {
-	if len(args) == 0 {
+func runLayer(cmd *cobra.Command, args []string) (exit int) {
+	if len(args) != 0 {
 		cmd.Usage()
 		return 1
 	}
 
 	if debug {
-		stderr("Setting exec command %v", args)
+		stderr("Adding new layer")
 	}
 
 	a, err := newACBuild()
@@ -47,10 +46,10 @@ func runSetExec(cmd *cobra.Command, args []string) (exit int) {
 		stderr("%v", err)
 		return 1
 	}
-	err = a.SetExec(args)
+	err = a.NewLayer()
 
 	if err != nil {
-		stderr("set-exec: %v", err)
+		stderr("layer: %v", err)
 		return getErrorCode(err)
 	}
 

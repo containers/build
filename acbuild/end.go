@@ -42,7 +42,12 @@ func runEnd(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Ending the build")
 	}
 
-	err := newACBuild().End()
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.End()
 
 	if err != nil {
 		stderr("end: %v", err)

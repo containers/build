@@ -29,11 +29,12 @@ import (
 	"github.com/appc/spec/schema/types"
 
 	"github.com/containers/build/engine"
+	"github.com/containers/build/lib/oci"
 	"github.com/containers/build/registry"
 	"github.com/containers/build/util"
 )
 
-// Run will execute the given command in the ACI being built. a.CurrentACIPath
+// Run will execute the given command in the ACI being built. a.CurrentImagePath
 // is where the untarred ACI is stored, a.DepStoreTarPath is the directory to
 // download dependencies into, a.DepStoreExpandedPath is where the dependencies
 // are expanded into, and a.OverlayWorkPath is the work directory used by
@@ -89,12 +90,20 @@ func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine 
 		return err
 	}
 
-	man, err := util.GetManifest(a.CurrentACIPath)
+	var depPaths []string
+	switch a.Mode {
+	case BuildModeOCI:
+		depPaths, err = a.generateOverlayPathsOCI()
+	case BuildModeAppC:
+		depPaths, err = a.generateOverlayPathsAppC(insecure)
+	default:
+		return fmt.Errorf("unknown build mode: %s", a.Mode)
+	}
 	if err != nil {
 		return err
 	}
 
-	if len(man.Dependencies) != 0 {
+	if len(depPaths) != 1 {
 		if !supportsOverlay() {
 			err := exec.Command("modprobe", "overlay").Run()
 			if err != nil {
@@ -110,20 +119,14 @@ func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine 
 		}
 	}
 
-	deps, err := a.renderACI(insecure, a.Debug)
-	if err != nil {
-		return err
-	}
-
 	var chrootDir string
-	if deps == nil {
-		chrootDir = path.Join(a.CurrentACIPath, aci.RootfsDir)
+	if len(depPaths) == 1 {
+		chrootDir = depPaths[0]
 	} else {
-		for i, dep := range deps {
-			deps[i] = path.Join(a.DepStoreExpandedPath, dep, aci.RootfsDir)
-		}
-		options := "lowerdir=" + strings.Join(deps, ":") +
-			",upperdir=" + path.Join(a.CurrentACIPath, aci.RootfsDir) +
+		lowerLayers := depPaths[0 : len(depPaths)-1]
+		upperLayer := depPaths[len(depPaths)-1]
+		options := "lowerdir=" + strings.Join(lowerLayers, ":") +
+			",upperdir=" + upperLayer +
 			",workdir=" + a.OverlayWorkPath
 		err := syscall.Mount("overlay", a.OverlayTargetPath, "overlay", 0, options)
 		if err != nil {
@@ -140,11 +143,17 @@ func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine 
 		chrootDir = a.OverlayTargetPath
 	}
 
-	var env types.Environment
-	if man.App != nil {
-		env = man.App.Environment
-	} else {
-		env = types.Environment{}
+	var env map[string]string
+	switch a.Mode {
+	case BuildModeOCI:
+		env, err = a.getEnvVarsOCI()
+	case BuildModeAppC:
+		env, err = a.getEnvVarsAppC()
+	default:
+		return fmt.Errorf("unknown build mode: %s", a.Mode)
+	}
+	if err != nil {
+		return err
 	}
 
 	err = a.mirrorLocalZoneInfo()
@@ -157,7 +166,99 @@ func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine 
 		return err
 	}
 
+	if a.Mode == BuildModeOCI {
+		err = a.rehashAndStoreOCIBlob(depPaths[len(depPaths)-1], false)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func (a *ACBuild) generateOverlayPathsAppC(insecure bool) ([]string, error) {
+	deps, err := a.renderACI(insecure, a.Debug)
+	if err != nil {
+		return nil, err
+	}
+	for i, dep := range deps {
+		deps[i] = path.Join(a.DepStoreExpandedPath, dep, aci.RootfsDir)
+	}
+
+	deps = append(deps, path.Join(a.CurrentImagePath, aci.RootfsDir))
+
+	return deps, nil
+}
+
+func (a *ACBuild) generateOverlayPathsOCI() ([]string, error) {
+	var layerIDs []string
+	switch ociMan := a.man.(type) {
+	case *oci.Image:
+		layerIDs = ociMan.GetLayerHashes()
+	default:
+		return nil, fmt.Errorf("internal error: mismatched manifest type and build mode???")
+	}
+
+	var layerPaths []string
+	if len(layerIDs) == 0 {
+		layerPaths = []string{path.Join(a.OCIExpandedBlobsPath, "sha256", "new-layer")}
+		err := os.MkdirAll(layerPaths[0], 0755)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := util.OCIExtractLayers(layerIDs, a.CurrentImagePath, a.OCIExpandedBlobsPath)
+		if err != nil {
+			return nil, err
+		}
+		for _, layerID := range layerIDs {
+			algo, hash, err := util.SplitOCILayerID(layerID)
+			if err != nil {
+				return nil, err
+			}
+			layerPaths = append(layerPaths, path.Join(a.OCIExpandedBlobsPath, algo, hash))
+		}
+	}
+	return layerPaths, nil
+}
+
+func (a *ACBuild) getEnvVarsAppC() (map[string]string, error) {
+	man, err := util.GetManifest(a.CurrentImagePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var env types.Environment
+	if man.App != nil {
+		env = man.App.Environment
+	} else {
+		env = types.Environment{}
+	}
+
+	envMap := make(map[string]string)
+	for _, v := range env {
+		envMap[v.Name] = v.Value
+	}
+
+	return envMap, nil
+}
+
+func (a *ACBuild) getEnvVarsOCI() (map[string]string, error) {
+	switch ociMan := a.man.(type) {
+	case *oci.Image:
+		env := ociMan.GetConfig().Config.Env
+		ret := make(map[string]string)
+		for _, v := range env {
+			tokens := strings.SplitN(v, "=", 2)
+			if len(tokens) < 2 {
+				return nil, fmt.Errorf("incorrectly formatted environment variable: %q", v)
+			}
+			ret[tokens[0]] = tokens[1]
+		}
+		return ret, nil
+	default:
+		return nil, fmt.Errorf("internal error: mismatched manifest type and build mode???")
+	}
 }
 
 // stolen from github.com/coreos/rkt/common/common.go
@@ -187,7 +288,7 @@ func (a *ACBuild) renderACI(insecure, debug bool) ([]string, error) {
 		Debug:                debug,
 	}
 
-	man, err := util.GetManifest(a.CurrentACIPath)
+	man, err := util.GetManifest(a.CurrentImagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +365,7 @@ func (a *ACBuild) mirrorLocalZoneInfo() error {
 	}
 	defer src.Close()
 
-	destp := filepath.Join(a.CurrentACIPath, aci.RootfsDir, zif)
+	destp := filepath.Join(a.CurrentImagePath, aci.RootfsDir, zif)
 
 	if err = os.MkdirAll(filepath.Dir(destp), 0755); err != nil {
 		return err

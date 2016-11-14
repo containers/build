@@ -16,12 +16,11 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/containers/build/lib"
 )
 
 var (
 	prettyPrint bool
+	printConfig bool
 
 	cmdCat = &cobra.Command{
 		Use:     "cat-manifest",
@@ -34,6 +33,7 @@ var (
 func init() {
 	cmdAcbuild.AddCommand(cmdCat)
 	cmdCat.Flags().BoolVar(&prettyPrint, "pretty-print", false, "Print the manifest with whitespace")
+	cmdCat.Flags().BoolVar(&printConfig, "config", false, "(oci only) Prints the image config instead of the manifest")
 }
 
 func runCat(cmd *cobra.Command, args []string) (exit int) {
@@ -46,7 +46,12 @@ func runCat(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Printing manifest from current build")
 	}
 
-	err := newACBuild().CatManifest(prettyPrint)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.Print(prettyPrint, printConfig)
 	if err != nil {
 		stderr("cat-manifest: %v", err)
 		return 1
@@ -56,10 +61,11 @@ func runCat(cmd *cobra.Command, args []string) (exit int) {
 }
 
 func runCatOnACI(aciToModify string) int {
-	err := lib.CatManifest(aciToModify, prettyPrint)
-	if err != nil {
-		stderr("cat-manifest: %v", err)
-		return 1
-	}
+	// TODO
+	//err := lib.Print(aciToModify, prettyPrint)
+	//if err != nil {
+	//	stderr("cat-manifest: %v", err)
+	//	return 1
+	//}
 	return 0
 }

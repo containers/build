@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The acbuild Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package oci
 
 import (
 	"fmt"
-
-	"github.com/containers/build/util"
-
-	"github.com/appc/spec/schema"
+	"strings"
 )
 
-// SetUser sets the user the pod will run as in the untarred ACI stored at
-// a.CurrentACIPath.
-func (a *ACBuild) SetUser(user string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
+// SetUser will set the user (username or UID) the app in this container will
+// run as
+func (i *Image) SetUser(user string) error {
 	if user == "" {
 		return fmt.Errorf("user cannot be empty")
 	}
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.User = user
-		return nil
+	if strings.Contains(user, ":") {
+		return fmt.Errorf("user cannot contain a ':' character")
 	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	if !strings.Contains(i.config.Config.User, ":") {
+		i.config.Config.User = user
+	} else {
+		tokens := strings.Split(i.config.Config.User, ":")
+		if len(tokens) != 2 {
+			return fmt.Errorf("something has gone horribly wrong setting the user")
+		}
+		i.config.Config.User = user + ":" + tokens[1]
+	}
+	return i.save()
 }

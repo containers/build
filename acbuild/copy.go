@@ -45,7 +45,12 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Copying host:%s to aci:%s", args[0], args[1])
 	}
 
-	err := newACBuild().CopyToTarget(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.CopyToTarget(args[0], args[1])
 
 	if err != nil {
 		stderr("copy: %v", err)

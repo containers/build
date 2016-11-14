@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package appc
 
 import (
 	"fmt"
 
-	"github.com/containers/build/util"
-
-	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 )
 
-// SetName sets the name for the untarred ACI stored at a.CurrentACIPath
-func (a *ACBuild) SetName(name string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
+// SetName sets the name for the untarred ACI stored at a.CurrentImagePath
+func (m *Manifest) SetName(name string) error {
 	if name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
@@ -41,10 +29,6 @@ func (a *ACBuild) SetName(name string) (err error) {
 	if err != nil {
 		return err
 	}
-
-	fn := func(s *schema.ImageManifest) error {
-		s.Name = *acid
-		return nil
-	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	m.manifest.Name = *acid
+	return m.save()
 }

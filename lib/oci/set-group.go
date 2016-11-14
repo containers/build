@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The acbuild Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,37 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package oci
 
 import (
 	"fmt"
-
-	"github.com/containers/build/util"
-
-	"github.com/appc/spec/schema"
+	"strings"
 )
 
-// SetGroup sets the group the pod will run as in the untarred ACI stored at
-// a.CurrentACIPath.
-func (a *ACBuild) SetGroup(group string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
+// SetGroup will set the user (group name or GID) the app in this container will
+// run as
+func (i *Image) SetGroup(group string) error {
 	if group == "" {
 		return fmt.Errorf("group cannot be empty")
 	}
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.Group = group
-		return nil
+	if strings.Contains(group, ":") {
+		return fmt.Errorf("group cannot contain a ':' character")
 	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	if !strings.Contains(i.config.Config.User, ":") {
+		i.config.Config.User = i.config.Config.User + ":" + group
+	} else {
+		tokens := strings.Split(i.config.Config.User, ":")
+		if len(tokens) != 2 {
+			return fmt.Errorf("something has gone horribly wrong setting the user")
+		}
+		i.config.Config.User = tokens[0] + ":" + group
+	}
+	return i.save()
 }

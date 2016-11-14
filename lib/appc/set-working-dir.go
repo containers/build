@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
-
-import (
-	"github.com/containers/build/util"
-
-	"github.com/appc/spec/schema"
-)
+package appc
 
 // SetWorkingDir sets the workingDirectory value in the untarred ACI stored at
-// a.CurrentACIPath
-func (a *ACBuild) SetWorkingDir(dir string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
+// a.CurrentImagePath
+func (m *Manifest) SetWorkingDir(dir string) error {
+	if m.manifest.App == nil {
+		m.manifest.App = newManifestApp()
 	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.WorkingDirectory = dir
-		return nil
-	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	m.manifest.App.WorkingDirectory = dir
+	return m.save()
 }

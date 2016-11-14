@@ -52,7 +52,12 @@ func runWrite(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Writing ACI to %s", args[0])
 	}
 
-	err := newACBuild().Write(args[0], overwrite)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.Write(args[0], overwrite)
 
 	if err != nil {
 		stderr("write: %v", err)

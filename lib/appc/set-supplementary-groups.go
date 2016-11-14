@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
-
-import (
-	"github.com/appc/spec/schema"
-	"github.com/containers/build/util"
-)
+package appc
 
 // SetSuppGroups sets the groups the pod will run as in the untarred ACI
 // stored at a.CurrentACIPath.
-func (a *ACBuild) SetSuppGroups(groups []int) (err error) {
-	if err = a.lock(); err != nil {
-		return err
+func (m *Manifest) SetSuppGroups(groups []int) error {
+	if m.manifest.App == nil {
+		m.manifest.App = newManifestApp()
 	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.SupplementaryGIDs = groups
-		return nil
-	}
-
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	m.manifest.App.SupplementaryGIDs = groups
+	return m.save()
 }

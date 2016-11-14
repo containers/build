@@ -15,6 +15,7 @@
 package lib
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -26,6 +27,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/containers/build/lib/appc"
+	"github.com/containers/build/lib/oci"
 	"github.com/containers/build/registry"
 	"github.com/containers/build/util"
 
@@ -37,17 +40,20 @@ import (
 	"github.com/appc/spec/schema/types"
 	"github.com/coreos/rkt/pkg/fileutil"
 	"github.com/coreos/rkt/pkg/user"
+	specs "github.com/opencontainers/image-spec/specs-go"
+	ociImage "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 var (
 	placeholdername = "acbuild-unnamed"
 )
 
-// Begin will start a new build, storing the untarred ACI the build operates on
-// at a.CurrentACIPath. If start is the empty string, the build will begin with
-// an empty ACI, otherwise the ACI stored at start will be used at the starting
-// point.
-func (a *ACBuild) Begin(start string, insecure bool) (err error) {
+// Begin will start a new build, storing the untarred image the build operates
+// on at a.CurrentImagePath. If start is the empty string, the build will begin
+// with an empty image, otherwise the image stored at start will be used at the
+// starting point. The mode parameter specifies whether this is starting with an
+// AppC or OCI image.
+func (a *ACBuild) Begin(start string, insecure bool, mode BuildMode) (err error) {
 	_, err = os.Stat(a.ContextPath)
 	switch {
 	case os.IsNotExist(err):
@@ -80,8 +86,26 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 		}
 	}()
 
+	defer func() {
+		// If the build was successfully started, there's now a new manifest we
+		// should load.
+		if err == nil {
+			switch mode {
+			case BuildModeAppC:
+				a.man, err = appc.LoadManifest(a.CurrentImagePath)
+			case BuildModeOCI:
+				a.man, err = oci.LoadImage(a.CurrentImagePath)
+			}
+		}
+	}()
+
+	err = ioutil.WriteFile(a.BuildModePath, []byte(mode), 0644)
+	if err != nil {
+		return err
+	}
+
 	if start != "" {
-		err = os.MkdirAll(a.CurrentACIPath, 0755)
+		err = os.MkdirAll(a.CurrentImagePath, 0755)
 		if err != nil {
 			return err
 		}
@@ -95,9 +119,13 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 			case finfo.IsDir():
 				return a.beginFromLocalDirectory(start)
 			default:
-				return a.beginFromLocalImage(start)
+				return a.beginFromLocalImage(start, mode)
 			}
 		} else {
+			if mode == BuildModeOCI {
+				// TODO: fix this!
+				return fmt.Errorf("cannot start from remote OCI images currently")
+			}
 			dockerPrefix := "docker://"
 			if strings.HasPrefix(start, dockerPrefix) {
 				start = strings.TrimPrefix(start, dockerPrefix)
@@ -106,10 +134,16 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 			return a.beginFromRemoteImage(start, insecure)
 		}
 	}
-	return a.beginWithEmptyACI()
+	switch mode {
+	case BuildModeAppC:
+		return a.beginWithEmptyACI()
+	case BuildModeOCI:
+		return a.beginWithEmptyOCI()
+	}
+	return fmt.Errorf("unknown build mode: %s", mode)
 }
 
-func (a *ACBuild) beginFromLocalImage(start string) error {
+func (a *ACBuild) beginFromLocalImage(start string, mode BuildMode) error {
 	finfo, err := os.Stat(start)
 	if err != nil {
 		return err
@@ -117,23 +151,33 @@ func (a *ACBuild) beginFromLocalImage(start string) error {
 	if finfo.IsDir() {
 		return fmt.Errorf("provided starting ACI is a directory: %s", start)
 	}
-	err = util.ExtractImage(start, a.CurrentACIPath, nil)
+	err = util.ExtractImage(start, a.CurrentImagePath, nil)
 	if err != nil {
 		return err
 	}
 
-	for _, file := range []struct {
-		FileName string
-		FilePath string
-	}{
-		{"manifest file", path.Join(a.CurrentACIPath, aci.ManifestFile)},
-		{"rootfs directory", path.Join(a.CurrentACIPath, aci.RootfsDir)},
-	} {
-		_, err = os.Stat(file.FilePath)
+	var thingsToCheck []string
+	switch mode {
+	case BuildModeOCI:
+		thingsToCheck = []string{
+			path.Join(a.CurrentImagePath, "oci-layout"),
+			path.Join(a.CurrentImagePath, "refs"),
+			path.Join(a.CurrentImagePath, "blobs"),
+		}
+	case BuildModeAppC:
+		thingsToCheck = []string{
+			path.Join(a.CurrentImagePath, aci.ManifestFile),
+			path.Join(a.CurrentImagePath, aci.RootfsDir),
+		}
+	}
+
+	for _, f := range thingsToCheck {
+		_, err = os.Stat(f)
 		switch {
 		case os.IsNotExist(err):
-			fmt.Fprintf(os.Stderr, "%s is missing, assuming build is beginning with a tar of a rootfs\n", file.FileName)
-			return a.startedFromTar()
+			_, fname := path.Split(f)
+			fmt.Fprintf(os.Stderr, "%s is missing, assuming build is beginning with a tar of a rootfs\n", fname)
+			return a.startedFromTar(mode)
 		case err != nil:
 			return err
 		}
@@ -141,30 +185,52 @@ func (a *ACBuild) beginFromLocalImage(start string) error {
 	return nil
 }
 
-func (a *ACBuild) startedFromTar() error {
-	tmpPath := path.Join(a.ContextPath, "rootfs")
-	err := os.Rename(a.CurrentACIPath, tmpPath)
-	if err != nil {
-		return err
+func (a *ACBuild) startedFromTar(mode BuildMode) error {
+	switch mode {
+	case BuildModeAppC:
+		tmpPath := path.Join(a.ContextPath, aci.RootfsDir)
+		err := os.Rename(a.CurrentImagePath, tmpPath)
+		if err != nil {
+			return err
+		}
+		err = a.beginWithEmptyACI()
+		if err != nil {
+			return err
+		}
+		err = os.Remove(path.Join(a.CurrentImagePath, aci.RootfsDir))
+		if err != nil {
+			return err
+		}
+		return os.Rename(tmpPath, path.Join(a.CurrentImagePath, aci.RootfsDir))
+	case BuildModeOCI:
+		targetPath, err := util.OCINewExpandedLayer(a.OCIExpandedBlobsPath)
+		if err != nil {
+			return err
+		}
+		err = os.Remove(targetPath)
+		if err != nil {
+			return err
+		}
+		err = os.Rename(a.CurrentImagePath, targetPath)
+		if err != nil {
+			return err
+		}
+		err = a.beginWithEmptyOCI()
+		if err != nil {
+			return err
+		}
+		return a.rehashAndStoreOCIBlob(targetPath, false)
 	}
-	err = a.beginWithEmptyACI()
-	if err != nil {
-		return err
-	}
-	err = os.Remove(path.Join(a.CurrentACIPath, aci.RootfsDir))
-	if err != nil {
-		return err
-	}
-	return os.Rename(tmpPath, path.Join(a.CurrentACIPath, aci.RootfsDir))
+	return fmt.Errorf("unknown build mode: %s", mode)
 }
 
 func (a *ACBuild) beginFromLocalDirectory(start string) error {
-	err := os.MkdirAll(a.CurrentACIPath, 0755)
+	err := os.MkdirAll(a.CurrentImagePath, 0755)
 	if err != nil {
 		return err
 	}
 
-	err = fileutil.CopyTree(start, path.Join(a.CurrentACIPath, aci.RootfsDir), user.NewBlankUidRange())
+	err = fileutil.CopyTree(start, path.Join(a.CurrentImagePath, aci.RootfsDir), user.NewBlankUidRange())
 	if err != nil {
 		return err
 	}
@@ -172,8 +238,74 @@ func (a *ACBuild) beginFromLocalDirectory(start string) error {
 	return a.writeEmptyManifest()
 }
 
+func (a *ACBuild) beginWithEmptyOCI() error {
+	for _, f := range []string{"blobs/sha256", "refs"} {
+		err := os.MkdirAll(path.Join(a.CurrentImagePath, f), 0755)
+		if err != nil {
+			return err
+		}
+	}
+	ociLayoutBlob, err := json.Marshal(OCILayoutValue)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(path.Join(a.CurrentImagePath, "oci-layout"), ociLayoutBlob, 0755)
+	if err != nil {
+		return err
+	}
+	return a.writeSkeletonRefAndManifest()
+}
+
+func (a *ACBuild) writeSkeletonRefAndManifest() error {
+	img := ociImage.Image{
+		Architecture: runtime.GOARCH,
+		OS:           runtime.GOOS,
+	}
+	imgHash, imgSize, err := a.marshalHashAndWrite(img)
+	if err != nil {
+		return err
+	}
+
+	man := ociImage.Manifest{
+		Versioned: specs.Versioned{
+			SchemaVersion: OCISchemaVersion,
+			MediaType:     ociImage.MediaTypeImageManifest,
+		},
+		Config: ociImage.Descriptor{
+			MediaType: ociImage.MediaTypeImageConfig,
+			Digest:    imgHash,
+			Size:      int64(imgSize),
+		},
+	}
+	manHash, manSize, err := a.marshalHashAndWrite(man)
+	if err != nil {
+		return err
+	}
+
+	ref := ociImage.Descriptor{
+		MediaType: ociImage.MediaTypeImageManifest,
+		Digest:    manHash,
+		Size:      int64(manSize),
+	}
+	refBlob, err := json.Marshal(ref)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path.Join(a.CurrentImagePath, "refs", "latest"), refBlob, 0644)
+	if err != nil {
+		return err
+	}
+	return a.loadManifest()
+}
+
+func (a *ACBuild) marshalHashAndWrite(data interface{}) (string, int, error) {
+	algo, hash, n, e := util.MarshalHashAndWrite(a.CurrentImagePath, data)
+	return algo + ":" + hash, n, e
+}
+
 func (a *ACBuild) beginWithEmptyACI() error {
-	err := os.MkdirAll(path.Join(a.CurrentACIPath, aci.RootfsDir), 0755)
+	err := os.MkdirAll(path.Join(a.CurrentImagePath, aci.RootfsDir), 0755)
 	if err != nil {
 		return err
 	}
@@ -234,7 +366,7 @@ func (a *ACBuild) writeEmptyManifest() error {
 		return err
 	}
 
-	manfile, err := os.Create(path.Join(a.CurrentACIPath, aci.ManifestFile))
+	manfile, err := os.Create(path.Join(a.CurrentImagePath, aci.ManifestFile))
 	if err != nil {
 		return err
 	}
@@ -249,7 +381,7 @@ func (a *ACBuild) writeEmptyManifest() error {
 		return err
 	}
 
-	return nil
+	return a.loadManifest()
 }
 
 func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
@@ -312,7 +444,7 @@ func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
 		panic("unexpected number of files in store after download: " + filelist)
 	}
 
-	return util.ExtractImage(path.Join(tmpDepStoreTarPath, files[0].Name()), a.CurrentACIPath, nil)
+	return util.ExtractImage(path.Join(tmpDepStoreTarPath, files[0].Name()), a.CurrentImagePath, nil)
 }
 
 func (a *ACBuild) beginFromRemoteDockerImage(start string, insecure bool) (err error) {
@@ -359,5 +491,5 @@ func (a *ACBuild) beginFromRemoteDockerImage(start string, insecure bool) (err e
 		return err
 	}
 
-	return util.ExtractImage(absRenderedACI, a.CurrentACIPath, nil)
+	return util.ExtractImage(absRenderedACI, a.CurrentImagePath, nil)
 }

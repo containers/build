@@ -60,7 +60,12 @@ func runAddAnno(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding annotation %q=%q", args[0], args[1])
 	}
 
-	err := newACBuild().AddAnnotation(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddAnnotation(args[0], args[1])
 
 	if err != nil {
 		stderr("annotation add: %v", err)
@@ -84,7 +89,12 @@ func runRmAnno(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing annotation %q", args[0])
 	}
 
-	err := newACBuild().RemoveAnnotation(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveAnnotation(args[0])
 
 	if err != nil {
 		stderr("annotation remove: %v", err)

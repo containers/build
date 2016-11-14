@@ -27,16 +27,14 @@ var (
 	cmdAddMount = &cobra.Command{
 		Use:     "add NAME PATH",
 		Short:   "Add a mount point",
-		Long:    "Updates the ACI to contain a mount point with the given name and path. If the mount point already exists, its path will be changed.",
 		Example: "acbuild mount add htmlfiles /usr/share/nginx/html --read-only",
 		Run:     runWrapper(runAddMount),
 	}
 	cmdRmMount = &cobra.Command{
-		Use:     "remove NAME",
+		Use:     "remove NAME/PATH",
 		Aliases: []string{"rm"},
-		Short:   "Remove a mount point",
-		Long:    "Removes the mount point with the given name from the ACI's manifest",
-		Example: "acbuild mount remove htmlfiles",
+		Short:   "Remove a mount point with the given name or path",
+		Example: "acbuild mount remove /usr/share/nginx/html",
 		Run:     runWrapper(runRmMount),
 	}
 )
@@ -46,7 +44,7 @@ func init() {
 	cmdMount.AddCommand(cmdAddMount)
 	cmdMount.AddCommand(cmdRmMount)
 
-	cmdAddMount.Flags().BoolVar(&readOnly, "read-only", false, "Set the mount point to be read only")
+	cmdAddMount.Flags().BoolVar(&readOnly, "read-only", false, "(appc only) Set the mount point to be read only")
 }
 
 func runAddMount(cmd *cobra.Command, args []string) (exit int) {
@@ -67,7 +65,12 @@ func runAddMount(cmd *cobra.Command, args []string) (exit int) {
 		}
 	}
 
-	err := newACBuild().AddMount(args[0], args[1], readOnly)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddMount(args[0], args[1], readOnly)
 
 	if err != nil {
 		stderr("mount add: %v", err)
@@ -91,7 +94,12 @@ func runRmMount(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing mount point %q", args[0])
 	}
 
-	err := newACBuild().RemoveMount(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveMount(args[0])
 
 	if err != nil {
 		stderr("mount remove: %v", err)

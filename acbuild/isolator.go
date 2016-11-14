@@ -25,11 +25,11 @@ import (
 var (
 	cmdIso = &cobra.Command{
 		Use:   "isolator [command]",
-		Short: "Manage isolators",
+		Short: "Manage isolators (appc only)",
 	}
 	cmdAddIso = &cobra.Command{
 		Use:     "add NAME JSON_FILE",
-		Short:   "Add an isolator",
+		Short:   "Add an isolator (appc only)",
 		Long:    "Updates the ACI to contain an isolator with the given name and value. If the isolator exists, its value will be changed.",
 		Example: "acbuild isolator add resource/cpu ./value.json",
 		Run:     runWrapper(runAddIso),
@@ -37,7 +37,7 @@ var (
 	cmdRmIso = &cobra.Command{
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
-		Short:   "Remove an isolator",
+		Short:   "Remove an isolator (appc only)",
 		Long:    "Updates the current ACI's manifest to not contain the given isolator",
 		Example: "acbuild isolator remove resource/memory",
 		Run:     runWrapper(runRemoveIso),
@@ -84,7 +84,12 @@ func runAddIso(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding isolator %q=%q", args[0], string(val))
 	}
 
-	err = newACBuild().AddIsolator(args[0], val)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddIsolator(args[0], val)
 
 	if err != nil {
 		stderr("isolator add: %v", err)
@@ -108,7 +113,12 @@ func runRemoveIso(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing isolator %q", args[0])
 	}
 
-	err := newACBuild().RemoveIsolator(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveIsolator(args[0])
 
 	if err != nil {
 		stderr("isolator remove: %v", err)

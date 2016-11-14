@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package appc
 
 import (
-	"github.com/containers/build/util"
-
-	"github.com/appc/spec/schema"
+	"fmt"
 )
 
-// SetExec sets the exec command for the untarred ACI stored at
-// a.CurrentACIPath.
-func (a *ACBuild) SetExec(cmd []string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
+// SetGroup sets the group the pod will run as in the untarred ACI stored at
+// a.CurrentImagePath.
+func (m *Manifest) SetGroup(group string) error {
+	if group == "" {
+		return fmt.Errorf("group cannot be empty")
 	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
-	fn := func(s *schema.ImageManifest) error {
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.Exec = cmd
-		return nil
+	if m.manifest.App == nil {
+		m.manifest.App = newManifestApp()
 	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	m.manifest.App.Group = group
+	return m.save()
 }

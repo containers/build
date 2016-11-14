@@ -17,6 +17,7 @@ package util
 import (
 	"archive/tar"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -73,4 +74,41 @@ func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
 		return fmt.Errorf("error determining current user: %v", err)
 	}
 	return rkttar.ExtractTarInsecure(tar.NewReader(dr), dst, true, fileMap, editor)
+}
+
+func PathWalker(twriter *tar.Writer, tarSrcPath string) func(string, os.FileInfo, error) error {
+	prefixLen := len(tarSrcPath + "/")
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == tarSrcPath {
+			return nil
+		}
+		hdr, err := tar.FileInfoHeader(info, "")
+		if err != nil {
+			return err
+		}
+		hdr.Name = path[prefixLen:]
+		twriter.WriteHeader(hdr)
+
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		n, err := io.Copy(twriter, f)
+		if err != nil {
+			return err
+		}
+		if n != info.Size() {
+			return fmt.Errorf("underwrite error")
+		}
+		return nil
+	}
 }

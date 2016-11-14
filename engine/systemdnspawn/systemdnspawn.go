@@ -23,12 +23,11 @@ import (
 	"syscall"
 
 	"github.com/containers/build/engine"
-	"github.com/appc/spec/schema/types"
 )
 
 type Engine struct{}
 
-func (e Engine) Run(command string, args []string, environment types.Environment, chroot, workingDir string) error {
+func (e Engine) Run(command string, args []string, environment map[string]string, chroot, workingDir string) error {
 	nspawncmd := []string{"systemd-nspawn", "-D", chroot}
 
 	systemdVersion, err := getSystemdVersion()
@@ -65,8 +64,8 @@ func (e Engine) Run(command string, args []string, environment types.Environment
 		}
 	}
 
-	for _, envVar := range environment {
-		nspawncmd = append(nspawncmd, "--setenv", envVar.Name+"="+envVar.Value)
+	for name, value := range environment {
+		nspawncmd = append(nspawncmd, "--setenv", name+"="+value)
 	}
 
 	nspawncmd = append(nspawncmd, "--setenv", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin")

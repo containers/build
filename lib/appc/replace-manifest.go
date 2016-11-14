@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,30 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package appc
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
-
-	"github.com/appc/spec/aci"
-	"github.com/appc/spec/schema"
 )
 
-// ReplaceManifest will replace the manifest in the expanded ACI stored at
-// a.CurrentACIPath with the new manifest stored at manifestPath
-func (a *ACBuild) ReplaceManifest(manifestPath string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
+// Replace will replace the manifest in the expanded ACI stored at
+// a.CurrentImagePath with the new manifest stored at manifestPath
+func (m *Manifest) Replace(manifestPath string) error {
 	finfo, err := os.Stat(manifestPath)
 	switch {
 	case os.IsNotExist(err):
@@ -53,19 +40,10 @@ func (a *ACBuild) ReplaceManifest(manifestPath string) (err error) {
 		return err
 	}
 
-	// Marshal and Unmarshal the manifest to assert that it's valid and to
-	// strip any whitespace
-
-	var man schema.ImageManifest
-	err = man.UnmarshalJSON(manblob)
+	err = m.manifest.UnmarshalJSON(manblob)
 	if err != nil {
 		return err
 	}
 
-	manblob, err = man.MarshalJSON()
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(path.Join(a.CurrentACIPath, aci.ManifestFile), manblob, 0755)
+	return m.save()
 }

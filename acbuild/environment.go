@@ -60,7 +60,12 @@ func runAddEnv(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding environment variable %q=%q", args[0], args[1])
 	}
 
-	err := newACBuild().AddEnv(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddEnv(args[0], args[1])
 
 	if err != nil {
 		stderr("environment add: %v", err)
@@ -84,7 +89,12 @@ func runRemoveEnv(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing environment variable %q", args[0])
 	}
 
-	err := newACBuild().RemoveEnv(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveEnv(args[0])
 
 	if err != nil {
 		stderr("environment remove: %v", err)

@@ -29,11 +29,11 @@ var (
 	size    uint
 	cmdDep  = &cobra.Command{
 		Use:   "dependency [command]",
-		Short: "Manage dependencies",
+		Short: "Manage dependencies (appc only)",
 	}
 	cmdAddDep = &cobra.Command{
 		Use:     "add IMAGE_NAME",
-		Short:   "Add a dependency",
+		Short:   "Add a dependency (appc only)",
 		Long:    "Updates the ACI to contain a dependency with the given name. If the dependency already exists, its values will be changed.",
 		Example: "acbuild dependency add example.com/reduce-worker-base --label os=linux --label env=canary --size 22017258",
 		Run:     runWrapper(runAddDep),
@@ -41,7 +41,7 @@ var (
 	cmdRmDep = &cobra.Command{
 		Use:     "remove IMAGE_NAME",
 		Aliases: []string{"rm"},
-		Short:   "Remove a dependency",
+		Short:   "Remove a dependency (appc only)",
 		Long:    "Removes the dependency with the given name from the ACI's manifest",
 		Example: "acbuild dependency remove example.com/reduce-worker-base",
 		Run:     runWrapper(runRmDep),
@@ -101,7 +101,12 @@ func runAddDep(cmd *cobra.Command, args []string) (exit int) {
 		}
 	}
 
-	err = newACBuild().AddDependency(app.Name, hash, appcLabels, size)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddDependency(app.Name, hash, appcLabels, size)
 
 	if err != nil {
 		stderr("dependency add: %v", err)
@@ -125,7 +130,12 @@ func runRmDep(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing dependency %q", args[0])
 	}
 
-	err := newACBuild().RemoveDependency(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveDependency(args[0])
 
 	if err != nil {
 		stderr("dependency remove: %v", err)

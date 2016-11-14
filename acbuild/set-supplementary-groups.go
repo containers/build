@@ -54,7 +54,12 @@ func runSetSuppGroups(cmd *cobra.Command, args []string) (exit int) {
 		intArgs = append(intArgs, intArg)
 	}
 
-	err := newACBuild().SetSuppGroups(intArgs)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetSuppGroups(intArgs)
 
 	if err != nil {
 		stderr("set-supp-groups: %v", err)

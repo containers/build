@@ -54,7 +54,12 @@ func runCopyToDir(cmd *cobra.Command, args []string) (exit int) {
 		stderr(logMsg)
 	}
 
-	err := newACBuild().CopyToDir(args[:len(args)-1], args[len(args)-1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.CopyToDir(args[:len(args)-1], args[len(args)-1])
 
 	if err != nil {
 		stderr("copy-to-dir: %v", err)

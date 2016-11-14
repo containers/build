@@ -73,7 +73,12 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	err := newACBuild().Run(args, workingdir, insecure, engine)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.Run(args, workingdir, insecure, engine)
 
 	if err != nil {
 		stderr("run: %v", err)

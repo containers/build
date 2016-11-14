@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2017 The acbuild Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,27 +19,31 @@ import (
 )
 
 var (
-	cmdSetExec = &cobra.Command{
-		Use:     "set-exec -- CMD [ARGS]",
-		Short:   "Set the exec command",
-		Long:    "Sets the exec command in the ACI's manifest",
-		Example: "acbuild set-exec -- /usr/sbin/nginx -g \"daemon off;\"",
-		Run:     runWrapper(runSetExec),
+	cmdSetTag = &cobra.Command{
+		Use:     "set-tag USER",
+		Short:   "Set the tag",
+		Long:    "Set the tag this image will be referred to by (oci default \"latest\")",
+		Example: "acbuild set-tag v1.0.0",
+		Run:     runWrapper(runSetTag),
 	}
 )
 
 func init() {
-	cmdAcbuild.AddCommand(cmdSetExec)
+	cmdAcbuild.AddCommand(cmdSetTag)
 }
 
-func runSetExec(cmd *cobra.Command, args []string) (exit int) {
+func runSetTag(cmd *cobra.Command, args []string) (exit int) {
 	if len(args) == 0 {
 		cmd.Usage()
 		return 1
 	}
+	if len(args) != 1 {
+		stderr("set-tag: incorrect number of arguments")
+		return 1
+	}
 
 	if debug {
-		stderr("Setting exec command %v", args)
+		stderr("Setting tag to %s", args[0])
 	}
 
 	a, err := newACBuild()
@@ -47,10 +51,10 @@ func runSetExec(cmd *cobra.Command, args []string) (exit int) {
 		stderr("%v", err)
 		return 1
 	}
-	err = a.SetExec(args)
+	err = a.SetTag(args[0])
 
 	if err != nil {
-		stderr("set-exec: %v", err)
+		stderr("set-tag: %v", err)
 		return getErrorCode(err)
 	}
 

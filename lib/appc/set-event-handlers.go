@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lib
+package appc
 
 import (
-	"github.com/containers/build/util"
-
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 )
@@ -27,40 +25,28 @@ const (
 )
 
 // SetPreStart sets the pre-start event handler in the expanded ACI stored at
-// a.CurrentACIPath
-func (a *ACBuild) SetPreStart(exec []string) error {
-	return a.setEventHandler(preStartName, exec)
+// a.CurrentImagePath
+func (m *Manifest) SetPreStart(exec []string) error {
+	return m.setEventHandler(preStartName, exec)
 }
 
 // SetPostStop sets the post-stop event handler in the expanded ACI stored at
-// a.CurrentACIPath
-func (a *ACBuild) SetPostStop(exec []string) error {
-	return a.setEventHandler(postStopName, exec)
+// a.CurrentImagePath
+func (m *Manifest) SetPostStop(exec []string) error {
+	return m.setEventHandler(postStopName, exec)
 }
 
-func (a *ACBuild) setEventHandler(name string, exec []string) (err error) {
-	if err = a.lock(); err != nil {
-		return err
+func (m *Manifest) setEventHandler(name string, exec []string) (err error) {
+	removeEventHandler(name, m.manifest)
+	if m.manifest.App == nil {
+		m.manifest.App = newManifestApp()
 	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-
-	fn := func(s *schema.ImageManifest) error {
-		removeEventHandler(name, s)
-		if s.App == nil {
-			s.App = newManifestApp()
-		}
-		s.App.EventHandlers = append(s.App.EventHandlers,
-			types.EventHandler{
-				Name: name,
-				Exec: exec,
-			})
-		return nil
-	}
-	return util.ModifyManifest(fn, a.CurrentACIPath)
+	m.manifest.App.EventHandlers = append(m.manifest.App.EventHandlers,
+		types.EventHandler{
+			Name: name,
+			Exec: exec,
+		})
+	return m.save()
 }
 
 func removeEventHandler(name string, s *schema.ImageManifest) {

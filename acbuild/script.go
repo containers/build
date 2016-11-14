@@ -101,6 +101,10 @@ func execScript(rawScript []byte) error {
 		contextpath = tmpDir
 	}
 
+	a, err := newACBuild()
+	if err != nil {
+		return err
+	}
 	for _, line := range script {
 		if line == "" {
 			continue
@@ -108,7 +112,7 @@ func execScript(rawScript []byte) error {
 		err := execACBuild(tmpDir, line)
 		if err != nil {
 			if !strings.HasPrefix(line, "begin") && !nestedScript {
-				err1 := newACBuild().End()
+				err1 := a.End()
 				if err1 != nil {
 					stderr("script: %v", err1)
 				}
@@ -117,7 +121,7 @@ func execScript(rawScript []byte) error {
 		}
 	}
 	if !nestedScript {
-		err := newACBuild().End()
+		err := a.End()
 		if err != nil {
 			return err
 		}

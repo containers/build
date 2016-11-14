@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/containers/build/lib"
-	"github.com/containers/build/util"
+	"github.com/containers/build/lib/appc"
 )
 
 const (
@@ -102,8 +102,16 @@ func init() {
 	cobra.EnablePrefixMatching = true
 }
 
-func newACBuild() *lib.ACBuild {
-	return lib.NewACBuild(contextpath, debug)
+func newACBuild() (*lib.ACBuild, error) {
+	bmode, err := lib.GetBuildMode(contextpath)
+	if err != nil {
+		return nil, err
+	}
+	return lib.NewACBuild(contextpath, debug, bmode)
+}
+
+func newACBuildWithBuildMode(bmode lib.BuildMode) (*lib.ACBuild, error) {
+	return lib.NewACBuild(contextpath, debug, bmode)
 }
 
 func getErrorCode(err error) int {
@@ -111,7 +119,7 @@ func getErrorCode(err error) int {
 		return exitErr.Sys().(syscall.WaitStatus).ExitStatus()
 	}
 	switch err {
-	case lib.ErrNotFound:
+	case appc.ErrNotFound:
 		return 2
 	case errCobra:
 		return 3
@@ -192,9 +200,15 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		}
 		defer os.RemoveAll(contextpath)
 
-		a := newACBuild()
+		a, err := newACBuild()
+		if err != nil {
+			stderr("%v", err)
+			cmdExitCode = 1
+			return
+		}
 
-		err = a.Begin(absoluteAciToModify, false)
+		// TODO: be able to modify OCI images
+		err = a.Begin(absoluteAciToModify, false, lib.BuildModeAppC)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
@@ -283,19 +297,22 @@ func stdout(format string, a ...interface{}) {
 }
 
 func addACBuildAnnotation(cmd *cobra.Command, args []string) error {
-	const annoNamePattern = "appc.io/acbuild/command-%d"
+	const annoNamePattern = "coreos.com/acbuild/command-%d"
 
-	acb := newACBuild()
+	acb, err := newACBuild()
+	if err != nil {
+		return err
+	}
 
-	man, err := util.GetManifest(acb.CurrentACIPath)
+	annotations, err := acb.GetAnnotations()
 	if err != nil {
 		return err
 	}
 
 	var acbuildCount int
-	for _, ann := range man.Annotations {
+	for name, _ := range annotations {
 		var tmpCount int
-		n, _ := fmt.Sscanf(string(ann.Name), annoNamePattern, &tmpCount)
+		n, _ := fmt.Sscanf(string(name), annoNamePattern, &tmpCount)
 		if n == 1 && tmpCount > acbuildCount {
 			acbuildCount = tmpCount
 		}
