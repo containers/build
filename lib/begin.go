@@ -93,7 +93,7 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 			case err != nil:
 				return err
 			case finfo.IsDir():
-				a.beginFromLocalDirectory(start)
+				return a.beginFromLocalDirectory(start)
 			default:
 				return a.beginFromLocalImage(start)
 			}
