@@ -2,6 +2,11 @@
 
 `acbuild run` will run the given command inside the ACI.
 
+## --working-dir
+
+The `--working-dir` flag can be used to specify the working directory for the
+command being run inside the image.
+
 ## Options Parsing
 
 acbuild needs to be able to differentiate between flags to acbuild and flags to
