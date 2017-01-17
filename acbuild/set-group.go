@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetGroup = &cobra.Command{
 		Use:     "set-group GROUP",
-		Short:   "Set the group",
-		Long:    "Set the group the app will run as inside the container",
+		Short:   "Set the group that is used when this image is run",
 		Example: "acbuild set-group www-data",
 		Run:     runWrapper(runSetGroup),
 	}

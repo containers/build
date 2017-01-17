@@ -22,7 +22,7 @@ var (
 	cmdEnd = &cobra.Command{
 		Use:     "end",
 		Short:   "end a current build",
-		Long:    "End the current build, deleting the current context",
+		Long:    "End the current build, deleting all information about it",
 		Example: "acbuild end",
 		Run:     runWrapper(runEnd),
 	}

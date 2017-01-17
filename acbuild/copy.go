@@ -21,7 +21,7 @@ import (
 var (
 	cmdCopy = &cobra.Command{
 		Use:     "copy PATH_ON_HOST PATH_IN_ACI",
-		Short:   "Copy a file or directory into an ACI",
+		Short:   "Copy a file or directory into the image",
 		Example: "acbuild copy nginx.conf /etc/nginx/nginx.conf",
 		Run:     runWrapper(runCopy),
 	}

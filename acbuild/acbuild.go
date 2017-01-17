@@ -62,7 +62,13 @@ COMMANDS:
 {{end}}\
 \
 OPTIONS:
-{{.LocalFlags.FlagUsages}}`
+{{.LocalFlags.FlagUsages}}\
+{{if (eq .Name "acbuild")}}\
+
+DOCUMENTATION:
+	Additional documentation is available at https://github.com/containers/build\
+{{end}}
+`
 )
 
 var (

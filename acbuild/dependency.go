@@ -33,8 +33,7 @@ var (
 	}
 	cmdAddDep = &cobra.Command{
 		Use:     "add IMAGE_NAME",
-		Short:   "Add a dependency (appc only)",
-		Long:    "Updates the ACI to contain a dependency with the given name. If the dependency already exists, its values will be changed.",
+		Short:   "Add a new dependency, or update an existing one (appc only)",
 		Example: "acbuild dependency add example.com/reduce-worker-base --label os=linux --label env=canary --size 22017258",
 		Run:     runWrapper(runAddDep),
 	}
@@ -42,7 +41,6 @@ var (
 		Use:     "remove IMAGE_NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove a dependency (appc only)",
-		Long:    "Removes the dependency with the given name from the ACI's manifest",
 		Example: "acbuild dependency remove example.com/reduce-worker-base",
 		Run:     runWrapper(runRmDep),
 	}

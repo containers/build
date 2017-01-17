@@ -26,13 +26,13 @@ var (
 	}
 	cmdSetPreStart = &cobra.Command{
 		Use:     "pre-start CMD [ARGS]",
-		Short:   "Set the pre-start event handler",
+		Short:   "Set the pre-start event handler (appc only)",
 		Example: "acbuild set-event-handler pre-start /root/setup-stuff.sh",
 		Run:     runWrapper(runSetPreStart),
 	}
 	cmdSetPostStop = &cobra.Command{
 		Use:     "post-stop CMD [ARGS]",
-		Short:   "Set the post-stop event handler",
+		Short:   "Set the post-stop event handler (appc only)",
 		Example: "acbuild set-event-handler post-stop /bin/report-results.sh",
 		Run:     runWrapper(runSetPostStop),
 	}

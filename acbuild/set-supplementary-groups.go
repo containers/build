@@ -23,8 +23,7 @@ import (
 var (
 	cmdSetSupplementaryGroups = &cobra.Command{
 		Use:     "set-supp-groups [GROUPS]",
-		Short:   "Set supplementary GID's",
-		Long:    "Set the supplementary groups the app will run as inside the container",
+		Short:   "Set the supplementary GID's that are used when this image is run",
 		Example: "acbuild set-supp-groups 200 300 400",
 		Run:     runWrapper(runSetSuppGroups),
 	}

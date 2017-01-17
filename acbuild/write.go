@@ -23,8 +23,7 @@ var (
 	sign      = false
 	cmdWrite  = &cobra.Command{
 		Use:     "write ACI_PATH",
-		Short:   "Write the ACI to a file",
-		Long:    "Writes the ACI resulting from the current build context to a file",
+		Short:   "Write the image from the current build to a file",
 		Example: "acbuild write --sign mynewapp.aci -- --no-default-keyring --keyring ./rkt.gpg",
 		Run:     runWrapper(runWrite),
 	}

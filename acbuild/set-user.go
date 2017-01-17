@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetUser = &cobra.Command{
 		Use:     "set-user USER",
-		Short:   "Set the user",
-		Long:    "Set the user the app will run as inside the container",
+		Short:   "Set the user that is used when this image is run",
 		Example: "acbuild set-user www-data",
 		Run:     runWrapper(runSetUser),
 	}

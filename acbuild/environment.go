@@ -25,8 +25,7 @@ var (
 	}
 	cmdAddEnv = &cobra.Command{
 		Use:     "add NAME VALUE",
-		Short:   "Add an environment variable",
-		Long:    "Updates the ACI to contain an environment variable with the given name and value. If the variable already exists, its value will be changed.",
+		Short:   "Add an environment variable, or update an existing one",
 		Example: "acbuild environment add REDUCE_WORKER_DEBUG true",
 		Run:     runWrapper(runAddEnv),
 	}
@@ -34,7 +33,6 @@ var (
 		Use:     "remove NAME VALUE",
 		Aliases: []string{"rm"},
 		Short:   "Remove an environment variable",
-		Long:    "Updates the environment in the current ACI's manifest to not contain the given variable",
 		Example: "acbuild environment remove REDUCE_WORKER_DEBUG",
 		Run:     runWrapper(runRemoveEnv),
 	}

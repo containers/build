@@ -24,7 +24,7 @@ var (
 	toDir        bool
 	cmdCopyToDir = &cobra.Command{
 		Use:     "copy-to-dir PATH1_ON_HOST PATH2_ON_HOST ... PATH_IN_ACI",
-		Short:   "Copy a file or directory into a directory in an ACI",
+		Short:   "Copy a file or directory into a directory in the image",
 		Example: "acbuild copy-to-dir build/bin/* /usr/bin",
 		Run:     runWrapper(runCopyToDir),
 	}

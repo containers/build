@@ -24,8 +24,7 @@ var (
 	mode     string
 	cmdBegin = &cobra.Command{
 		Use:     "begin [START_ACI]",
-		Short:   "Start a new build",
-		Long:    "Begins a new build. By default operations will be performed on top of an empty image, but a start image can be provided",
+		Short:   "Start a new build, with either a new and empty image or an existing image",
 		Example: "acbuild begin",
 		Run:     runWrapper(runBegin),
 	}

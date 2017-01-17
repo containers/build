@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetWorkingDir = &cobra.Command{
 		Use:     "set-working-directory DIR",
-		Short:   "Set the working directory",
-		Long:    "Set the working directory the app will run in inside the container",
+		Short:   "Set the working directory that is used when the image is run",
 		Example: "acbuild set-working-directory /root",
 		Aliases: []string{"set-wd"},
 		Run:     runWrapper(runSetWorkingDir),

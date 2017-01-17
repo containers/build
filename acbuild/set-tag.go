@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetTag = &cobra.Command{
 		Use:     "set-tag USER",
-		Short:   "Set the tag",
-		Long:    "Set the tag this image will be referred to by (oci default \"latest\")",
+		Short:   "Set the tag (oci default \"latest\")",
 		Example: "acbuild set-tag v1.0.0",
 		Run:     runWrapper(runSetTag),
 	}

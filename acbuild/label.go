@@ -25,8 +25,7 @@ var (
 	}
 	cmdAddLabel = &cobra.Command{
 		Use:     "add NAME VALUE",
-		Short:   "Add a label",
-		Long:    "Updates the ACI to contain a label with the given name and value. If the label already exists, its value will be changed.",
+		Short:   "Add a label, or update an existing one",
 		Example: "acbuild label add arch amd64",
 		Run:     runWrapper(runAddLabel),
 	}
@@ -34,7 +33,6 @@ var (
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove a label",
-		Long:    "Updates the labels in the ACI's manifest to not include the label for the given name",
 		Example: "acbuild label remove arch",
 		Run:     runWrapper(runRemoveLabel),
 	}

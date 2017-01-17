@@ -29,8 +29,7 @@ var (
 	}
 	cmdAddIso = &cobra.Command{
 		Use:     "add NAME JSON_FILE",
-		Short:   "Add an isolator (appc only)",
-		Long:    "Updates the ACI to contain an isolator with the given name and value. If the isolator exists, its value will be changed.",
+		Short:   "Add an isolator, or update an existing one (appc only)",
 		Example: "acbuild isolator add resource/cpu ./value.json",
 		Run:     runWrapper(runAddIso),
 	}
@@ -38,7 +37,6 @@ var (
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove an isolator (appc only)",
-		Long:    "Updates the current ACI's manifest to not contain the given isolator",
 		Example: "acbuild isolator remove resource/memory",
 		Run:     runWrapper(runRemoveIso),
 	}
