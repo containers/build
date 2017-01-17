@@ -89,6 +89,15 @@ func (a *ACBuild) lock() error {
 
 	a.lockFile, err = os.OpenFile(a.LockPath, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
+		switch err1 := err.(type) {
+		case *os.PathError:
+			switch err2 := err1.Err.(type) {
+			case syscall.Errno:
+				if err2 == syscall.EACCES {
+					err = fmt.Errorf("permission denied: please run this as a user with appropriate privileges\n")
+				}
+			}
+		}
 		return err
 	}
 
