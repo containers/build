@@ -59,13 +59,3 @@ func runCat(cmd *cobra.Command, args []string) (exit int) {
 
 	return 0
 }
-
-func runCatOnACI(aciToModify string) int {
-	// TODO
-	//err := lib.Print(aciToModify, prettyPrint)
-	//if err != nil {
-	//	stderr("cat-manifest: %v", err)
-	//	return 1
-	//}
-	return 0
-}

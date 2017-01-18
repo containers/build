@@ -75,6 +75,7 @@ var (
 	debug          bool
 	contextpath    string
 	aciToModify    string
+	ociToModify    string
 	disableHistory bool
 
 	cmdExitCode int
@@ -102,7 +103,8 @@ var cmdAcbuild = &cobra.Command{
 func init() {
 	cmdAcbuild.PersistentFlags().BoolVar(&debug, "debug", false, "Print out debug information to stderr")
 	cmdAcbuild.PersistentFlags().StringVar(&contextpath, "work-path", ".", "Path to place working files in")
-	cmdAcbuild.PersistentFlags().StringVar(&aciToModify, "modify", "", "Path to an ACI to modify (ignores build context)")
+	cmdAcbuild.PersistentFlags().StringVar(&aciToModify, "modify-appc", "", "Path to an ACI to modify (ignores build context)")
+	cmdAcbuild.PersistentFlags().StringVar(&ociToModify, "modify-oci", "", "Path to an OCI image to modify (ignores build context)")
 	cmdAcbuild.PersistentFlags().BoolVar(&disableHistory, "no-history", false, "Don't add annotations with the command that was run")
 
 	cobra.EnablePrefixMatching = true
@@ -141,7 +143,7 @@ func getErrorCode(err error) int {
 // terminator.
 func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
-		if aciToModify == "" {
+		if aciToModify == "" && ociToModify == "" {
 			cmdExitCode = cf(cmd, args)
 			switch cmd.Name() {
 			case "cat-manifest", "begin", "write", "end", "version", "gen-man-pages", "script":
@@ -158,40 +160,48 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 			return
 		}
 
-		switch cmd.Name() {
-		case "cat-manifest":
-			cmdExitCode = runCatOnACI(aciToModify)
-			return
-		case "begin", "write", "end", "version", "gen-man-pages", "script":
-			stderr("Can't use the --modify flag with %s.", cmd.Name())
+		if aciToModify != "" && ociToModify != "" {
+			stderr("can't modify an appc image and an oci image at the same time")
 			cmdExitCode = 1
 			return
 		}
 
-		finfo, err := os.Stat(aciToModify)
+		switch cmd.Name() {
+		case "begin", "write", "end", "version", "gen-man-pages", "script":
+			stderr("Can't use --modify flags with %s.", cmd.Name())
+			cmdExitCode = 1
+			return
+		}
+
+		toModify := aciToModify
+		if ociToModify != "" {
+			toModify = ociToModify
+		}
+
+		finfo, err := os.Stat(toModify)
 		switch {
 		case os.IsNotExist(err):
-			stderr("ACI doesn't appear to exist: %s.", aciToModify)
+			stderr("image doesn't appear to exist: %s.", toModify)
 			cmdExitCode = 1
 			return
 		case err != nil:
-			stderr("Error accessing ACI to modify: %v.", err)
+			stderr("error accessing image to modify: %v.", err)
 			cmdExitCode = 1
 			return
 		case finfo.IsDir():
-			stderr("ACI to modify is a directory: %s.", aciToModify)
+			stderr("image to modify is a directory: %s.", toModify)
 			cmdExitCode = 1
 			return
 		}
 
-		absoluteAciToModify, err := filepath.Abs(aciToModify)
+		absoluteToModify, err := filepath.Abs(toModify)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
 			return
 		}
 
-		hash := sha512.New().Sum([]byte(absoluteAciToModify))
+		hash := sha512.New().Sum([]byte(absoluteToModify))
 		contextpath := path.Join(os.TempDir(), fmt.Sprintf("acbuild-%x", hash))
 
 		if len(contextpath) > 16 {
@@ -206,15 +216,19 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		}
 		defer os.RemoveAll(contextpath)
 
-		a, err := newACBuild()
+		modifyMode := lib.BuildModeAppC
+		if ociToModify != "" {
+			modifyMode = lib.BuildModeOCI
+		}
+
+		a, err := newACBuildWithBuildMode(modifyMode)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = 1
 			return
 		}
 
-		// TODO: be able to modify OCI images
-		err = a.Begin(absoluteAciToModify, false, lib.BuildModeAppC)
+		err = a.Begin(absoluteToModify, false, modifyMode)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
@@ -243,18 +257,18 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		}
 
 		dir, file := path.Split(aciToModify)
-		tmpACIFile := path.Join(dir, "."+file+".tmp")
+		tmpFile := path.Join(dir, "."+file+".tmp")
 
-		err = a.Write(tmpACIFile, true)
+		err = a.Write(tmpFile, true)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
 			return
 		}
 
-		err = os.Rename(tmpACIFile, aciToModify)
+		err = os.Rename(tmpFile, toModify)
 		if err != nil {
-			os.Remove(tmpACIFile)
+			os.Remove(tmpFile)
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
 			return
