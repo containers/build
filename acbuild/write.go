@@ -34,11 +34,16 @@ func init() {
 	cmdAcbuild.AddCommand(cmdWrite)
 
 	cmdWrite.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the resulting ACI")
-	cmdWrite.Flags().BoolVar(&sign, "sign", false, "sign the resulting ACI")
+	cmdWrite.Flags().BoolVar(&sign, "sign", false, "(removed) sign the resulting ACI")
 }
 
 func runWrite(cmd *cobra.Command, args []string) (exit int) {
-	if len(args) == 0 {
+	if sign {
+		stderr("write: the sign flag has been removed, please invoke gpg directly")
+		return 1
+	}
+
+	if len(args) != 1 {
 		cmd.Usage()
 		return 1
 	}
@@ -47,7 +52,7 @@ func runWrite(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Writing ACI to %s", args[0])
 	}
 
-	err := newACBuild().Write(args[0], overwrite, sign, args[1:])
+	err := newACBuild().Write(args[0], overwrite)
 
 	if err != nil {
 		stderr("write: %v", err)

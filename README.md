@@ -34,7 +34,6 @@ which it's run:
 
 - `cp`
 - `modprobe`
-- `gpg`
 
 Additionally `systemd-nspawn` is required to use the [default
 engine](Documentation/subcommands/run.md) for acbuild run. Thus on Ubuntu the `systemd-container` package needs to be installed.
