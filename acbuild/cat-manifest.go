@@ -15,12 +15,14 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
 var (
 	prettyPrint bool
-	printConfig bool
+	printFile   string
 
 	cmdCat = &cobra.Command{
 		Use:     "cat-manifest",
@@ -33,7 +35,7 @@ var (
 func init() {
 	cmdAcbuild.AddCommand(cmdCat)
 	cmdCat.Flags().BoolVar(&prettyPrint, "pretty-print", false, "Print the manifest with whitespace")
-	cmdCat.Flags().BoolVar(&printConfig, "config", false, "(oci only) Prints the image config instead of the manifest")
+	cmdCat.Flags().StringVar(&printFile, "file", "manifest", "(oci only) Which file to print, accepts \"manifest\" (the default), and \"config\"")
 }
 
 func runCat(cmd *cobra.Command, args []string) (exit int) {
@@ -51,7 +53,14 @@ func runCat(cmd *cobra.Command, args []string) (exit int) {
 		stderr("%v", err)
 		return 1
 	}
-	err = a.Print(prettyPrint, printConfig)
+	switch printFile {
+	case "manifest":
+		err = a.Print(prettyPrint, false)
+	case "config":
+		err = a.Print(prettyPrint, true)
+	default:
+		err = fmt.Errorf("don't know how to print a %q", printFile)
+	}
 	if err != nil {
 		stderr("cat-manifest: %v", err)
 		return 1
