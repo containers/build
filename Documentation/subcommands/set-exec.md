@@ -2,7 +2,7 @@
 
 * `acbuild set-exec -- CMD [ARGS]`
 
-  Sets the exec command in the ACI's manifest.
+  Sets the exec command in the image's manifest.
 
 ## Options Parsing
 

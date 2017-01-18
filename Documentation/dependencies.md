@@ -1,5 +1,7 @@
 # appc Dependencies
 
+_Note: the following only applies when in the appc build mode_
+
 Some of the most common questions people new to acbuild ask are related to image
 dependencies. How do they work, how are they referenced, what's the difference
 between `acbuild begin <image>` and `acbuild dependency add <image>`.

@@ -1,6 +1,6 @@
 # acbuild run
 
-`acbuild run` will run the given command inside the ACI.
+`acbuild run` will run the given command inside the image.
 
 ## --working-dir
 
@@ -16,20 +16,23 @@ flags after it are assumed to belong to the command being run.
 
 ## Dependencies
 
-In order to be able to run the command, all dependencies of the current ACI
-must be fetched. The first time `run` is called, the dependencies will be
-downloaded and expanded.
+In order to be able to run the command, all dependencies of the image must be
+available. In the appc build mode, any missing dependencies will be downloaded
+the first time `run` is called. In the oci build mode, all layers should be
+available if the image was pulled from a remote registry. If the build was
+started from a local image and not all layers are present, `run` will be unable
+to run and exit with an error.
 
 ## Overlayfs
 
-acbuild utilizes overlayfs when running a command in an ACI with dependencies.
-This is so that acbuild is able to separate out the files from the dependencies
-and the files in your ACI after the command finishes running.
+acbuild utilizes overlayfs when running a command in an image with layers.
+This is so that acbuild is able to separate out the files from lower layers
+and the files belonging to the top layer after the command finishes running.
 
-Obviously this is not necessary when there are no dependencies. If `acbuild
-run` is to be used on a system without overlayfs, the ACI and its dependencies
-must be flattened into a single ACI without dependencies. A command called
-`acbuild squash` is being worked on to do this.
+Obviously this is not necessary when there is only one layer. If `acbuild run`
+is to be used on a system without overlayfs, the image and its dependencies must
+be flattened into a single layer without dependencies. A command called `acbuild
+squash` is being worked on to do this.
 
 ## Engines
 

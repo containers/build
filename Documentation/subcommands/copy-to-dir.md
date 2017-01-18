@@ -1,14 +1,14 @@
 # acbuild copy-to-dir
 
 `acbuild copy-to-dir` will copy any number of files and directories from the
-local filesystem into the ACI.
+local filesystem into the image.
 
 It takes at least two arguments, where all but the final argument are paths on
-the host system. The final argument is a parent directory inside the ACI to
+the host system. The final argument is a parent directory inside the image to
 place the files and directories in.
 
-If the target directory doesn't exist in the ACI, it will be implicitly created
-(along with any necessary parent directories).
+If the target directory doesn't exist in the image, it will be implicitly
+created (along with any necessary parent directories).
 
 The following commands would do the same thing:
 
@@ -17,6 +17,6 @@ acbuild copy-to-dir apache.conf sites-available/00-default sites-available/myblo
 ```
 
 ```bash
-cp apache.conf sites-available/00-default sites-available/myblog ./.acbuild/currentaci/rootfs/etc/apache2
+cp apache.conf sites-available/00-default sites-available/myblog ./.acbuild/current/rootfs/etc/apache2
 ```
 

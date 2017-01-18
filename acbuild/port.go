@@ -37,7 +37,7 @@ var (
 		Use:     "remove NAME/PORT",
 		Aliases: []string{"rm"},
 		Short:   "Remove a port with the given name or port number (and optionally protocol)",
-		Example: "acbuild port remove 443/tcp",
+		Example: "acbuild port remove https",
 		Run:     runWrapper(runRmPort),
 	}
 )

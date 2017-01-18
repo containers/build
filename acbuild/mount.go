@@ -21,8 +21,9 @@ import (
 var (
 	readOnly bool
 	cmdMount = &cobra.Command{
-		Use:   "mount [command]",
-		Short: "Manage mount points",
+		Use:     "mount [command]",
+		Aliases: []string{"volume"},
+		Short:   "Manage mount points",
 	}
 	cmdAddMount = &cobra.Command{
 		Use:     "add NAME PATH",
