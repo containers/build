@@ -79,6 +79,10 @@ func execScript(rawScript []byte) error {
 		if strings.HasPrefix(strings.ToLower(s), "run") && os.Geteuid() != 0 {
 			return fmt.Errorf("scripts using the run subcommand must be run as root")
 		}
+
+		if strings.HasPrefix(strings.ToLower(s), "end") {
+			return fmt.Errorf("calling end is unnecessary in a script, cleanup is done automatically")
+		}
 	}
 	script = joinLines(script)
 
