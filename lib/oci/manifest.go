@@ -17,6 +17,7 @@ package oci
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -24,7 +25,6 @@ import (
 
 	"github.com/containers/build/util"
 
-	//specs "github.com/opencontainers/image-spec/specs-go"
 	ociImage "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -129,10 +129,6 @@ func splitHash(hash string) (string, string, error) {
 	return pieces[0], pieces[1], nil
 }
 
-func (i *Image) Close() error {
-	return nil
-}
-
 func (i *Image) save() error {
 	// Remove the old config
 	oldConfigHashAlgo, oldConfigHash, err := splitHash(i.manifest.Config.Digest)
@@ -207,7 +203,7 @@ func (i *Image) GetLayerHashes() []string {
 	return i.config.RootFS.DiffIDs
 }
 
-func (i *Image) Print(prettyPrint, printConfig bool) error {
+func (i *Image) Print(w io.Writer, prettyPrint, printConfig bool) error {
 	var configblob []byte
 	var err error
 	var toPrint interface{}
@@ -224,7 +220,14 @@ func (i *Image) Print(prettyPrint, printConfig bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(configblob))
+	configblob = append(configblob, '\n')
+	n, err := w.Write(configblob)
+	if err != nil {
+		return err
+	}
+	if n < len(configblob) {
+		return fmt.Errorf("short write")
+	}
 	return nil
 }
 

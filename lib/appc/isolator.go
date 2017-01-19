@@ -57,7 +57,7 @@ func (m *Manifest) AddIsolator(name string, value []byte) error {
 	return m.save()
 }
 
-// AddIsolator removes an isolator of name from the current manifest
+// RemoveIsolator removes an isolator of name from the current manifest
 func (m *Manifest) RemoveIsolator(name string) error {
 	acid, err := types.NewACIdentifier(name)
 	if err != nil {

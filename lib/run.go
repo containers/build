@@ -257,7 +257,7 @@ func (a *ACBuild) getEnvVarsOCI() (map[string]string, error) {
 		}
 		return ret, nil
 	default:
-		return nil, fmt.Errorf("internal error: mismatched manifest type and build mode???")
+		return nil, fmt.Errorf("internal error: mismatched manifest type and build mode")
 	}
 }
 

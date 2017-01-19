@@ -108,12 +108,10 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 		if err != nil {
 			pathErr, ok := err.(*os.PathError)
 			if !ok {
-				fmt.Printf("not a path error!\n")
 				return err
 			}
 			syscallErrno, ok := pathErr.Err.(syscall.Errno)
 			if !ok {
-				fmt.Printf("not a syscall errno!\n")
 				return err
 			}
 			if pathErr.Op == "open" && syscallErrno != syscall.EACCES {

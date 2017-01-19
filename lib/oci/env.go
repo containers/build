@@ -35,22 +35,26 @@ func (i *Image) RemoveEnv(name string) error {
 }
 
 func (i *Image) removeFromEnv(name string) error {
+	tmpEnv := make([]string, len(i.config.Config.Env))
+	copy(tmpEnv, i.config.Config.Env)
 	foundOne := false
-	for j := len(i.config.Config.Env) - 1; j >= 0; j-- {
-		varParts := strings.Split(i.config.Config.Env[j], "=")
+	for j := len(tmpEnv) - 1; j >= 0; j-- {
+		varParts := strings.SplitN(tmpEnv[j], "=", 2)
 		if len(varParts) != 2 {
-			return fmt.Errorf("invalid environment variable in config: %q", i.config.Config.Env[j])
+			return fmt.Errorf("invalid environment variable in config: %q", tmpEnv[j])
 		}
 		varName := varParts[0]
 		if varName == name {
-			i.config.Config.Env = append(
-				i.config.Config.Env[:j],
-				i.config.Config.Env[j+1:]...,
+			foundOne = true
+			tmpEnv = append(
+				tmpEnv[:j],
+				tmpEnv[j+1:]...,
 			)
 		}
 	}
 	if !foundOne {
 		return ErrNotFound
 	}
+	i.config.Config.Env = tmpEnv
 	return nil
 }

@@ -16,6 +16,7 @@ package lib
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/appc/spec/schema/types"
 
@@ -26,8 +27,7 @@ import (
 // contained in it are the common subset of fields between appc and oci that can
 // be altered by a user.
 type Manifest interface {
-	Close() error                              // Close any open handles this manifest has
-	Print(prettyPrint, printConfig bool) error // Print out this manifest to the screen
+	Print(w io.Writer, prettyPrint, printConfig bool) error // Print out this manifest to the given writer
 
 	GetAnnotations() (map[string]string, error) // Used to generate build history
 
@@ -49,7 +49,7 @@ type Manifest interface {
 	SetTag(tag string) error
 }
 
-func (a *ACBuild) Close() (err error) {
+func (a *ACBuild) Print(w io.Writer, prettyPrint, printConfig bool) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -58,18 +58,7 @@ func (a *ACBuild) Close() (err error) {
 			err = err1
 		}
 	}()
-	return a.man.Close()
-}
-func (a *ACBuild) Print(prettyPrint, printConfig bool) (err error) {
-	if err = a.lock(); err != nil {
-		return err
-	}
-	defer func() {
-		if err1 := a.unlock(); err == nil {
-			err = err1
-		}
-	}()
-	return a.man.Print(prettyPrint, printConfig)
+	return a.man.Print(w, prettyPrint, printConfig)
 }
 func (a *ACBuild) GetAnnotations() (m map[string]string, err error) {
 	if err = a.lock(); err != nil {

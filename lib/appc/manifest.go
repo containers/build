@@ -17,6 +17,7 @@ package appc
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -34,9 +35,8 @@ var (
 
 // Manifest is a struct with an open handle to a manifest that it can manipulate
 type Manifest struct {
-	aciPath      string
-	manifest     *schema.ImageManifest
-	manifestFile *os.File
+	aciPath  string
+	manifest *schema.ImageManifest
 }
 
 // LoadManifest will read in the manifest from an untarred ACI on disk at
@@ -46,31 +46,20 @@ func LoadManifest(aciPath string) (*Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer manFile.Close()
 
 	manblob, err := ioutil.ReadAll(manFile)
 	if err != nil {
-		manFile.Close()
 		return nil, err
 	}
 
 	man := &schema.ImageManifest{}
 	err = man.UnmarshalJSON(manblob)
 	if err != nil {
-		manFile.Close()
 		return nil, err
 	}
 
-	return &Manifest{aciPath, man, manFile}, nil
-}
-
-// Close will close the Manifest struct's open handle to the manifest file
-func (m *Manifest) Close() error {
-	err := m.manifestFile.Close()
-	if err != nil {
-		return err
-	}
-	m.manifestFile = nil
-	return nil
+	return &Manifest{aciPath, man}, nil
 }
 
 // save commits changes to m's manifest to disk
@@ -80,17 +69,18 @@ func (m *Manifest) save() error {
 		return err
 	}
 
-	_, err = m.manifestFile.Seek(0, os.SEEK_SET)
+	manFile, err := os.OpenFile(path.Join(m.aciPath, aci.ManifestFile), os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+	defer manFile.Close()
+
+	err = manFile.Truncate(0)
 	if err != nil {
 		return err
 	}
 
-	err = m.manifestFile.Truncate(0)
-	if err != nil {
-		return err
-	}
-
-	_, err = m.manifestFile.Write(blob)
+	_, err = manFile.Write(blob)
 	if err != nil {
 		return err
 	}
@@ -105,7 +95,7 @@ func (m *Manifest) Get() *schema.ImageManifest {
 
 // Print will print out the current manifest to stdout, optionally inserting
 // whitespace to improve readability
-func (m *Manifest) Print(prettyPrint, printConfig bool) error {
+func (m *Manifest) Print(w io.Writer, prettyPrint, printConfig bool) error {
 	if printConfig {
 		return fmt.Errorf("can't print config, appc has no image configs")
 	}
@@ -119,7 +109,14 @@ func (m *Manifest) Print(prettyPrint, printConfig bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(manblob))
+	manblob = append(manblob, '\n')
+	n, err := w.Write(manblob)
+	if err != nil {
+		return err
+	}
+	if n < len(manblob) {
+		return fmt.Errorf("short write")
+	}
 	return nil
 }
 

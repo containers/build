@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -55,9 +56,9 @@ func runCat(cmd *cobra.Command, args []string) (exit int) {
 	}
 	switch printFile {
 	case "manifest":
-		err = a.Print(prettyPrint, false)
+		err = a.Print(os.Stdout, prettyPrint, false)
 	case "config":
-		err = a.Print(prettyPrint, true)
+		err = a.Print(os.Stdout, prettyPrint, true)
 	default:
 		err = fmt.Errorf("don't know how to print a %q", printFile)
 	}
