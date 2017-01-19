@@ -19,7 +19,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"syscall"
@@ -32,7 +31,7 @@ import (
 
 // Write will produce the resulting ACI from the current build context, saving
 // it to the given path, optionally signing it.
-func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) (err error) {
+func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -112,25 +111,5 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 		return fmt.Errorf("%q: permission denied - call write as root", problemPath)
 	}
 
-	if sign {
-		err = signACI(output, output+".asc", gpgflags)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
-}
-
-func signACI(acipath, signaturepath string, flags []string) error {
-	if len(flags) == 0 {
-		flags = []string{"--armor", "--yes"}
-	}
-	flags = append(flags, "--output", signaturepath, "--detach-sig", acipath)
-
-	gpgCmd := exec.Command("gpg", flags...)
-	gpgCmd.Stdin = os.Stdin
-	gpgCmd.Stdout = os.Stdout
-	gpgCmd.Stderr = os.Stderr
-	return gpgCmd.Run()
 }
