@@ -386,6 +386,8 @@ func (r Registry) download(url, path, label string) error {
 	switch res.StatusCode {
 	case http.StatusOK:
 		break
+	case http.StatusNotFound:
+		return ErrNotFound
 	default:
 		return fmt.Errorf("bad HTTP status code: %d", res.StatusCode)
 	}
