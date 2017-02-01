@@ -31,7 +31,7 @@ var (
 		Run:     runWrapper(runAddEnv),
 	}
 	cmdRmEnv = &cobra.Command{
-		Use:     "remove NAME VALUE",
+		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove an environment variable",
 		Long:    "Updates the environment in the current ACI's manifest to not contain the given variable",
