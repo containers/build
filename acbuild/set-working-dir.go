@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetWorkingDir = &cobra.Command{
 		Use:     "set-working-directory DIR",
-		Short:   "Set the working directory",
-		Long:    "Set the working directory the app will run in inside the container",
+		Short:   "Set the working directory that is used when the image is run",
 		Example: "acbuild set-working-directory /root",
 		Aliases: []string{"set-wd"},
 		Run:     runWrapper(runSetWorkingDir),
@@ -47,7 +46,12 @@ func runSetWorkingDir(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting working directory to %s", args[0])
 	}
 
-	err := newACBuild().SetWorkingDir(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetWorkingDir(args[0])
 
 	if err != nil {
 		stderr("set-working-dir: %v", err)

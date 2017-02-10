@@ -25,8 +25,7 @@ var (
 	}
 	cmdAddLabel = &cobra.Command{
 		Use:     "add NAME VALUE",
-		Short:   "Add a label",
-		Long:    "Updates the ACI to contain a label with the given name and value. If the label already exists, its value will be changed.",
+		Short:   "Add a label, or update an existing one",
 		Example: "acbuild label add arch amd64",
 		Run:     runWrapper(runAddLabel),
 	}
@@ -34,7 +33,6 @@ var (
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove a label",
-		Long:    "Updates the labels in the ACI's manifest to not include the label for the given name",
 		Example: "acbuild label remove arch",
 		Run:     runWrapper(runRemoveLabel),
 	}
@@ -60,7 +58,12 @@ func runAddLabel(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding label %q=%q", args[0], args[1])
 	}
 
-	err := newACBuild().AddLabel(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddLabel(args[0], args[1])
 
 	if err != nil {
 		stderr("label add: %v", err)
@@ -84,7 +87,12 @@ func runRemoveLabel(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing label %q", args[0])
 	}
 
-	err := newACBuild().RemoveLabel(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveLabel(args[0])
 
 	if err != nil {
 		stderr("label remove: %v", err)

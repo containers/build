@@ -20,7 +20,6 @@ import (
 	"path/filepath"
 
 	"github.com/containers/build/engine"
-	"github.com/appc/spec/schema/types"
 	"github.com/coreos/rkt/pkg/fileutil"
 	"github.com/coreos/rkt/pkg/multicall"
 	"github.com/coreos/rkt/pkg/user"
@@ -32,7 +31,7 @@ func init() {
 	multicall.Add("acbuild-chroot", cmdACBuildChroot.Execute)
 }
 
-func (e Engine) Run(command string, args []string, environment types.Environment, chroot, workingDir string) error {
+func (e Engine) Run(command string, args []string, environment map[string]string, chroot, workingDir string) error {
 	resolvConfFile := filepath.Join(chroot, "/etc/resolv.conf")
 	_, err := os.Stat(resolvConfFile)
 	switch {
@@ -57,11 +56,11 @@ func (e Engine) Run(command string, args []string, environment types.Environment
 		serializedArgs += arg
 	}
 	var serializedEnv string
-	for _, envvar := range environment {
+	for name, value := range environment {
 		if serializedEnv != "" {
 			serializedEnv += ","
 		}
-		serializedEnv += envvar.Name + "=" + envvar.Value
+		serializedEnv += name + "=" + value
 	}
 	path := "PATH="
 	for _, p := range engine.Pathlist {

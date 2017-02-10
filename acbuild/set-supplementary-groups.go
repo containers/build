@@ -23,8 +23,7 @@ import (
 var (
 	cmdSetSupplementaryGroups = &cobra.Command{
 		Use:     "set-supp-groups [GROUPS]",
-		Short:   "Set supplementary GID's",
-		Long:    "Set the supplementary groups the app will run as inside the container",
+		Short:   "Set the supplementary GID's that are used when this image is run",
 		Example: "acbuild set-supp-groups 200 300 400",
 		Run:     runWrapper(runSetSuppGroups),
 	}
@@ -54,7 +53,12 @@ func runSetSuppGroups(cmd *cobra.Command, args []string) (exit int) {
 		intArgs = append(intArgs, intArg)
 	}
 
-	err := newACBuild().SetSuppGroups(intArgs)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetSuppGroups(intArgs)
 
 	if err != nil {
 		stderr("set-supp-groups: %v", err)

@@ -16,13 +16,15 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+
+	"github.com/containers/build/lib"
 )
 
 var (
+	mode     string
 	cmdBegin = &cobra.Command{
 		Use:     "begin [START_ACI]",
-		Short:   "Start a new build",
-		Long:    "Begins a new build. By default operations will be performed on top of an empty image, but a start image can be provided",
+		Short:   "Start a new build, with either a new and empty image or an existing image",
 		Example: "acbuild begin",
 		Run:     runWrapper(runBegin),
 	}
@@ -31,11 +33,18 @@ var (
 func init() {
 	cmdAcbuild.AddCommand(cmdBegin)
 	cmdBegin.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over an unencrypted connection")
+	cmdBegin.Flags().StringVar(&mode, "build-mode", "appc", "Which build mode to operate in. Accepts: appc, oci")
 }
 
 func runBegin(cmd *cobra.Command, args []string) (exit int) {
 	if len(args) > 1 {
 		stderr("begin: incorrect number of arguments")
+		return 1
+	}
+
+	bmode := lib.BuildMode(mode)
+	if bmode != lib.BuildModeAppC && bmode != lib.BuildModeOCI {
+		stderr("begin: invalid build mode: %s", mode)
 		return 1
 	}
 
@@ -47,11 +56,15 @@ func runBegin(cmd *cobra.Command, args []string) (exit int) {
 		}
 	}
 
-	var err error
+	a, err := newACBuildWithBuildMode(bmode)
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
 	if len(args) == 0 {
-		err = newACBuild().Begin("", insecure)
+		err = a.Begin("", insecure, bmode)
 	} else {
-		err = newACBuild().Begin(args[0], insecure)
+		err = a.Begin(args[0], insecure, bmode)
 	}
 
 	if err != nil {

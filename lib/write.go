@@ -29,7 +29,7 @@ import (
 	"github.com/containers/build/util"
 )
 
-// Write will produce the resulting ACI from the current build context, saving
+// Write will produce the resulting image from the current build context, saving
 // it to the given path, optionally signing it.
 func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	if err = a.lock(); err != nil {
@@ -41,17 +41,19 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 		}
 	}()
 
-	man, err := util.GetManifest(a.CurrentACIPath)
-	if err != nil {
-		return err
-	}
+	if a.Mode == BuildModeAppC {
+		man, err := util.GetManifest(a.CurrentImagePath)
+		if err != nil {
+			return err
+		}
 
-	if man.App != nil && len(man.App.Exec) == 0 {
-		fmt.Fprintf(os.Stderr, "warning: exec command was never set.\n")
-	}
+		if man.App != nil && len(man.App.Exec) == 0 {
+			fmt.Fprintf(os.Stderr, "warning: exec command was never set.\n")
+		}
 
-	if man.Name == types.ACIdentifier(placeholdername) {
-		return fmt.Errorf("can't write ACI, name was never set")
+		if man.Name == types.ACIdentifier(placeholdername) {
+			return fmt.Errorf("can't write ACI, name was never set")
+		}
 	}
 
 	fileFlags := os.O_CREATE | os.O_WRONLY
@@ -69,7 +71,7 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 		fileFlags |= os.O_TRUNC
 	}
 
-	// open/create the aci file
+	// open/create the image file
 	ofile, err := os.OpenFile(output, fileFlags, 0644)
 	if err != nil {
 		return err
@@ -89,27 +91,40 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	gzwriter := gzip.NewWriter(ofile)
 	defer gzwriter.Close()
 
-	// create the aci writer
-	aw := aci.NewImageWriter(*man, tar.NewWriter(gzwriter))
-	err = filepath.Walk(a.CurrentACIPath, aci.BuildWalker(a.CurrentACIPath, aw, nil))
-	defer aw.Close()
-	if err != nil {
-		pathErr, ok := err.(*os.PathError)
-		if !ok {
-			fmt.Printf("not a path error!\n")
-			return err
-		}
-		syscallErrno, ok := pathErr.Err.(syscall.Errno)
-		if !ok {
-			fmt.Printf("not a syscall errno!\n")
-			return err
-		}
-		if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
-			return err
-		}
-		problemPath := pathErr.Path[len(path.Join(a.CurrentACIPath, aci.RootfsDir)):]
-		return fmt.Errorf("%q: permission denied - call write as root", problemPath)
-	}
+	// setup tar writer
+	twriter := tar.NewWriter(gzwriter)
+	defer twriter.Close()
 
+	// create the aci writer
+	switch a.Mode {
+	case BuildModeAppC:
+		man, err := util.GetManifest(a.CurrentImagePath)
+		if err != nil {
+			return err
+		}
+		aw := aci.NewImageWriter(*man, twriter)
+		err = filepath.Walk(a.CurrentImagePath, aci.BuildWalker(a.CurrentImagePath, aw, nil))
+		defer aw.Close()
+		if err != nil {
+			pathErr, ok := err.(*os.PathError)
+			if !ok {
+				return err
+			}
+			syscallErrno, ok := pathErr.Err.(syscall.Errno)
+			if !ok {
+				return err
+			}
+			if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
+				return err
+			}
+			problemPath := pathErr.Path[len(path.Join(a.CurrentImagePath, aci.RootfsDir)):]
+			return fmt.Errorf("%q: permission denied - call write as root", problemPath)
+		}
+	case BuildModeOCI:
+		err = filepath.Walk(a.CurrentImagePath, util.PathWalker(twriter, a.CurrentImagePath))
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

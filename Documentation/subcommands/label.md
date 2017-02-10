@@ -1,5 +1,8 @@
 # acbuild label
 
+_Note: this only applies when in build mode appc. The OCI spec does support
+labels, but acbuild can't manipulate them currently_
+
 Labels are a part of an ACI's manifest that are used during image discovery and
 dependency resolution. Each label has a name and a value, and each name must be
 unique.

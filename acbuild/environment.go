@@ -25,8 +25,7 @@ var (
 	}
 	cmdAddEnv = &cobra.Command{
 		Use:     "add NAME VALUE",
-		Short:   "Add an environment variable",
-		Long:    "Updates the ACI to contain an environment variable with the given name and value. If the variable already exists, its value will be changed.",
+		Short:   "Add an environment variable, or update an existing one",
 		Example: "acbuild environment add REDUCE_WORKER_DEBUG true",
 		Run:     runWrapper(runAddEnv),
 	}
@@ -34,7 +33,6 @@ var (
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove an environment variable",
-		Long:    "Updates the environment in the current ACI's manifest to not contain the given variable",
 		Example: "acbuild environment remove REDUCE_WORKER_DEBUG",
 		Run:     runWrapper(runRemoveEnv),
 	}
@@ -60,7 +58,12 @@ func runAddEnv(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding environment variable %q=%q", args[0], args[1])
 	}
 
-	err := newACBuild().AddEnv(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddEnv(args[0], args[1])
 
 	if err != nil {
 		stderr("environment add: %v", err)
@@ -84,7 +87,12 @@ func runRemoveEnv(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing environment variable %q", args[0])
 	}
 
-	err := newACBuild().RemoveEnv(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveEnv(args[0])
 
 	if err != nil {
 		stderr("environment remove: %v", err)

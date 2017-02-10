@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetName = &cobra.Command{
 		Use:     "set-name ACI_NAME",
-		Short:   "Set the image name",
-		Long:    "Sets the name of the ACI in the manifest",
+		Short:   "Set the image name (appc only)",
 		Example: "acbuild set-name quay.io/coreos/etcd",
 		Run:     runWrapper(runSetName),
 	}
@@ -46,7 +45,12 @@ func runSetName(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting name of ACI to %s", args[0])
 	}
 
-	err := newACBuild().SetName(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetName(args[0])
 
 	if err != nil {
 		stderr("set-name: %v", err)

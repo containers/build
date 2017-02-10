@@ -25,8 +25,7 @@ var (
 	}
 	cmdAddAnno = &cobra.Command{
 		Use:     "add NAME VALUE",
-		Short:   "Add an annotation",
-		Long:    "Updates the ACI to contain an annotation with the given name and value. If the annotation already exists, its value will be changed.",
+		Short:   "Add an annotation, or updates an existing annotation",
 		Example: "acbuild annotation add documentation https://example.com/docs",
 		Run:     runWrapper(runAddAnno),
 	}
@@ -34,7 +33,6 @@ var (
 		Use:     "remove NAME",
 		Aliases: []string{"rm"},
 		Short:   "Remove an annotation",
-		Long:    "Removes the annotation with the given name from the ACI's manifest",
 		Example: "acbuild annotation remove documentation",
 		Run:     runWrapper(runRmAnno),
 	}
@@ -60,7 +58,12 @@ func runAddAnno(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding annotation %q=%q", args[0], args[1])
 	}
 
-	err := newACBuild().AddAnnotation(args[0], args[1])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddAnnotation(args[0], args[1])
 
 	if err != nil {
 		stderr("annotation add: %v", err)
@@ -84,7 +87,12 @@ func runRmAnno(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing annotation %q", args[0])
 	}
 
-	err := newACBuild().RemoveAnnotation(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemoveAnnotation(args[0])
 
 	if err != nil {
 		stderr("annotation remove: %v", err)

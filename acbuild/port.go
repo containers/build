@@ -30,15 +30,13 @@ var (
 	cmdAddPort = &cobra.Command{
 		Use:     "add NAME PROTOCOL PORT",
 		Short:   "Add a port",
-		Long:    "Updates the ACI to contain a port with the given name, protocol, and port. If the port already exists, its values will be changed.",
 		Example: "acbuild port add https tcp 443 --socket-activated",
 		Run:     runWrapper(runAddPort),
 	}
 	cmdRmPort = &cobra.Command{
-		Use:     "remove NAME",
+		Use:     "remove NAME/PORT",
 		Aliases: []string{"rm"},
-		Short:   "Remove a port",
-		Long:    "Updates the ports in the ACI's manifest to include a port with the given name and value",
+		Short:   "Remove a port with the given name or port number (and optionally protocol)",
 		Example: "acbuild port remove https",
 		Run:     runWrapper(runRmPort),
 	}
@@ -49,8 +47,8 @@ func init() {
 	cmdPort.AddCommand(cmdAddPort)
 	cmdPort.AddCommand(cmdRmPort)
 
-	cmdAddPort.Flags().UintVar(&count, "count", 1, "Specifies a range of ports, going from PORT to PORT + count - 1")
-	cmdAddPort.Flags().BoolVar(&socketActivated, "socket-activated", false, "Set the app to be socket activated on this/these port/ports")
+	cmdAddPort.Flags().UintVar(&count, "count", 1, "(appc only) Specifies a range of ports, going from PORT to PORT + count - 1")
+	cmdAddPort.Flags().BoolVar(&socketActivated, "socket-activated", false, "(appc only) Set the app to be socket activated on this/these port/ports")
 }
 
 func runAddPort(cmd *cobra.Command, args []string) (exit int) {
@@ -72,7 +70,12 @@ func runAddPort(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Adding port %q=%q", args[0], args[1])
 	}
 
-	err = newACBuild().AddPort(args[0], args[1], uint(port), count, socketActivated)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.AddPort(args[0], args[1], uint(port), count, socketActivated)
 
 	if err != nil {
 		stderr("port add: %v", err)
@@ -96,7 +99,12 @@ func runRmPort(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Removing port %q", args[0])
 	}
 
-	err := newACBuild().RemovePort(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.RemovePort(args[0])
 
 	if err != nil {
 		stderr("port remove: %v", err)

@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetGroup = &cobra.Command{
 		Use:     "set-group GROUP",
-		Short:   "Set the group",
-		Long:    "Set the group the app will run as inside the container",
+		Short:   "Set the group that is used when this image is run",
 		Example: "acbuild set-group www-data",
 		Run:     runWrapper(runSetGroup),
 	}
@@ -46,7 +45,12 @@ func runSetGroup(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting group to %s", args[0])
 	}
 
-	err := newACBuild().SetGroup(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetGroup(args[0])
 
 	if err != nil {
 		stderr("set-group: %v", err)

@@ -1,5 +1,7 @@
 # acbuild dependency
 
+_Note: this only applies when in build mode appc_
+
 Dependencies are ACIs separate from the current ACI, that are placed down into
 the rootfs before the files from the current ACI.
 
