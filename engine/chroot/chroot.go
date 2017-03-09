@@ -22,7 +22,6 @@ import (
 	"github.com/containers/build/engine"
 	"github.com/coreos/rkt/pkg/fileutil"
 	"github.com/coreos/rkt/pkg/multicall"
-	"github.com/coreos/rkt/pkg/user"
 )
 
 type Engine struct{}
@@ -40,7 +39,7 @@ func (e Engine) Run(command string, args []string, environment map[string]string
 		if err != nil {
 			return err
 		}
-		err = fileutil.CopyTree("/etc/resolv.conf", resolvConfFile, user.NewBlankUidRange())
+		err = fileutil.CopyRegularFile("/etc/resolv.conf", resolvConfFile)
 		if err != nil {
 			return err
 		}
