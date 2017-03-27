@@ -110,10 +110,25 @@ func (a *ACBuild) expandTopOCILayer() (string, error) {
 }
 
 func (a *ACBuild) copyToDirOCI(froms []string, to string) error {
-	targetPath, err := a.expandTopOCILayer()
+	currentLayer, err := a.expandTopOCILayer()
 	if err != nil {
 		return err
 	}
+	targetPath := path.Join(currentLayer, to)
+
+	targetInfo, err := os.Stat(targetPath)
+	switch {
+	case os.IsNotExist(err):
+		err := os.MkdirAll(targetPath, 0755)
+		if err != nil {
+			return err
+		}
+	case err != nil:
+		return err
+	case !targetInfo.IsDir():
+		return fmt.Errorf("target %q is not a directory", to)
+	}
+
 	for _, from := range froms {
 		_, file := path.Split(from)
 		tmptarget := path.Join(targetPath, file)
@@ -123,7 +138,7 @@ func (a *ACBuild) copyToDirOCI(froms []string, to string) error {
 		}
 	}
 
-	return a.rehashAndStoreOCIBlob(targetPath, false)
+	return a.rehashAndStoreOCIBlob(currentLayer, false)
 }
 
 // CopyToTarget will copy a single file/directory from the from string to the
