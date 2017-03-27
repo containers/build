@@ -85,30 +85,48 @@ func PathWalker(twriter *tar.Writer, tarSrcPath string) func(string, os.FileInfo
 		if path == tarSrcPath {
 			return nil
 		}
-		hdr, err := tar.FileInfoHeader(info, "")
-		if err != nil {
-			return err
-		}
-		hdr.Name = path[prefixLen:]
-		twriter.WriteHeader(hdr)
+		hdrName := path[prefixLen:]
 
-		if !info.Mode().IsRegular() {
-			return nil
+		switch {
+		case info.Mode()&os.ModeSymlink != 0:
+			target, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			hdr, err := tar.FileInfoHeader(info, target)
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
+
+		case info.Mode().IsRegular():
+			hdr, err := tar.FileInfoHeader(info, "")
+			if err != nil {
+				return err
+			}
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
+
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			n, err := io.Copy(twriter, f)
+			if err != nil {
+				return err
+			}
+			if n != info.Size() {
+				return fmt.Errorf("underwrite error")
+			}
+		default:
+			hdr, err := tar.FileInfoHeader(info, "")
+			if err != nil {
+				return err
+			}
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
 		}
 
-		f, err := os.Open(path)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-
-		n, err := io.Copy(twriter, f)
-		if err != nil {
-			return err
-		}
-		if n != info.Size() {
-			return fmt.Errorf("underwrite error")
-		}
 		return nil
 	}
 }
