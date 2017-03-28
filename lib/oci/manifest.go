@@ -246,7 +246,7 @@ func (i *Image) UpdateTopLayerHash(hashAlgo, newHash string, size int64) (string
 
 	layerDescriptor :=
 		ociImage.Descriptor{
-			MediaType: "MediaTypeImageLayer",
+			MediaType: ociImage.MediaTypeImageLayer,
 			Digest:    hashStr,
 			Size:      size,
 		}
@@ -272,7 +272,7 @@ func (i *Image) NewTopLayer(hashAlgo, newHash string, size int64) error {
 
 	layerDescriptor :=
 		ociImage.Descriptor{
-			MediaType: "MediaTypeImageLayer",
+			MediaType: ociImage.MediaTypeImageLayer,
 			Digest:    hashStr,
 			Size:      size,
 		}
