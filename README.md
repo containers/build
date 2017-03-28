@@ -9,7 +9,10 @@ formats; currently, it can output the following types of container images:
 * OCI, the format defined in the [Open Containers Image Format
   specification](https://github.com/opencontainers/image-spec)
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/WcnIDm80y68" frameborder="0" allowfullscreen></iframe>
+
+[http://www.youtube.com/watch?v=WcnIDm80y68](http://www.youtube.com/watch?v=WcnIDm80y68)
+
+[![How to use rkt acbuild to construct app container images](http://img.youtube.com/vi/WcnIDm80y68/0.jpg)](http://www.youtube.com/watch?v=WcnIDm80y68 "How to use rkt acbuild to construct app container images")
 
 ## Rationale
 
