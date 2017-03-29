@@ -200,16 +200,16 @@ func (a *ACBuild) rehashAndStoreOCIBlob(targetPath string, newLayer bool) error 
 			tmpFile.Close()
 		}
 	}()
-	gzwriter := gzip.NewWriter(tmpFile)
+	combinedWriter := io.MultiWriter(hashWriter, tmpFile)
+
+	gzwriter := gzip.NewWriter(combinedWriter)
 	defer func() {
 		if !finishedWriting {
 			gzwriter.Close()
 		}
 	}()
 
-	combinedWriter := io.MultiWriter(hashWriter, gzwriter)
-
-	twriter := tar.NewWriter(combinedWriter)
+	twriter := tar.NewWriter(gzwriter)
 	defer func() {
 		if !finishedWriting {
 			twriter.Close()
