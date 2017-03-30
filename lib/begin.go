@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/containers/build/lib/appc"
@@ -258,6 +259,7 @@ func (a *ACBuild) beginWithEmptyOCI() error {
 
 func (a *ACBuild) writeSkeletonRefAndManifest() error {
 	img := ociImage.Image{
+		Created:      time.Now().Format(time.RFC3339),
 		Architecture: runtime.GOARCH,
 		OS:           runtime.GOOS,
 	}
