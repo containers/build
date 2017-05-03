@@ -17,7 +17,10 @@ package lib
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -31,9 +34,9 @@ import (
 
 // Write will produce the resulting image from the current build context, saving
 // it to the given path, optionally signing it.
-func (a *ACBuild) Write(output string, overwrite bool) (err error) {
+func (a *ACBuild) Write(output string, overwrite bool) (id string, err error) {
 	if err = a.lock(); err != nil {
-		return err
+		return "", err
 	}
 	defer func() {
 		if err1 := a.unlock(); err == nil {
@@ -44,7 +47,7 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	if a.Mode == BuildModeAppC {
 		man, err := util.GetManifest(a.CurrentImagePath)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		if man.App != nil && len(man.App.Exec) == 0 {
@@ -52,7 +55,7 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 		}
 
 		if man.Name == types.ACIdentifier(placeholdername) {
-			return fmt.Errorf("can't write ACI, name was never set")
+			return "", fmt.Errorf("can't write ACI, name was never set")
 		}
 	}
 
@@ -63,10 +66,10 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	case os.IsNotExist(err):
 		break
 	case err != nil:
-		return err
+		return "", err
 	default:
 		if !overwrite {
-			return fmt.Errorf("ACI already exists: %s", output)
+			return "", fmt.Errorf("ACI already exists: %s", output)
 		}
 		fileFlags |= os.O_TRUNC
 	}
@@ -74,7 +77,7 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	// open/create the image file
 	ofile, err := os.OpenFile(output, fileFlags, 0644)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer ofile.Close()
 
@@ -91,8 +94,11 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	gzwriter := gzip.NewWriter(ofile)
 	defer gzwriter.Close()
 
+	// setup hasher
+	hasher := sha512.New()
+
 	// setup tar writer
-	twriter := tar.NewWriter(gzwriter)
+	twriter := tar.NewWriter(&duplexer{[]io.Writer{gzwriter, hasher}})
 	defer twriter.Close()
 
 	// create the aci writer
@@ -100,7 +106,7 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 	case BuildModeAppC:
 		man, err := util.GetManifest(a.CurrentImagePath)
 		if err != nil {
-			return err
+			return "", err
 		}
 		aw := aci.NewImageWriter(*man, twriter)
 		err = filepath.Walk(a.CurrentImagePath, aci.BuildWalker(a.CurrentImagePath, aw, nil))
@@ -108,23 +114,40 @@ func (a *ACBuild) Write(output string, overwrite bool) (err error) {
 		if err != nil {
 			pathErr, ok := err.(*os.PathError)
 			if !ok {
-				return err
+				return "", err
 			}
 			syscallErrno, ok := pathErr.Err.(syscall.Errno)
 			if !ok {
-				return err
+				return "", err
 			}
 			if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
-				return err
+				return "", err
 			}
 			problemPath := pathErr.Path[len(path.Join(a.CurrentImagePath, aci.RootfsDir)):]
-			return fmt.Errorf("%q: permission denied - call write as root", problemPath)
+			return "", fmt.Errorf("%q: permission denied - call write as root", problemPath)
 		}
+		aw.Close()
 	case BuildModeOCI:
 		err = filepath.Walk(a.CurrentImagePath, util.PathWalker(twriter, a.CurrentImagePath))
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
-	return nil
+	twriter.Flush()
+	hash := "sha512-" + hex.EncodeToString(hasher.Sum(nil))
+	return hash, nil
+}
+
+type duplexer struct {
+	outputs []io.Writer
+}
+
+func (dup *duplexer) Write(data []byte) (n int, err error) {
+	for _, output := range dup.outputs {
+		n, err = output.Write(data)
+		if err != nil {
+			return
+		}
+	}
+	return
 }

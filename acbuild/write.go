@@ -56,12 +56,12 @@ func runWrite(cmd *cobra.Command, args []string) (exit int) {
 		stderr("%v", err)
 		return 1
 	}
-	err = a.Write(args[0], overwrite)
+	id, err := a.Write(args[0], overwrite)
 
 	if err != nil {
 		stderr("write: %v", err)
 		return getErrorCode(err)
 	}
-
+	stdout(id)
 	return 0
 }

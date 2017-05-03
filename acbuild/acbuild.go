@@ -259,7 +259,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 		dir, file := path.Split(aciToModify)
 		tmpFile := path.Join(dir, "."+file+".tmp")
 
-		err = a.Write(tmpFile, true)
+		_, err = a.Write(tmpFile, true)
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)
