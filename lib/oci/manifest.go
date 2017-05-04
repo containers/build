@@ -231,23 +231,24 @@ func (i *Image) Print(w io.Writer, prettyPrint, printConfig bool) error {
 	return nil
 }
 
-func (i *Image) UpdateTopLayerHash(hashAlgo, newHash string, size int64) (string, error) {
-	var oldTopLayerHash string
-	hashStr := hashAlgo + ":" + newHash
+func (i *Image) UpdateTopLayer(digestAlgo, layerDigest, diffId string, size int64) (string, error) {
+	var oldLayerDigest string
+	layerDigest = digestAlgo + ":" + layerDigest
+	diffId = digestAlgo + ":" + diffId
 	if len(i.config.RootFS.DiffIDs) == 0 {
 		i.config.RootFS = ociImage.RootFS{
 			Type:    "layers",
-			DiffIDs: []string{hashStr},
+			DiffIDs: []string{diffId},
 		}
 	} else {
-		oldTopLayerHash = i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1]
-		i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1] = hashStr
+		oldLayerDigest = i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1]
+		i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1] = diffId
 	}
 
 	layerDescriptor :=
 		ociImage.Descriptor{
 			MediaType: ociImage.MediaTypeImageLayer,
-			Digest:    hashStr,
+			Digest:    layerDigest,
 			Size:      size,
 		}
 	if len(i.manifest.Layers) == 0 {
@@ -256,24 +257,25 @@ func (i *Image) UpdateTopLayerHash(hashAlgo, newHash string, size int64) (string
 		i.manifest.Layers[len(i.manifest.Layers)-1] = layerDescriptor
 	}
 
-	return oldTopLayerHash, i.save()
+	return oldLayerDigest, i.save()
 }
 
-func (i *Image) NewTopLayer(hashAlgo, newHash string, size int64) error {
-	hashStr := hashAlgo + ":" + newHash
+func (i *Image) NewTopLayer(digestAlgo, layerDigest, diffId string, size int64) error {
+	layerDigest = digestAlgo + ":" + layerDigest
+	diffId = digestAlgo + ":" + diffId
 	if len(i.config.RootFS.DiffIDs) == 0 {
 		i.config.RootFS = ociImage.RootFS{
 			Type:    "layers",
-			DiffIDs: []string{hashStr},
+			DiffIDs: []string{diffId},
 		}
 	} else {
-		i.config.RootFS.DiffIDs = append(i.config.RootFS.DiffIDs, hashStr)
+		i.config.RootFS.DiffIDs = append(i.config.RootFS.DiffIDs, diffId)
 	}
 
 	layerDescriptor :=
 		ociImage.Descriptor{
 			MediaType: ociImage.MediaTypeImageLayer,
-			Digest:    hashStr,
+			Digest:    layerDigest,
 			Size:      size,
 		}
 	if len(i.manifest.Layers) == 0 {
