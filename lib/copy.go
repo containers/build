@@ -79,7 +79,7 @@ func (a *ACBuild) expandTopOCILayer() (string, error) {
 	var topLayerID string
 	switch ociMan := a.man.(type) {
 	case *oci.Image:
-		layerIDs := ociMan.GetLayerHashes()
+		layerIDs := ociMan.GetLayerDigests()
 		if len(layerIDs) > 0 {
 			topLayerID = layerIDs[len(layerIDs)-1]
 		}

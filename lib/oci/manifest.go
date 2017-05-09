@@ -199,8 +199,17 @@ func (i *Image) GetRef() ociImage.Descriptor {
 	return i.ref
 }
 
-func (i *Image) GetLayerHashes() []string {
+func (i *Image) GetDiffIDs() []string {
 	return i.config.RootFS.DiffIDs
+}
+
+func (i *Image) GetLayerDigests() []string {
+	numLayers := len(i.manifest.Layers)
+	layerDigests := make([]string, numLayers, numLayers)
+	for index, layer := range i.manifest.Layers {
+		layerDigests[index] = layer.Digest
+	}
+	return layerDigests
 }
 
 func (i *Image) Print(w io.Writer, prettyPrint, printConfig bool) error {
@@ -241,20 +250,21 @@ func (i *Image) UpdateTopLayer(digestAlgo, layerDigest, diffId string, size int6
 			DiffIDs: []string{diffId},
 		}
 	} else {
-		oldLayerDigest = i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1]
 		i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1] = diffId
 	}
 
-	layerDescriptor :=
-		ociImage.Descriptor{
-			MediaType: ociImage.MediaTypeImageLayer,
-			Digest:    layerDigest,
-			Size:      size,
-		}
+	layerDescriptor := ociImage.Descriptor{
+		MediaType: ociImage.MediaTypeImageLayer,
+		Digest:    layerDigest,
+		Size:      size,
+	}
+
 	if len(i.manifest.Layers) == 0 {
 		i.manifest.Layers = []ociImage.Descriptor{layerDescriptor}
 	} else {
-		i.manifest.Layers[len(i.manifest.Layers)-1] = layerDescriptor
+		numLayers := len(i.manifest.Layers)
+		oldLayerDigest = i.manifest.Layers[numLayers-1].Digest
+		i.manifest.Layers[numLayers-1] = layerDescriptor
 	}
 
 	return oldLayerDigest, i.save()

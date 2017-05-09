@@ -191,27 +191,27 @@ func (a *ACBuild) generateOverlayPathsAppC(insecure bool) ([]string, error) {
 }
 
 func (a *ACBuild) generateOverlayPathsOCI() ([]string, error) {
-	var layerIDs []string
+	var layerDigests []string
 	switch ociMan := a.man.(type) {
 	case *oci.Image:
-		layerIDs = ociMan.GetLayerHashes()
+		layerDigests = ociMan.GetLayerDigests()
 	default:
 		return nil, fmt.Errorf("internal error: mismatched manifest type and build mode???")
 	}
 
 	var layerPaths []string
-	if len(layerIDs) == 0 {
+	if len(layerDigests) == 0 {
 		layerPaths = []string{path.Join(a.OCIExpandedBlobsPath, "sha256", "new-layer")}
 		err := os.MkdirAll(layerPaths[0], 0755)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		err := util.OCIExtractLayers(layerIDs, a.CurrentImagePath, a.OCIExpandedBlobsPath)
+		err := util.OCIExtractLayers(layerDigests, a.CurrentImagePath, a.OCIExpandedBlobsPath)
 		if err != nil {
 			return nil, err
 		}
-		for _, layerID := range layerIDs {
+		for _, layerID := range layerDigests {
 			algo, hash, err := util.SplitOCILayerID(layerID)
 			if err != nil {
 				return nil, err
