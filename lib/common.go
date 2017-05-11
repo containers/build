@@ -187,7 +187,7 @@ func GetBuildMode(cwd string) (BuildMode, error) {
 }
 
 func (a *ACBuild) rehashAndStoreOCIBlob(targetPath string, newLayer bool) error {
-	hashWriter := sha256.New()
+	layerDigestWriter := sha256.New()
 
 	finishedWriting := false
 
@@ -200,29 +200,30 @@ func (a *ACBuild) rehashAndStoreOCIBlob(targetPath string, newLayer bool) error 
 			tmpFile.Close()
 		}
 	}()
-	combinedWriter := io.MultiWriter(hashWriter, tmpFile)
+	combinedWriter := io.MultiWriter(layerDigestWriter, tmpFile)
 
-	gzwriter := gzip.NewWriter(combinedWriter)
+	gzipWriter := gzip.NewWriter(combinedWriter)
 	defer func() {
 		if !finishedWriting {
-			gzwriter.Close()
+			gzipWriter.Close()
 		}
 	}()
 
-	twriter := tar.NewWriter(gzwriter)
+	diffIdWriter := sha256.New()
+	tarWriter := tar.NewWriter(io.MultiWriter(diffIdWriter, gzipWriter))
 	defer func() {
 		if !finishedWriting {
-			twriter.Close()
+			tarWriter.Close()
 		}
 	}()
 
-	err = filepath.Walk(targetPath, util.PathWalker(twriter, targetPath))
+	err = filepath.Walk(targetPath, util.PathWalker(tarWriter, targetPath))
 	if err != nil {
 		return err
 	}
 
-	twriter.Close()
-	gzwriter.Close()
+	tarWriter.Close()
+	gzipWriter.Close()
 	tmpFile.Close()
 
 	finfo, err := os.Stat(tmpFile.Name())
@@ -233,20 +234,23 @@ func (a *ACBuild) rehashAndStoreOCIBlob(targetPath string, newLayer bool) error 
 
 	finishedWriting = true
 
-	blobHash := hex.EncodeToString(hashWriter.Sum(nil))
+	// See https://github.com/opencontainers/image-spec/blob/master/config.md for the difference between layer
+	// digest and DiffID.
+	layerDigest := hex.EncodeToString(layerDigestWriter.Sum(nil))
+	diffId := hex.EncodeToString(diffIdWriter.Sum(nil))
 
 	err = os.MkdirAll(path.Join(a.CurrentImagePath, "blobs", "sha256"), 0755)
 	if err != nil {
 		return err
 	}
 
-	err = os.Rename(tmpFile.Name(), path.Join(a.CurrentImagePath, "blobs", "sha256", blobHash))
+	err = os.Rename(tmpFile.Name(), path.Join(a.CurrentImagePath, "blobs", "sha256", layerDigest))
 	if err != nil {
 		return err
 	}
 
 	blobStorePath := path.Dir(path.Dir(targetPath))
-	err = os.Rename(targetPath, path.Join(blobStorePath, "sha256", blobHash))
+	err = os.Rename(targetPath, path.Join(blobStorePath, "sha256", layerDigest))
 	if err != nil {
 		return err
 	}
@@ -256,14 +260,14 @@ func (a *ACBuild) rehashAndStoreOCIBlob(targetPath string, newLayer bool) error 
 	case *oci.Image:
 		if newLayer {
 			// add a new top layer to the config/manifest
-			err = ociMan.NewTopLayer("sha256", blobHash, fsize)
+			err = ociMan.NewTopLayer("sha256", layerDigest, diffId, fsize)
 			if err != nil {
 				return err
 			}
 		} else {
 			// update the top layer hash in the config/manifest, and remove the old
 			// top layer
-			oldTopLayerHash, err = ociMan.UpdateTopLayerHash("sha256", blobHash, fsize)
+			oldTopLayerHash, err = ociMan.UpdateTopLayer("sha256", layerDigest, diffId, fsize)
 			if err != nil {
 				return err
 			}

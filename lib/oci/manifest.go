@@ -199,8 +199,17 @@ func (i *Image) GetRef() ociImage.Descriptor {
 	return i.ref
 }
 
-func (i *Image) GetLayerHashes() []string {
+func (i *Image) GetDiffIDs() []string {
 	return i.config.RootFS.DiffIDs
+}
+
+func (i *Image) GetLayerDigests() []string {
+	numLayers := len(i.manifest.Layers)
+	layerDigests := make([]string, numLayers, numLayers)
+	for index, layer := range i.manifest.Layers {
+		layerDigests[index] = layer.Digest
+	}
+	return layerDigests
 }
 
 func (i *Image) Print(w io.Writer, prettyPrint, printConfig bool) error {
@@ -231,49 +240,52 @@ func (i *Image) Print(w io.Writer, prettyPrint, printConfig bool) error {
 	return nil
 }
 
-func (i *Image) UpdateTopLayerHash(hashAlgo, newHash string, size int64) (string, error) {
-	var oldTopLayerHash string
-	hashStr := hashAlgo + ":" + newHash
+func (i *Image) UpdateTopLayer(digestAlgo, layerDigest, diffId string, size int64) (string, error) {
+	var oldLayerDigest string
+	layerDigest = digestAlgo + ":" + layerDigest
+	diffId = digestAlgo + ":" + diffId
 	if len(i.config.RootFS.DiffIDs) == 0 {
 		i.config.RootFS = ociImage.RootFS{
 			Type:    "layers",
-			DiffIDs: []string{hashStr},
+			DiffIDs: []string{diffId},
 		}
 	} else {
-		oldTopLayerHash = i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1]
-		i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1] = hashStr
+		i.config.RootFS.DiffIDs[len(i.config.RootFS.DiffIDs)-1] = diffId
 	}
 
-	layerDescriptor :=
-		ociImage.Descriptor{
-			MediaType: ociImage.MediaTypeImageLayer,
-			Digest:    hashStr,
-			Size:      size,
-		}
+	layerDescriptor := ociImage.Descriptor{
+		MediaType: ociImage.MediaTypeImageLayer,
+		Digest:    layerDigest,
+		Size:      size,
+	}
+
 	if len(i.manifest.Layers) == 0 {
 		i.manifest.Layers = []ociImage.Descriptor{layerDescriptor}
 	} else {
-		i.manifest.Layers[len(i.manifest.Layers)-1] = layerDescriptor
+		numLayers := len(i.manifest.Layers)
+		oldLayerDigest = i.manifest.Layers[numLayers-1].Digest
+		i.manifest.Layers[numLayers-1] = layerDescriptor
 	}
 
-	return oldTopLayerHash, i.save()
+	return oldLayerDigest, i.save()
 }
 
-func (i *Image) NewTopLayer(hashAlgo, newHash string, size int64) error {
-	hashStr := hashAlgo + ":" + newHash
+func (i *Image) NewTopLayer(digestAlgo, layerDigest, diffId string, size int64) error {
+	layerDigest = digestAlgo + ":" + layerDigest
+	diffId = digestAlgo + ":" + diffId
 	if len(i.config.RootFS.DiffIDs) == 0 {
 		i.config.RootFS = ociImage.RootFS{
 			Type:    "layers",
-			DiffIDs: []string{hashStr},
+			DiffIDs: []string{diffId},
 		}
 	} else {
-		i.config.RootFS.DiffIDs = append(i.config.RootFS.DiffIDs, hashStr)
+		i.config.RootFS.DiffIDs = append(i.config.RootFS.DiffIDs, diffId)
 	}
 
 	layerDescriptor :=
 		ociImage.Descriptor{
 			MediaType: ociImage.MediaTypeImageLayer,
-			Digest:    hashStr,
+			Digest:    layerDigest,
 			Size:      size,
 		}
 	if len(i.manifest.Layers) == 0 {
