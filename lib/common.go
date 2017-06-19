@@ -106,8 +106,8 @@ func (a *ACBuild) loadManifest() error {
 		a.man, err = oci.LoadImage(a.CurrentImagePath)
 	}
 	if err != nil {
-		_, err := os.Stat(a.ContextPath)
-		if !os.IsNotExist(err) {
+		_, serr := os.Stat(a.ContextPath)
+		if !os.IsNotExist(serr) {
 			// If the context path exists, then this build was started and we
 			// shouldn't have failed. Let's error.
 			return fmt.Errorf("error loading manifest: %v\n", err)
