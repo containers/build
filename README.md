@@ -1,18 +1,26 @@
-# acbuild
+# acbuild - another container build tool
 
-acbuild is a command line utility to build and modify App Container Images 
-(ACIs), the container image format defined in the 
-[App Container (appc) spec](https://github.com/appc/spec).
+acbuild is a command line utility to build and modify container images.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/WcnIDm80y68" frameborder="0" allowfullscreen></iframe>
+It is intended to provide an image build workflow independent of specific
+formats; currently, it can output the following types of container images:
+* ACI, the container image format defined in the [App Container (appc) 
+ spec](https://github.com/appc/spec).
+* OCI, the format defined in the [Open Containers Image Format
+  specification](https://github.com/opencontainers/image-spec)
+
+
+[http://www.youtube.com/watch?v=WcnIDm80y68](http://www.youtube.com/watch?v=WcnIDm80y68)
+
+[![How to use rkt acbuild to construct app container images](http://img.youtube.com/vi/WcnIDm80y68/0.jpg)](http://www.youtube.com/watch?v=WcnIDm80y68 "How to use rkt acbuild to construct app container images")
 
 ## Rationale
 
-We needed a powerful tool for constructing and manipulating ACIs that made it
-easy to iteratively build containers, both from scratch and atop existing
-images. We wanted that tool to integrate well with Unix mechanisms like the
-shell and `Makefile`s so it would fit seamlessly into well-known administrator
-and developer workflows.
+We needed a powerful tool for constructing and manipulating container images
+that made it easy to iteratively build containers, both from scratch and atop
+existing images. We wanted that tool to integrate well with Unix mechanisms
+like the shell and `Makefile`s so it would fit seamlessly into well-known
+administrator and developer workflows.
 
 ## Installation
 
@@ -29,7 +37,6 @@ which it's run:
 
 - `cp`
 - `modprobe`
-- `gpg`
 
 Additionally `systemd-nspawn` is required to use the [default
 engine](Documentation/subcommands/run.md) for acbuild run. Thus on Ubuntu the `systemd-container` package needs to be installed.
@@ -37,7 +44,7 @@ engine](Documentation/subcommands/run.md) for acbuild run. Thus on Ubuntu the `s
 ### Prebuilt Binaries
 
 The easiest way to get `acbuild` is to download one of the
-[releases](https://github.com/appc/acbuild/releases) from GitHub.
+[releases](https://github.com/containers/build/releases) from GitHub.
 
 ### Build from source
 
@@ -48,7 +55,7 @@ Follow these steps to do so:
 1. Grab the source code for `acbuild` by `git clone`ing the source repository:
    ```
    cd ~
-   git clone https://github.com/appc/acbuild
+   git clone https://github.com/containers/build acbuild
    ```
 
 2. Run the `build` script from the root source repository directory:
@@ -98,7 +105,7 @@ can quickly get you set up with a Linux VM that has both acbuild and rkt. The
 following steps will grab acbuild, set up the machine, and ssh into it.
 
 ```
-git clone https://github.com/appc/acbuild
+git clone https://github.com/containers/build acbuild
 cd acbuild
 vagrant up
 vagrant ssh
@@ -108,13 +115,13 @@ vagrant ssh
 
 Documentation about acbuild and many of its commands is available in the
 [`Documentation`
-directory](https://github.com/appc/acbuild/tree/master/Documentation) in this
+directory](https://github.com/containers/build/tree/master/Documentation) in this
 repository.
 
 ## Examples
 
 Check out the [`examples`
-directory](https://github.com/appc/acbuild/tree/master/examples) for some common
+directory](https://github.com/containers/build/tree/master/examples) for some common
 applications being packaged into ACIs with `acbuild`.
 
 ## Related work

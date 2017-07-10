@@ -35,7 +35,7 @@ import (
 	"github.com/coreos/ioprogress"
 	"xi2.org/x/xz"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 func (r Registry) tmppath() string {
@@ -361,10 +361,9 @@ func (r Registry) download(url, path, label string) error {
 		return err
 	}
 	transport := http.DefaultTransport
+	transport.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	if r.Insecure {
-		transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
+		transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	client := &http.Client{Transport: transport}
@@ -387,6 +386,8 @@ func (r Registry) download(url, path, label string) error {
 	switch res.StatusCode {
 	case http.StatusOK:
 		break
+	case http.StatusNotFound:
+		return ErrNotFound
 	default:
 		return fmt.Errorf("bad HTTP status code: %d", res.StatusCode)
 	}

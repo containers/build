@@ -5,10 +5,10 @@ set -e
 # https://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-ORG_PATH="github.com/appc"
-REPO_PATH="${ORG_PATH}/acbuild"
+ORG_PATH="github.com/containers"
+REPO_PATH="${ORG_PATH}/build"
 VERSION=$(cd "${DIR}" && git describe --dirty)
-GLDFLAGS="-s -X github.com/appc/acbuild/lib.Version=${VERSION}"
+GLDFLAGS="-X ${REPO_PATH}/lib.Version=${VERSION}"
 
 if [ ! -h gopath/src/${REPO_PATH} ]; then
 	mkdir -p gopath/src/${ORG_PATH}
@@ -31,5 +31,9 @@ if [ "${GOOS}" = "freebsd" ]; then
 fi
 
 echo "Building acbuild..."
-CGO_ENABLED=0 go build -o $GOBIN/acbuild -a -tags netgo -ldflags "${GLDFLAGS}" ${ACBUILD_BUILD_TAGS} ${REPO_PATH}/acbuild
-ln -f $GOBIN/acbuild $GOBIN/acbuild-script
+go build -o $GOBIN/acbuild -ldflags "${GLDFLAGS}" ${ACBUILD_BUILD_TAGS} ${REPO_PATH}/acbuild
+pushd "$GOBIN"
+ln -sf acbuild acbuild-script
+ln -sf acbuild acbuild-chroot
+popd
+

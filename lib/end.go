@@ -15,9 +15,11 @@
 package lib
 
 import (
+	"fmt"
 	"os"
+	"syscall"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
 // End will stop the current build. An error will be returned if no build is in
@@ -42,6 +44,15 @@ func (a *ACBuild) End() error {
 
 	err = os.RemoveAll(a.ContextPath)
 	if err != nil {
+		switch err1 := err.(type) {
+		case *os.PathError:
+			switch err2 := err1.Err.(type) {
+			case syscall.Errno:
+				if err2 == syscall.EACCES {
+					err = fmt.Errorf("permission denied: please run this as a user with appropriate privileges\n")
+				}
+			}
+		}
 		return err
 	}
 

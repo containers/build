@@ -10,10 +10,10 @@ in the bash shell, rather than just inheriting the user's `SHELL` environment.
 
 Further, we set the `-e` option to bash to ensure that the entire script exits
 on the failure of any command. This gives us some atomicity, ensuring that
-either a complete and valid ACI is constructed, or none at all
+either a complete and valid image is constructed, or none at all
 
 The `begin` line starts the build. If the build is to be started from an
-existing ACI, this line will be different.
+existing image, this line will be different.
 
 The rest of the script is concerned with cleanup and error handling. The
 `acbuildend` function is interesting, as it serves as a simple "catch" mechanism

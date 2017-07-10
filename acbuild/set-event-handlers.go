@@ -26,13 +26,13 @@ var (
 	}
 	cmdSetPreStart = &cobra.Command{
 		Use:     "pre-start CMD [ARGS]",
-		Short:   "Set the pre-start event handler",
+		Short:   "Set the pre-start event handler (appc only)",
 		Example: "acbuild set-event-handler pre-start /root/setup-stuff.sh",
 		Run:     runWrapper(runSetPreStart),
 	}
 	cmdSetPostStop = &cobra.Command{
 		Use:     "post-stop CMD [ARGS]",
-		Short:   "Set the post-stop event handler",
+		Short:   "Set the post-stop event handler (appc only)",
 		Example: "acbuild set-event-handler post-stop /bin/report-results.sh",
 		Run:     runWrapper(runSetPostStop),
 	}
@@ -54,7 +54,12 @@ func runSetPreStart(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting pre-start event handler to %v", args)
 	}
 
-	err := newACBuild().SetPreStart(args)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetPreStart(args)
 
 	if err != nil {
 		stderr("pre-start: %v", err)
@@ -74,7 +79,12 @@ func runSetPostStop(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting post-stop event handler to %v", args)
 	}
 
-	err := newACBuild().SetPostStop(args)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetPostStop(args)
 
 	if err != nil {
 		stderr("post-stop: %v", err)

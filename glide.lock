@@ -1,5 +1,5 @@
-hash: 184c0c37269a0f6733ba567a8e609e494856f6b83cb4f5c82144dd3727337951
-updated: 2016-07-11T16:10:12.747988885-07:00
+hash: ada2b3fbdd717c7a9db32c5cce09fcfce01fa3a98e36b29275ac19c7021f8e1d
+updated: 2017-01-10T12:02:33.878602995-08:00
 imports:
 - name: github.com/appc/docker2aci
   version: 355af275fa8d48b4ecdd361a5feaf173abff81e7
@@ -11,9 +11,9 @@ imports:
   - lib/internal/backend/repository
   - lib/internal/docker
   - lib/internal/tarball
-  - lib/internal/types
   - lib/internal/util
   - pkg/log
+  - lib/internal/types
 - name: github.com/appc/spec
   version: fd5e3d8f5d596c6fbd506e80b5e13ba8a97b704c
   subpackages:
@@ -78,6 +78,11 @@ imports:
   subpackages:
   - diff
   - pretty
+- name: github.com/opencontainers/image-spec
+  version: 3b65d2823d053f93ec790e64416072d6019f30e5
+  subpackages:
+  - specs-go
+  - specs-go/v1
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/shurcooL/sanitized_anchor_name

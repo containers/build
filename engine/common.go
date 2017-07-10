@@ -14,9 +14,8 @@
 
 package engine
 
-import (
-	"github.com/appc/spec/schema/types"
-)
+var Pathlist = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin",
+	"/usr/bin", "/sbin", "/bin"}
 
 // Engine is an interface which is accepted by lib.Run, and used to perform the
 // actual execution of a binary inside the container.
@@ -28,5 +27,5 @@ type Engine interface {
 	// filesystem exists, and workingDir specifies the path inside the
 	// container that should be the current working directory for the binary.
 	// If workingDir is "", the default should be "/".
-	Run(command string, args []string, environment types.Environment, chroot, workingDir string) error
+	Run(command string, args []string, environment map[string]string, chroot, workingDir string) error
 }

@@ -3,7 +3,7 @@
 set -x
 
 export DEBIAN_FRONTEND=noninteractive
-VERSION=1.4.2
+VERSION=1.5.4
 OS=linux
 ARCH=amd64
 
@@ -28,4 +28,4 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 EOF
 
 # not essential but go get depends on it
-which git || sudo apt-get update && sudo apt-get install -y git
+which git || { sudo apt-get update && sudo apt-get install -y git; }

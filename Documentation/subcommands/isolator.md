@@ -1,5 +1,7 @@
 # acbuild isolator
 
+_Note: this only applies when in build mode appc_
+
 Isolators can be specified on an ACI. They represent a list of isolation steps
 that should be performed when the ACI is run.
 

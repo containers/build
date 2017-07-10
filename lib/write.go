@@ -17,9 +17,11 @@ package lib
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha512"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"syscall"
@@ -27,14 +29,14 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema/types"
 
-	"github.com/appc/acbuild/util"
+	"github.com/containers/build/util"
 )
 
-// Write will produce the resulting ACI from the current build context, saving
+// Write will produce the resulting image from the current build context, saving
 // it to the given path, optionally signing it.
-func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) (err error) {
+func (a *ACBuild) Write(output string, overwrite bool) (id string, err error) {
 	if err = a.lock(); err != nil {
-		return err
+		return "", err
 	}
 	defer func() {
 		if err1 := a.unlock(); err == nil {
@@ -42,17 +44,19 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 		}
 	}()
 
-	man, err := util.GetManifest(a.CurrentACIPath)
-	if err != nil {
-		return err
-	}
+	if a.Mode == BuildModeAppC {
+		man, err := util.GetManifest(a.CurrentImagePath)
+		if err != nil {
+			return "", err
+		}
 
-	if man.App != nil && len(man.App.Exec) == 0 {
-		fmt.Fprintf(os.Stderr, "warning: exec command was never set.\n")
-	}
+		if man.App != nil && len(man.App.Exec) == 0 {
+			fmt.Fprintf(os.Stderr, "warning: exec command was never set.\n")
+		}
 
-	if man.Name == types.ACIdentifier(placeholdername) {
-		return fmt.Errorf("can't write ACI, name was never set")
+		if man.Name == types.ACIdentifier(placeholdername) {
+			return "", fmt.Errorf("can't write ACI, name was never set")
+		}
 	}
 
 	fileFlags := os.O_CREATE | os.O_WRONLY
@@ -62,18 +66,18 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 	case os.IsNotExist(err):
 		break
 	case err != nil:
-		return err
+		return "", err
 	default:
 		if !overwrite {
-			return fmt.Errorf("ACI already exists: %s", output)
+			return "", fmt.Errorf("ACI already exists: %s", output)
 		}
 		fileFlags |= os.O_TRUNC
 	}
 
-	// open/create the aci file
+	// open/create the image file
 	ofile, err := os.OpenFile(output, fileFlags, 0644)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer ofile.Close()
 
@@ -90,47 +94,60 @@ func (a *ACBuild) Write(output string, overwrite, sign bool, gpgflags []string) 
 	gzwriter := gzip.NewWriter(ofile)
 	defer gzwriter.Close()
 
+	// setup hasher
+	hasher := sha512.New()
+
+	// setup tar writer
+	twriter := tar.NewWriter(&duplexer{[]io.Writer{gzwriter, hasher}})
+	defer twriter.Close()
+
 	// create the aci writer
-	aw := aci.NewImageWriter(*man, tar.NewWriter(gzwriter))
-	err = filepath.Walk(a.CurrentACIPath, aci.BuildWalker(a.CurrentACIPath, aw, nil))
-	defer aw.Close()
-	if err != nil {
-		pathErr, ok := err.(*os.PathError)
-		if !ok {
-			fmt.Printf("not a path error!\n")
-			return err
-		}
-		syscallErrno, ok := pathErr.Err.(syscall.Errno)
-		if !ok {
-			fmt.Printf("not a syscall errno!\n")
-			return err
-		}
-		if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
-			return err
-		}
-		problemPath := pathErr.Path[len(path.Join(a.CurrentACIPath, aci.RootfsDir)):]
-		return fmt.Errorf("%q: permission denied - call write as root", problemPath)
-	}
-
-	if sign {
-		err = signACI(output, output+".asc", gpgflags)
+	switch a.Mode {
+	case BuildModeAppC:
+		man, err := util.GetManifest(a.CurrentImagePath)
 		if err != nil {
-			return err
+			return "", err
+		}
+		aw := aci.NewImageWriter(*man, twriter)
+		err = filepath.Walk(a.CurrentImagePath, aci.BuildWalker(a.CurrentImagePath, aw, nil))
+		defer aw.Close()
+		if err != nil {
+			pathErr, ok := err.(*os.PathError)
+			if !ok {
+				return "", err
+			}
+			syscallErrno, ok := pathErr.Err.(syscall.Errno)
+			if !ok {
+				return "", err
+			}
+			if pathErr.Op == "open" && syscallErrno != syscall.EACCES {
+				return "", err
+			}
+			problemPath := pathErr.Path[len(path.Join(a.CurrentImagePath, aci.RootfsDir)):]
+			return "", fmt.Errorf("%q: permission denied - call write as root", problemPath)
+		}
+		aw.Close()
+	case BuildModeOCI:
+		err = filepath.Walk(a.CurrentImagePath, util.PathWalker(twriter, a.CurrentImagePath))
+		if err != nil {
+			return "", err
 		}
 	}
-
-	return nil
+	twriter.Flush()
+	hash := "sha512-" + hex.EncodeToString(hasher.Sum(nil))
+	return hash, nil
 }
 
-func signACI(acipath, signaturepath string, flags []string) error {
-	if len(flags) == 0 {
-		flags = []string{"--armor", "--yes"}
-	}
-	flags = append(flags, "--output", signaturepath, "--detach-sig", acipath)
+type duplexer struct {
+	outputs []io.Writer
+}
 
-	gpgCmd := exec.Command("gpg", flags...)
-	gpgCmd.Stdin = os.Stdin
-	gpgCmd.Stdout = os.Stdout
-	gpgCmd.Stderr = os.Stderr
-	return gpgCmd.Run()
+func (dup *duplexer) Write(data []byte) (n int, err error) {
+	for _, output := range dup.outputs {
+		n, err = output.Write(data)
+		if err != nil {
+			return
+		}
+	}
+	return
 }

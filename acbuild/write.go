@@ -23,8 +23,7 @@ var (
 	sign      = false
 	cmdWrite  = &cobra.Command{
 		Use:     "write ACI_PATH",
-		Short:   "Write the ACI to a file",
-		Long:    "Writes the ACI resulting from the current build context to a file",
+		Short:   "Write the image from the current build to a file",
 		Example: "acbuild write --sign mynewapp.aci -- --no-default-keyring --keyring ./rkt.gpg",
 		Run:     runWrapper(runWrite),
 	}
@@ -34,11 +33,16 @@ func init() {
 	cmdAcbuild.AddCommand(cmdWrite)
 
 	cmdWrite.Flags().BoolVar(&overwrite, "overwrite", false, "overwrite the resulting ACI")
-	cmdWrite.Flags().BoolVar(&sign, "sign", false, "sign the resulting ACI")
+	cmdWrite.Flags().BoolVar(&sign, "sign", false, "(removed) sign the resulting ACI")
 }
 
 func runWrite(cmd *cobra.Command, args []string) (exit int) {
-	if len(args) == 0 {
+	if sign {
+		stderr("write: the sign flag has been removed, please invoke gpg directly")
+		return 1
+	}
+
+	if len(args) != 1 {
 		cmd.Usage()
 		return 1
 	}
@@ -47,12 +51,17 @@ func runWrite(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Writing ACI to %s", args[0])
 	}
 
-	err := newACBuild().Write(args[0], overwrite, sign, args[1:])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	id, err := a.Write(args[0], overwrite)
 
 	if err != nil {
 		stderr("write: %v", err)
 		return getErrorCode(err)
 	}
-
+	stdout(id)
 	return 0
 }

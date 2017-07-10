@@ -1,4 +1,4 @@
-package: github.com/appc/acbuild
+package: github.com/containers/build
 import:
 - package: github.com/appc/spec
   version: v0.8.5
@@ -75,3 +75,5 @@ import:
   version: 18c6b7129324841d920ee8dc1ab66ec07054998f
 - package: github.com/appc/docker2aci
   version: v0.11.1
+- package: github.com/opencontainers/image-spec
+  version: ~1.0.0-rc3

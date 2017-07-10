@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appc/acbuild/engine"
-	"github.com/appc/acbuild/engine/systemdnspawn"
+	"github.com/containers/build/engine"
+	"github.com/containers/build/engine/chroot"
+	"github.com/containers/build/engine/systemdnspawn"
 
 	"github.com/spf13/cobra"
 )
@@ -30,14 +31,14 @@ var (
 	engineName = ""
 	cmdRun     = &cobra.Command{
 		Use:     "run -- CMD [ARGS]",
-		Short:   "Run a command in an ACI",
-		Long:    "Run a given command in an ACI, and save the resulting container as a new ACI",
+		Short:   "Run a command in the image, saving changes made",
 		Example: "acbuild run -- yum install nginx",
 		Run:     runWrapper(runRun),
 	}
 
 	engines = map[string]engine.Engine{
 		"systemd-nspawn": systemdnspawn.Engine{},
+		"chroot":         chroot.Engine{},
 	}
 )
 
@@ -71,7 +72,12 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	err := newACBuild().Run(args, workingdir, insecure, engine)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.Run(args, workingdir, insecure, engine)
 
 	if err != nil {
 		stderr("run: %v", err)

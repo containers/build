@@ -1,12 +1,12 @@
 # Getting Started with acbuild
 
 acbuild aims to support a workflow very similar to `Dockerfile`s, but with more
-flexibility and adherence to the Unix tools philosophy, and native image output
-in the modern ACI format. Generally, the workflow consists of a shell script
-(analogous to the `Dockerfile`) driving acbuild to construct an ACI, either
-from scratch or with another image as a base. This ACI is then stored in an
-_image registry_, and fetched by users to execute the applications stored
-within.
+flexibility and adherence to the Unix tools philosophy, and the ability to
+generate images conforming to both the ACI format and the OCI format.
+Generally, the workflow consists of a shell script (analogous to the
+`Dockerfile`) driving acbuild to construct an image, either from scratch or with
+another image as a base. This image is then uploaded and stored in an _image
+registry_, and fetched by users to execute the applications stored within.
 
 The following guide will walk you through building and running a simple ACI
 with acbuild. The ACI will contain nginx, and will serve static files over HTTP.

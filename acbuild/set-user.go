@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetUser = &cobra.Command{
 		Use:     "set-user USER",
-		Short:   "Set the user",
-		Long:    "Set the user the app will run as inside the container",
+		Short:   "Set the user that is used when this image is run",
 		Example: "acbuild set-user www-data",
 		Run:     runWrapper(runSetUser),
 	}
@@ -46,7 +45,12 @@ func runSetUser(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting user to %s", args[0])
 	}
 
-	err := newACBuild().SetUser(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetUser(args[0])
 
 	if err != nil {
 		stderr("set-user: %v", err)

@@ -17,6 +17,7 @@ package util
 import (
 	"archive/tar"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -73,4 +74,59 @@ func ExtractImage(path, dst string, fileMap map[string]struct{}) error {
 		return fmt.Errorf("error determining current user: %v", err)
 	}
 	return rkttar.ExtractTarInsecure(tar.NewReader(dr), dst, true, fileMap, editor)
+}
+
+func PathWalker(twriter *tar.Writer, tarSrcPath string) func(string, os.FileInfo, error) error {
+	prefixLen := len(tarSrcPath + "/")
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == tarSrcPath {
+			return nil
+		}
+		hdrName := path[prefixLen:]
+
+		switch {
+		case info.Mode()&os.ModeSymlink != 0:
+			target, err := os.Readlink(path)
+			if err != nil {
+				return err
+			}
+			hdr, err := tar.FileInfoHeader(info, target)
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
+
+		case info.Mode().IsRegular():
+			hdr, err := tar.FileInfoHeader(info, "")
+			if err != nil {
+				return err
+			}
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
+
+			f, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			n, err := io.Copy(twriter, f)
+			if err != nil {
+				return err
+			}
+			if n != info.Size() {
+				return fmt.Errorf("underwrite error")
+			}
+		default:
+			hdr, err := tar.FileInfoHeader(info, "")
+			if err != nil {
+				return err
+			}
+			hdr.Name = hdrName
+			twriter.WriteHeader(hdr)
+		}
+
+		return nil
+	}
 }

@@ -21,8 +21,7 @@ import (
 var (
 	cmdSetExec = &cobra.Command{
 		Use:     "set-exec -- CMD [ARGS]",
-		Short:   "Set the exec command",
-		Long:    "Sets the exec command in the ACI's manifest",
+		Short:   "Set the command to execute when this image is run",
 		Example: "acbuild set-exec -- /usr/sbin/nginx -g \"daemon off;\"",
 		Run:     runWrapper(runSetExec),
 	}
@@ -42,7 +41,12 @@ func runSetExec(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Setting exec command %v", args)
 	}
 
-	err := newACBuild().SetExec(args)
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.SetExec(args)
 
 	if err != nil {
 		stderr("set-exec: %v", err)

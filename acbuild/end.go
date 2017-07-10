@@ -22,7 +22,7 @@ var (
 	cmdEnd = &cobra.Command{
 		Use:     "end",
 		Short:   "end a current build",
-		Long:    "End the current build, deleting the current context",
+		Long:    "End the current build, deleting all information about it",
 		Example: "acbuild end",
 		Run:     runWrapper(runEnd),
 	}
@@ -42,7 +42,12 @@ func runEnd(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Ending the build")
 	}
 
-	err := newACBuild().End()
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.End()
 
 	if err != nil {
 		stderr("end: %v", err)

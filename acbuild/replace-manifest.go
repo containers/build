@@ -45,7 +45,12 @@ func runReplaceMan(cmd *cobra.Command, args []string) (exit int) {
 		stderr("Replacing manifest in ACI with the manifest at ", args[0])
 	}
 
-	err := newACBuild().ReplaceManifest(args[0])
+	a, err := newACBuild()
+	if err != nil {
+		stderr("%v", err)
+		return 1
+	}
+	err = a.Replace(args[0])
 
 	if err != nil {
 		stderr("replace-manifest: %v", err)
