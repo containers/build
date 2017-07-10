@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export SRC_DIR=`pwd`
+
+sudo rkt run \
+    --volume src-dir,kind=host,source=${SRC_DIR} \
+    --volume build-dir,kind=host,source=${SRC_DIR} \
+    --interactive \
+    coreos.com/rkt/builder:1.0.1 \
+    --exec /opt/rkt/build

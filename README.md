@@ -86,6 +86,18 @@ and put the following lines at the end of the file:
    export PATH=$PATH:$ACBUILD_BIN_DIR
    ```
 
+### Building acbuild with rkt
+
+CoreOS comes preinstalled with rkt and git. It is my intention to put together a CI/CD system based on as few layers as possible and as little docker as possible. The tar.gz file
+did not work for me and so I started putting together an analog to build-docker called build-rkt which uses alpine 3.4.
+
+```
+./build-rkt
+```
+
+at this point there are two executables in the bin folder. You'll need to symlink or copy them.
+
+
 ### Trying out acbuild using Vagrant
 
 For users with Vagrant 1.5.x or greater, there's a provided `Vagrantfile` that
