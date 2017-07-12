@@ -1,13 +1,17 @@
-# appc Dependencies
+# AppC Dependencies
 
 _Note: the following only applies when in the appc build mode_
 
 Some of the most common questions people new to acbuild ask are related to image
 dependencies. How do they work, how are they referenced, what's the difference
-between `acbuild begin <image>` and `acbuild dependency add <image>`.
+between `acbuild begin <image>` and `acbuild dependency add <image>`. There is a 
+practical difference between the two methods `dep add` and `acbuild begin`. 
+`dep add` will point to an image in the manifest, and not include it in any way, 
+and `acbuild begin` will modify an image, meaning the resulting output will 
+include the entire contents of the image.
 
 This document aims to provide a detailed explanation of image dependencies in
-AppC and how they can be manipulated with acbuild.
+AppC and how they can be manipulated with acbuild. 
 
 ## acbuild begin
 
@@ -49,6 +53,22 @@ acbuild doesn't have a persistent local store, so if acbuild needs to find
 dependencies (which happens if you use the `run` command after a `dep add`
 command) it immediately falls back to performing AppC discovery to find the
 image. This means that local dependencies are not currently supported.
+In other words, when rkt attempts to load an image with a dependency on 
+`example.com/imagename`, it will first check its local store for this image, 
+and if it's not there it'll then attempt to perform AppC discovery to go find 
+it on the network. acbuild doesn't have a persistent store, so if it needs to
+fetch dependencies (which it does when the `acbuild run` command is used) it'll 
+just search on the network for it. Getting a persistent acbuild store is a 
+work-in-progress.
+
+## Docker images as dependencies ##
+
+You cannot reference Docker images as dependencies in an AppC image, so 
+acbuild doesn't allow `acbuild dependency add docker://alpine`.
+
+You can, however, run a Docker image through `docker2aci`, and then open that 
+image for modification with acbuild. There's even support for this in acbuild 
+for convenience, `acbuild begin docker://alpine`.
 
 [1]: subcommands/begin.md
 [2]: subcommands/dependency.md
