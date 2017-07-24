@@ -63,8 +63,6 @@ involved, so the command will be able to see and possibly interact with other
 processes on the host. This engine notably has no dependency on systemd, unlike
 the `systemd-nspawn` engine.
 
-
-
 ### Exiting out of systemd-nspawn
 
 All acbuild commands can be cancelled with Ctrl+c with the exception of
