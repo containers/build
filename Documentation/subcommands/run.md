@@ -39,14 +39,23 @@ squash` is being worked on to do this.
 acbuild can use different engines to perform the actual execution of the given
 command. The flag `--engine` can be used to select a non-default engine.
 
-### systemd-nspawn
+### `systemd-nspawn`
 
 The default engine in acbuild is called `systemd-nspawn`, which rather
 obviously uses `systemd-nspawn` to run the given command. This means that the
 machine running acbuild must have systemd installed to be able to use `acbuild
 run` with the default engine.
 
-### chroot
+#### Interaction with `/etc/resolv.conf` inside container
+
+This engine will modify `/etc/resolv.conf` inside the container. If you want to
+set what’s in `/etc/resolv.conf` during the build, make sure you copy it in
+after you've done any `acbuild run` commands (unless you use the `chroot` on all
+`run` commands, see below). If you want to make a host’s `resolv.conf`
+available for for reading, you could bind-mount read-only the hosts's
+`/etc/resolv.conf` into the container.
+
+### `chroot`
 
 An alternative engine is called `chroot`, which uses the chroot syscall to
 enter into the container and run the specified command. There's no namespacing
