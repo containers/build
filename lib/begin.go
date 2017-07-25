@@ -73,6 +73,12 @@ func (a *ACBuild) Begin(start string, insecure bool, mode BuildMode) (err error)
 	if err = a.lock(); err != nil {
 		return err
 	}
+
+	if os.Geteuid() != 0 {
+		fmt.Fprint(os.Stderr, `please run this as superuser to avoid 
+				       filesystem permissions issues`)
+	}
+
 	defer func() {
 		if err1 := a.unlock(); err == nil {
 			err = err1
