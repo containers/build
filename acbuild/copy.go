@@ -16,6 +16,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var (
@@ -43,6 +44,13 @@ func runCopy(cmd *cobra.Command, args []string) (exit int) {
 
 	if debug {
 		stderr("Copying host:%s to aci:%s", args[0], args[1])
+	}
+
+	if len(args[1]) > 0 && args[1][len(args[1])-1] == os.PathSeparator {
+		stderr(`There is a trailing path separator in the second 
+			operand. Please review the differences between 
+			this command and copy-to-dir. `)
+		return 1
 	}
 
 	a, err := newACBuild()
