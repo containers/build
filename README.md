@@ -1,3 +1,19 @@
+## _This project is currently unmaintained_
+
+acbuild was originally created to be the tool used to build AppC images. Due to
+the introduction of the [Open Container
+Initiative](https://www.opencontainers.org/), development on AppC was
+[officially suspended](https://github.com/appc/spec#-disclaimer-) in November,
+2016. While acbuild has the ability to also produce OCI images, it is not the
+only tool capable of doing so. In its current state, acbuild is not currently
+maintained. If you wish to become a maintainer of acbuild, feel free to start
+contributing and ask for direct commit access via the issue/PR tracker.
+
+For those looking for an OCI image manipulation tool that is actively
+maintained, [umoci](https://github.com/openSUSE/umoci) or
+[buildah](https://github.com/projectatomic/buildah) might be able to fill the
+role.
+
 # acbuild - another container build tool
 
 acbuild is a command line utility to build and modify container images.
